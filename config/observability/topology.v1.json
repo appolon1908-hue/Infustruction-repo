@@ -2,6 +2,9 @@
   "version": 1,
   "dnsTarget": "37.27.128.39",
   "domain": "codestra.media",
+  "listenerAuthority": "principal-service-repository-deployment-definition",
+  "listenerValuesAreReferences": true,
+  "liveInstallationAuthorized": false,
   "networks": {
     "loopback": "127.0.0.0/8",
     "privateIntegrationVlan": "10.40.0.0/24",
@@ -11,6 +14,7 @@
     {
       "id": "grafana",
       "repository": "appolon1908-hue/Codestra-Grafana-",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "graf.codestra.media",
       "exposure": "browser-through-caddy",
       "nativeListener": "127.0.0.1:3000",
@@ -21,16 +25,18 @@
     {
       "id": "prometheus",
       "repository": "appolon1908-hue/Codestra-Prometheus",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "prom.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:9090",
       "receivesFrom": ["grafana"],
-      "connectsTo": ["alertmanager", "node-exporter", "cadvisor", "postgres-exporter", "redis-exporter", "blackbox-exporter", "otel-collector", "alloy"],
+      "connectsTo": ["alertmanager", "node-exporter", "cadvisor", "postgres-exporter", "redis-exporter", "blackbox-exporter"],
       "authentication": "private-network-and-service-policy"
     },
     {
       "id": "alertmanager",
       "repository": "appolon1908-hue/Codestra-Alertmanager",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "aler.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:9093",
@@ -41,6 +47,7 @@
     {
       "id": "loki",
       "repository": "appolon1908-hue/Codestra-Loki",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "loki.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:3100",
@@ -52,6 +59,7 @@
     {
       "id": "tempo",
       "repository": "appolon1908-hue/Codestra-Tempo",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "temp.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:3200",
@@ -64,6 +72,7 @@
     {
       "id": "otel-collector",
       "repository": "appolon1908-hue/Codestra-Telemetry",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "otel.codestra.media",
       "exposure": "private-only",
       "nativeListeners": ["private:4317", "private:4318"],
@@ -74,6 +83,7 @@
     {
       "id": "superset",
       "repository": "appolon1908-hue/Superset",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "supe.codestra.media",
       "exposure": "browser-through-caddy",
       "nativeListener": "127.0.0.1:8088",
@@ -84,6 +94,7 @@
     {
       "id": "node-exporter",
       "repository": "appolon1908-hue/Codestra-Node-Exporter",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "node.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:9100",
@@ -94,6 +105,7 @@
     {
       "id": "cadvisor",
       "repository": "appolon1908-hue/Codestra-cAdvisor",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "cadv.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:8080",
@@ -103,7 +115,9 @@
     },
     {
       "id": "postgres-exporter",
-      "repository": "appolon1908-hue/Codestra-Postgres-Exporter",
+      "repository": null,
+      "repositoryAuthority": "blocked-missing-principal-repository",
+      "portConfirmation": "blocked-missing-principal-repository",
       "hostname": "pgex.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:9187",
@@ -114,6 +128,7 @@
     {
       "id": "redis-exporter",
       "repository": "appolon1908-hue/Codestra-Redis-Exporter",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "rdex.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:9121",
@@ -124,6 +139,7 @@
     {
       "id": "blackbox-exporter",
       "repository": "appolon1908-hue/Codestra-Blackbox-Exporter",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "blac.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:9115",
@@ -134,16 +150,18 @@
     {
       "id": "alloy",
       "repository": "appolon1908-hue/Codestra-Alloy",
+      "portConfirmation": "pending-principal-repository-deployment-definition-if-diagnostics-enabled",
       "hostname": "allo.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:12345",
       "receivesFrom": ["local-logs-metrics-traces"],
-      "connectsTo": ["loki", "tempo", "prometheus"],
+      "connectsTo": ["loki", "tempo", "otel-collector"],
       "authentication": "private-network-and-service-auth"
     },
     {
       "id": "openbao",
       "repository": "appolon1908-hue/Codestra-OpenBao",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "bao.codestra.media",
       "exposure": "restricted-browser-through-caddy",
       "nativeListener": "127.0.0.1:8200",

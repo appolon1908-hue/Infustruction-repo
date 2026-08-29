@@ -1,6 +1,10 @@
 {
   "version": 1,
+  "scope": "observability-additions-on-shared-provider-host",
   "policy": "default-deny-inbound",
+  "defaultRoutedPolicy": "deny",
+  "establishedRelatedAllowed": true,
+  "liveInstallationAuthorized": false,
   "publicIngress": [
     {
       "port": 22,
@@ -55,6 +59,37 @@
     "supe.codestra.media",
     "bao.codestra.media"
   ],
+  "forbiddenPublicNativePorts": [
+    3000,
+    8088,
+    9090,
+    9093,
+    3100,
+    3200,
+    4317,
+    4318,
+    8888,
+    8889,
+    9100,
+    8080,
+    9187,
+    9121,
+    9115,
+    12345,
+    8200
+  ],
+  "nativeListenerPolicy": {
+    "allowedBindScopes": ["loopback", "private-vlan", "private-docker-network"],
+    "forbiddenBindAddresses": ["0.0.0.0", "::"],
+    "dockerPublishedPortRequiresDockerUserPolicy": true,
+    "publicNativeServicePort": false
+  },
+  "sharedHostSafety": {
+    "preserveUnrelatedApprovedServices": true,
+    "smtpPort25IsOutsideThisObservabilityPolicy": true,
+    "doNotFlushExistingFirewall": true,
+    "doNotReplaceHostPolicyWithoutFullInventory": true
+  },
   "forbidden": [
     "bind-native-service-to-public-0.0.0.0",
     "open-prometheus-to-internet",

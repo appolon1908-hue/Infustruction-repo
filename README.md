@@ -113,9 +113,9 @@ Never perform production activation merely by merging documentation or infrastru
 
 ## Observability private-network candidate
 
-The reviewable service exposure registry, east-west communication map and
-default-deny firewall policy are under `config/observability/`. Validate them
-with `python3 scripts/validate-observability-network.py`. These files are
+The canonical topology, east-west communication map, and additive default-deny
+firewall intent are under `config/observability/`. Validate them with
+`python3 scripts/validate-observability-topology.py`. These files are
 source-only and explicitly keep live installation disabled until principal
-service repositories confirm their deployment listeners and the Caddy and
-Keycloak changes pass review.
+service repositories confirm their deployment listeners, PostgreSQL Exporter
+has a principal repository, and the Caddy and Keycloak changes pass review.

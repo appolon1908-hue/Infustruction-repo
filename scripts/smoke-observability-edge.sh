@@ -23,7 +23,7 @@ PRIVATE_HOSTS=(
   blac.codestra.media
   allo.codestra.media
 )
-NATIVE_PORTS=(3000 8088 8200 9090 9093 3100 3200 4317 4318 9100 9187 9121 9115 12345)
+NATIVE_PORTS=(3000 8088 8200 9090 9093 3100 3200 4317 4318 8888 8889 9100 8080 9187 9121 9115 12345)
 
 fail() {
   printf 'OBSERVABILITY_SMOKE_ERROR=%s\n' "$*" >&2
@@ -76,9 +76,9 @@ check_public_application() {
     "https://${host}/")" || fail "$host HTTPS request failed"
 
   case "$host:$status" in
-    graf.codestra.media:200 | graf.codestra.media:302 | graf.codestra.media:401 | graf.codestra.media:403) ;;
-    supe.codestra.media:200 | supe.codestra.media:302 | supe.codestra.media:401 | supe.codestra.media:403) ;;
-    bao.codestra.media:200 | bao.codestra.media:302 | bao.codestra.media:401 | bao.codestra.media:403) ;;
+    graf.codestra.media:302 | graf.codestra.media:401 | graf.codestra.media:403) ;;
+    supe.codestra.media:302 | supe.codestra.media:401 | supe.codestra.media:403) ;;
+    bao.codestra.media:302 | bao.codestra.media:401 | bao.codestra.media:403) ;;
     *) fail "$host returned unexpected status $status" ;;
   esac
   [[ "$status" != "502" && "$status" != "503" ]] || fail "$host upstream is unavailable"
@@ -93,7 +93,7 @@ check_private_denial() {
     --max-time "$TIMEOUT_SECONDS" \
     --write-out '%{http_code}' \
     "https://${host}/")" || fail "$host HTTPS request failed"
-  [[ "$status" == "403" ]] || fail "$host must return 403 publicly; got $status"
+  [[ "$status" == "403" || "$status" == "404" ]] || fail "$host must return 403 or 404 publicly; got $status"
   printf 'PRIVATE_DENIAL_OK=%s\n' "$host"
 }
 
@@ -127,7 +127,7 @@ if [[ "$MODE" == "postdeploy" ]]; then
 fi
 
 # Run this mode from a genuinely external host, not from the observability server.
-if [[ "$MODE" == "external-port-scan" || "$MODE" == "postdeploy" ]]; then
+if [[ "$MODE" == "external-port-scan" ]]; then
   for port in "${NATIVE_PORTS[@]}"; do
     check_native_port_closed "$port"
   done

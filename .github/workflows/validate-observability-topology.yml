@@ -7,6 +7,7 @@ on:
       - scripts/validate-observability-topology.py
       - scripts/smoke-observability-edge.sh
       - docs/OBSERVABILITY-PRIVATE-NETWORK.md
+      - docs/OBSERVABILITY-FIREWALL-IMPLEMENTATION.md
       - .github/workflows/validate-observability-topology.yml
   workflow_dispatch:
 
@@ -15,21 +16,26 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Check out exact source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+          fetch-depth: 1
 
       - name: Validate desired state
         run: python3 scripts/validate-observability-topology.py
 
       - name: Shell syntax
         run: bash -n scripts/smoke-observability-edge.sh
+
+      - name: Reject committed secret material
+        run: |
+          set -Eeuo pipefail
+          if grep -RInE --exclude-dir=.git 'BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|client_secret[[:space:]]*[:=][[:space:]]*[^<$[:space:]]|password[[:space:]]*[:=][[:space:]]*[^<$[:space:]]' .; then
+            echo 'ERROR=possible_secret_material' >&2
+            exit 1
+          fi

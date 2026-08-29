@@ -11,8 +11,8 @@ its own inventory and change approval.
 
 ## Native listener rule
 
-Ports 3000, 8088, 9090, 9093, 3100, 3200, 4317, 4318, 9100, 8080, 9187,
-9121, 9115, 12345 and 8200 must bind only to loopback, the reviewed private
+Ports 3000, 8088, 9090, 9093, 3100, 3200, 4317, 4318, 8888, 8889, 9100,
+8080, 9187, 9121, 9115, 12345 and 8200 must bind only to loopback, the reviewed private
 VLAN, or a private Docker network. Publishing a container port requires both
 an explicit host bind and a `DOCKER-USER`/nftables policy; UFW alone is not
 accepted as proof because Docker forwarding may bypass ordinary UFW paths.

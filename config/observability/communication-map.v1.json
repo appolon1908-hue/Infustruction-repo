@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "defaultEastWestPolicy": "deny",
+  "referencePortsPendingPrincipalConfirmation": true,
   "liveInstallationAuthorized": false,
   "flows": [
     {"source": "caddy", "destination": "grafana", "protocol": "tcp", "referencePort": 3000, "purpose": "authenticated browser proxy"},

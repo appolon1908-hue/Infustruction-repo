@@ -8,13 +8,18 @@ This branch defines desired state only. It does not apply firewall rules, start 
 
 ## Public edge
 
-Only these host ports may be Internet-facing:
+The observability change may add or manage only these Internet-facing ports:
 
 ```text
 22/tcp   restricted administrative SSH
 80/tcp   Caddy ACME and HTTPS redirect
 443/tcp  Caddy HTTPS edge
 ```
+
+This is not a complete host firewall inventory. The server is shared with the
+approved mail service, so SMTP on TCP 25 remains outside this observability
+policy and must be preserved. No observability change may flush or replace the
+host firewall without a separately reviewed full-host inventory.
 
 Browser-facing applications:
 
@@ -43,6 +48,19 @@ allo.codestra.media  Grafana Alloy
 ```
 
 Their native ports must bind to loopback, the `10.40.0.0/24` private integration VLAN, or an environment-specific private Docker network. Public HTTPS requests to these DNS names are handled by Caddy with `403`; Caddy does not proxy the native services.
+
+## Listener-authority blocker
+
+The native listener values in this branch are reference values only. As of
+2026-08-29, the dedicated service repositories do not contain accepted
+deployment/listener definitions, so the actual ports and bind addresses are
+not confirmed by their principal source. The proposed PostgreSQL Exporter
+repository `appolon1908-hue/Codestra-Postgres-Exporter` does not exist.
+
+Every component therefore remains `pending-principal-repository-deployment-definition`,
+and PostgreSQL Exporter remains `blocked-missing-principal-repository`. Server
+installation is prohibited until these authority gaps are resolved and the
+topology contract is updated through review.
 
 ## Approved communication graph
 
@@ -160,7 +178,10 @@ superset-analytics
 openbao-secrets
 ```
 
-No live client or secret should be created until the protected Keycloak plan/apply engine supports the accepted contract.
+The protected Keycloak plan/apply engine now covers these client definitions,
+but live creation remains disabled. Realm-role provisioning, MFA enforcement,
+application mappings, and all live secrets still require separate review and
+runtime evidence.
 
 ## Validation commands
 
@@ -184,6 +205,9 @@ Post-deployment test:
 OBSERVABILITY_SMOKE_MODE=postdeploy \
   bash scripts/smoke-observability-edge.sh
 ```
+
+The post-deployment mode validates TLS and authenticated/denied HTTPS behavior;
+it does not claim that native ports were tested from outside the provider.
 
 Run the external port test from a machine outside the server/private network:
 
