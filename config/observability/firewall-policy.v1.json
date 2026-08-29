@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "scope": "observability_additions_on_shared_provider_host",
+  "defaultInbound": "deny",
+  "defaultRouted": "deny",
+  "establishedRelatedAllowed": true,
+  "liveInstallationAuthorized": false,
+  "publicIngress": [
+    {"protocol": "tcp", "port": 80, "owner": "caddy", "purpose": "ACME and HTTPS redirect only", "sources": ["internet"]},
+    {"protocol": "tcp", "port": 443, "owner": "caddy", "purpose": "HTTPS edge only", "sources": ["internet"]},
+    {"protocol": "tcp", "port": 22, "owner": "host-ssh", "purpose": "restricted administration", "sources": ["approved_admin_cidrs"], "restricted": true}
+  ],
+  "forbiddenPublicNativePorts": [3000, 8088, 9090, 9093, 3100, 3200, 4317, 4318, 9100, 8080, 9187, 9121, 9115, 12345, 8200],
+  "nativeListenerPolicy": {
+    "allowedBindScopes": ["loopback", "private_vlan", "private_docker_network"],
+    "forbiddenBindAddresses": ["0.0.0.0", "::"],
+    "dockerPublishedPortRequiresDockerUserPolicy": true,
+    "publicNativeServicePort": false
+  },
+  "privateIngressSources": [
+    "loopback",
+    "reviewed_private_vlan_cidrs",
+    "reviewed_private_docker_networks",
+    "exact_service_identities_from_communication_map"
+  ],
+  "sharedHostSafety": {
+    "preserveUnrelatedApprovedServices": true,
+    "smtpPort25IsOutsideThisObservabilityPolicy": true,
+    "doNotFlushExistingFirewall": true,
+    "doNotReplaceHostPolicyWithoutFullInventory": true
+  }
+}

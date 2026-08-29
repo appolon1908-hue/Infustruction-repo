@@ -1,0 +1,34 @@
+name: Validate observability network policy
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate-observability-network:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Validate JSON and observability policy
+        run: |
+          set -Eeuo pipefail
+          python3 -m json.tool config/observability/service-exposure.v1.json >/dev/null
+          python3 -m json.tool config/observability/communication-map.v1.json >/dev/null
+          python3 -m json.tool config/observability/firewall-policy.v1.json >/dev/null
+          python3 scripts/validate-observability-network.py
+      - name: Reject committed secret material
+        run: |
+          set -Eeuo pipefail
+          if grep -RInE --exclude-dir=.git 'BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|client_secret[[:space:]]*[:=][[:space:]]*[^<$[:space:]]|password[[:space:]]*[:=][[:space:]]*[^<$[:space:]]' .; then
+            echo 'ERROR=possible_secret_material' >&2
+            exit 1
+          fi
