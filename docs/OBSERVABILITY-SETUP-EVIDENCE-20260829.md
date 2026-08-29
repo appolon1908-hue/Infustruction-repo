@@ -58,7 +58,7 @@ The following remain mandatory before a production change:
 
 1. Review and merge the managed Keycloak client candidate; separately implement/review realm-role provisioning, administrative MFA enforcement, user/group assignment, and application-side role mappings.
 2. Generate/retrieve client secrets through the approved protected process and inject them into service secret files/environment; never commit them.
-3. Add accepted immutable deployment/listener definitions to every principal service repository. Create a PostgreSQL Exporter principal repository or remove it from the stack; all familiar ports remain unconfirmed references until then.
+3. Add accepted immutable deployment/listener definitions to every principal service repository. PostgreSQL Exporter now has a repository and a disabled runtime contract, but still needs an accepted immutable deployment and private-listener evidence; all familiar ports remain unconfirmed deployment references until then.
 4. Select and certify OpenBao storage, HA, seal, initialization custody, audit, backup/restore, DR, and narrow policy design.
 5. Reconcile the target server's current Nginx ownership of 80/443 with the reviewed Caddy migration; Caddy is not currently installed or active there.
 6. Apply a separately reviewed additive firewall plan preserving restricted SSH, separately approved SMTP on TCP 25, and all unrelated approved services while denying native observability ports publicly.

@@ -40,7 +40,7 @@ EXPECTED_REPOSITORIES = {
     "superset": "appolon1908-hue/Superset",
     "node-exporter": "appolon1908-hue/Codestra-Node-Exporter",
     "cadvisor": "appolon1908-hue/Codestra-cAdvisor",
-    "postgres-exporter": None,
+    "postgres-exporter": "appolon1908-hue/Codestra-Postgres-Exporter",
     "redis-exporter": "appolon1908-hue/Codestra-Redis-Exporter",
     "blackbox-exporter": "appolon1908-hue/Codestra-Blackbox-Exporter",
     "alloy": "appolon1908-hue/Codestra-Alloy",
@@ -135,12 +135,7 @@ def validate_topology(topology: dict) -> None:
         if component.get("repository") != EXPECTED_REPOSITORIES[component_id]:
             fail(f"{component_id}: repository authority mismatch")
         confirmation = component.get("portConfirmation")
-        if component_id == "postgres-exporter":
-            if confirmation != "blocked-missing-principal-repository":
-                fail("postgres-exporter must remain blocked without a principal repository")
-            if component.get("repositoryAuthority") != "blocked-missing-principal-repository":
-                fail("postgres-exporter repository blocker is missing")
-        elif not isinstance(confirmation, str) or not confirmation.startswith("pending-principal-repository"):
+        if not isinstance(confirmation, str) or not confirmation.startswith("pending-principal-repository"):
             fail(f"{component_id}: reference port is not marked pending")
 
         listeners: list[str] = []
@@ -267,7 +262,7 @@ def main() -> None:
     print("PUBLIC_NATIVE_PORTS=DENIED")
     print("DOCKER_FORWARDING_POLICY=REQUIRED")
     print("SHARED_HOST_SMTP_POLICY=PRESERVED_OUT_OF_SCOPE")
-    print("POSTGRES_EXPORTER_REPOSITORY_AUTHORITY=BLOCKED")
+    print("POSTGRES_EXPORTER_DEPLOYMENT_AUTHORITY=PENDING")
     print("PRINCIPAL_REPOSITORY_PORT_CONFIRMATION=PENDING")
     print("LIVE_INSTALLATION_AUTHORIZED=NO")
     print("OBSERVABILITY_TOPOLOGY_VALID=1")

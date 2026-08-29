@@ -54,13 +54,14 @@ Their native ports must bind to loopback, the `10.40.0.0/24` private integration
 The native listener values in this branch are reference values only. As of
 2026-08-29, the dedicated service repositories do not contain accepted
 deployment/listener definitions, so the actual ports and bind addresses are
-not confirmed by their principal source. The proposed PostgreSQL Exporter
-repository `appolon1908-hue/Codestra-Postgres-Exporter` does not exist.
+not confirmed by accepted deployment source. The PostgreSQL Exporter repository
+`appolon1908-hue/Codestra-Postgres-Exporter` was created on 2026-08-29 and its
+runtime contract references internal port 9187 with no host publication, but
+deployment and immutable-image activation remain disabled.
 
 Every component therefore remains `pending-principal-repository-deployment-definition`,
-and PostgreSQL Exporter remains `blocked-missing-principal-repository`. Server
-installation is prohibited until these authority gaps are resolved and the
-topology contract is updated through review.
+including PostgreSQL Exporter. Server installation is prohibited until these
+authority gaps are resolved and the topology contract is updated through review.
 
 ## Approved communication graph
 
@@ -77,12 +78,10 @@ Prometheus -> cAdvisor
 Prometheus -> PostgreSQL Exporter
 Prometheus -> Redis Exporter
 Prometheus -> Blackbox Exporter
-Prometheus -> OpenTelemetry Collector metrics
-Prometheus -> Alloy metrics
 
 Instrumented services -> OpenTelemetry Collector
 OpenTelemetry Collector -> Tempo / Loki / Prometheus-compatible metrics
-Alloy -> Loki / Tempo / Prometheus-compatible metrics
+Alloy -> Loki / Tempo / OpenTelemetry Collector
 
 Superset -> curated analytics read models only
 Authorized applications -> OpenBao over private authenticated paths

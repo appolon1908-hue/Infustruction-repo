@@ -115,9 +115,8 @@
     },
     {
       "id": "postgres-exporter",
-      "repository": null,
-      "repositoryAuthority": "blocked-missing-principal-repository",
-      "portConfirmation": "blocked-missing-principal-repository",
+      "repository": "appolon1908-hue/Codestra-Postgres-Exporter",
+      "portConfirmation": "pending-principal-repository-deployment-definition",
       "hostname": "pgex.codestra.media",
       "exposure": "private-only",
       "nativeListener": "private:9187",

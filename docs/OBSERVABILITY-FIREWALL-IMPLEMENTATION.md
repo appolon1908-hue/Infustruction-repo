@@ -22,9 +22,10 @@ accepted as proof because Docker forwarding may bypass ordinary UFW paths.
 As of 2026-08-29, the dedicated service repositories declare deployment
 disabled and do not contain an accepted Codestra listener/deployment
 definition. Their familiar native ports therefore remain reference values,
-not confirmed deployment authority. PostgreSQL Exporter also lacks a principal
-repository. These are hard installation blockers, not permission to use
-upstream defaults silently.
+not confirmed deployment authority. The PostgreSQL Exporter repository now
+exists and declares no host-published port, but deployment and immutable-image
+activation remain disabled. These are hard installation blockers, not
+permission to use upstream defaults silently.
 
 The observed provider-host baseline is safer than the target exposure: the
 existing Grafana publishes container port 3000 only as host loopback port
@@ -35,8 +36,8 @@ is present. Source review must preserve that fail-closed state.
 
 1. Each principal service repository adds an immutable deployment definition,
    health/readiness checks, exact listener bindings and rollback steps.
-2. PostgreSQL Exporter receives a principal repository or is removed from the
-   approved stack.
+2. PostgreSQL Exporter receives an accepted immutable deployment definition
+   and private-listener evidence, or is removed from the approved stack.
 3. Exact private VLAN/container subnets and service identities replace the
    symbolic source groups in the policy.
 4. Caddy, Keycloak and infrastructure candidates pass independent review.
