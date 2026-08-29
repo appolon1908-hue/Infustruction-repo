@@ -85,6 +85,25 @@ The current server inventory identified several infrastructure risks that this r
 6. observability components documented architecturally are not all proven active;
 7. source-to-runtime reconciliation needs one authoritative deployment manifest.
 
+## Observability integration foundation
+
+The preparation-only integration contract is tracked in
+[`observability/integration-manifest.v1.json`](observability/integration-manifest.v1.json).
+It inventories the principal Grafana, Prometheus, Alertmanager, Loki, Tempo, OpenTelemetry,
+Superset, exporter, Alloy, and OpenBao repositories at reviewed source commits while keeping
+every deployment and connection disabled.
+
+The current review, target data paths, component artifact contracts, and acceptance gates are in
+[`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md). Network and security constraints are in
+[`docs/NETWORKING.md`](docs/NETWORKING.md) and
+[`docs/SECURITY-BASELINE.md`](docs/SECURITY-BASELINE.md).
+
+Validate the contract with:
+
+```bash
+node scripts/validate-observability-manifest.mjs
+```
+
 ## Required documentation set
 
 - `docs/ARCHITECTURE.md`

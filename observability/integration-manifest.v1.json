@@ -1,0 +1,318 @@
+{
+  "schema_version": "1.0",
+  "captured_at": "2026-08-29",
+  "deployment_enabled": false,
+  "infrastructure_authority": "appolon1908-hue/Infustruction-repo",
+  "application_authority": "appolon1908-hue/kyqra-crawler",
+  "review_dependencies": [
+    {
+      "repository": "appolon1908-hue/Infustruction-repo",
+      "branch": "feature/observability-private-network-v1",
+      "commit": "f75d5c1a2d1558ae94412ba499ffe31766d55a8d",
+      "status": "draft_pr_2"
+    },
+    {
+      "repository": "appolon1908-hue/Caddy",
+      "branch": "feature/observability-edge-routing-v1",
+      "commit": "5ee8755ddc900239d891358a0221295e0fe4a915",
+      "status": "candidate_not_accepted"
+    },
+    {
+      "repository": "appolon1908-hue/Keycloak",
+      "branch": "feature/observability-oidc-clients-v1",
+      "commit": "76464c4cce21fff2788cac58966888c51f548634",
+      "status": "candidate_not_accepted"
+    }
+  ],
+  "environments": ["development", "test", "staging", "production"],
+  "components": {
+    "grafana": {
+      "kind": "visualization",
+      "authority_repository": "appolon1908-hue/Codestra-Grafana-",
+      "source_commit": "30b736f98e7bbf16f54280251c6d51a877ff2d8a",
+      "candidate": {
+        "branch": "feature/private-bind-keycloak-oidc-v1",
+        "commit": "f83e8235d01ec9c5d8a89f064170872923a5f8f6",
+        "status": "validated_not_accepted"
+      },
+      "upstream_repository": "grafana/grafana",
+      "upstream_commit": "5e3a02f81d2aadf4bf24fe49ed97d872556f5bf9",
+      "canonical_hostname": "graf.codestra.media",
+      "exposure": "authenticated_https",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "A private-bind/OIDC candidate exists, but it is not accepted on main and does not yet supply the full provisioning, dashboard, and immutable release contract."
+      ]
+    },
+    "prometheus": {
+      "kind": "metrics_store",
+      "authority_repository": "appolon1908-hue/Codestra-Prometheus",
+      "source_commit": "eec6ea7d7a63d7debef16de92ef5b6d34395d013",
+      "upstream_repository": "prometheus/prometheus",
+      "upstream_commit": "e06b2dc5a6149e20ca82fe936fb044a6dfe45958",
+      "canonical_hostname": "prom.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Scrape, recording-rule, alert-rule, retention, and release artifacts are absent."
+      ]
+    },
+    "alertmanager": {
+      "kind": "alert_router",
+      "authority_repository": "appolon1908-hue/Codestra-Alertmanager",
+      "source_commit": "ab274b0410ef8faeaf1227db7b735ebaa09c4d21",
+      "upstream_repository": "prometheus/alertmanager",
+      "upstream_commit": "41dec65b373bc9ec38d8e02e51f790b9f71008df",
+      "canonical_hostname": "aler.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Routing, inhibition, receiver, secret-reference, and release artifacts are absent."
+      ]
+    },
+    "loki": {
+      "kind": "log_store",
+      "authority_repository": "appolon1908-hue/Codestra-Loki",
+      "source_commit": "75a5deb555547b557466c418af18c99f3cef5556",
+      "upstream_repository": "grafana/loki",
+      "upstream_commit": "d8a4d755695929a19ce53ab730a8776ddae09ea2",
+      "canonical_hostname": "loki.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Tenancy, storage, schema, retention, limits, and release artifacts are absent."
+      ]
+    },
+    "tempo": {
+      "kind": "trace_store",
+      "authority_repository": "appolon1908-hue/Codestra-Tempo",
+      "source_commit": "4d91ab83d702c5892a8521804abfe32a57a6825f",
+      "upstream_repository": "grafana/tempo",
+      "upstream_commit": "049347c455383b93cd8557760f18c1f269cccc2b",
+      "canonical_hostname": "temp.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Ingestion, storage, retention, compaction, query, and release artifacts are absent.",
+        "The owner must explicitly accept or correct the abbreviated temp.codestra.media hostname."
+      ]
+    },
+    "opentelemetry_collector": {
+      "kind": "application_telemetry_collector",
+      "authority_repository": "appolon1908-hue/Codestra-Telemetry",
+      "source_commit": "d42d866072ce86175ca03209bd866b3452d606fe",
+      "upstream_repository": "open-telemetry/opentelemetry-collector",
+      "upstream_commit": "a183c9cc604a9921c75b2eda0bf8fbb0bb9833b5",
+      "canonical_hostname": "otel.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Receivers, processors, redaction, sampling, exporters, and release artifacts are absent."
+      ]
+    },
+    "superset": {
+      "kind": "curated_analytics",
+      "authority_repository": "appolon1908-hue/Superset",
+      "source_commit": "9e9b5a347e1a52cf43f8c6ec2a967379e723d31a",
+      "candidate": {
+        "branch": "feature/private-bind-keycloak-oidc-v1",
+        "commit": "7ddf9932caaf50fff406220739eb08844990c489",
+        "status": "validated_not_accepted"
+      },
+      "upstream_repository": "apache/superset",
+      "upstream_commit": "96119ffefce6165efa4a655dd4674ec697b819d1",
+      "canonical_hostname": "supe.codestra.media",
+      "exposure": "authenticated_https",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "A private-bind/OIDC candidate exists, but it is not accepted on main and curated read models, migrations, and immutable release artifacts remain absent."
+      ]
+    },
+    "node_exporter": {
+      "kind": "host_metrics_exporter",
+      "authority_repository": "appolon1908-hue/Codestra-Node-Exporter",
+      "source_commit": "3de3b5444276037980ed374009ca55d5ccb6480c",
+      "upstream_repository": "prometheus/node_exporter",
+      "upstream_commit": "9a077374d780c3cbda129a5760fb785853c79542",
+      "canonical_hostname": "node.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Per-host deployment, collector policy, private target discovery, and release artifacts are absent."
+      ]
+    },
+    "cadvisor": {
+      "kind": "container_metrics_exporter",
+      "authority_repository": "appolon1908-hue/Codestra-cAdvisor",
+      "source_commit": "d3004eb2a8af6b8e8f00639417f2b0c31abf56bb",
+      "upstream_repository": "google/cadvisor",
+      "upstream_commit": "6a0c4f2539a8b1c11215804dee404c06fe3e0218",
+      "canonical_hostname": "cadv.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Per-host deployment, restricted runtime mounts, private target discovery, and release artifacts are absent."
+      ]
+    },
+    "postgres_exporter": {
+      "kind": "database_metrics_exporter",
+      "authority_repository": "appolon1908-hue/Codestra-Postgres-Exporter",
+      "source_commit": null,
+      "upstream_repository": null,
+      "upstream_commit": null,
+      "canonical_hostname": null,
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "The supplied authority repository returns 404 and no replacement repository was found.",
+        "Monitoring-role, query policy, target discovery, and release artifacts are undefined."
+      ]
+    },
+    "redis_exporter": {
+      "kind": "database_metrics_exporter",
+      "authority_repository": "appolon1908-hue/Codestra-Redis-Exporter",
+      "source_commit": "fd9b708b5842b6e2980933be2a8fbcc9ca3ebf16",
+      "upstream_repository": "oliver006/redis_exporter",
+      "upstream_commit": "072bd8bdabb60de075206fbebc9698edb1fff8f1",
+      "canonical_hostname": "rdex.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Monitoring identity, target discovery, and release artifacts are absent."
+      ]
+    },
+    "blackbox_exporter": {
+      "kind": "synthetic_probe_exporter",
+      "authority_repository": "appolon1908-hue/Codestra-Blackbox-Exporter",
+      "source_commit": "b3fba705c08db1ec737c338b3ce3b856ec5e5f7f",
+      "upstream_repository": "prometheus/blackbox_exporter",
+      "upstream_commit": "19352b58dc26d81ac63ba13680135f7527a29524",
+      "canonical_hostname": "blac.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Probe modules, approved-target policy, SSRF controls, and release artifacts are absent."
+      ]
+    },
+    "alloy": {
+      "kind": "infrastructure_telemetry_agent",
+      "authority_repository": "appolon1908-hue/Codestra-Alloy",
+      "source_commit": "104966b2cac822d2cc61f058e53a9dff4a10e03e",
+      "upstream_repository": "grafana/alloy",
+      "upstream_commit": "041d2911a30a53f2c9c0317333aedee108a56b0a",
+      "canonical_hostname": "allo.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "Discovery, redaction, relabeling, export, and release artifacts are absent."
+      ]
+    },
+    "openbao": {
+      "kind": "secrets_authority",
+      "authority_repository": "appolon1908-hue/Codestra-OpenBao",
+      "source_commit": "854aebf0bdf71c3a2cb75c093a5773190e11765e",
+      "candidate": {
+        "branch": "feature/private-bind-keycloak-oidc-v1",
+        "commit": "a3f6c4469cdf7acee032b024fcc3c707b7e71645",
+        "status": "validated_not_accepted"
+      },
+      "upstream_repository": "openbao/openbao",
+      "upstream_commit": null,
+      "canonical_hostname": "bao.codestra.media",
+      "exposure": "private_only",
+      "configuration_ready": false,
+      "image_digest": null,
+      "deployment_enabled": false,
+      "blockers": [
+        "A private-bind/OIDC candidate exists, but it is not accepted on main; the upstream lock/snapshot, initialization model, unseal/recovery design, workload policies, audit devices, and immutable release artifacts remain absent."
+      ]
+    }
+  },
+  "connections": [
+    {
+      "from": "kyqra_crawler",
+      "to": "opentelemetry_collector",
+      "protocol": "otlp_grpc_mtls",
+      "purpose": "application traces, metrics, and approved logs",
+      "enabled": false
+    },
+    {
+      "from": "opentelemetry_collector",
+      "to": "tempo",
+      "protocol": "otlp_grpc_mtls",
+      "purpose": "trace export",
+      "enabled": false
+    },
+    {
+      "from": "opentelemetry_collector",
+      "to": "loki",
+      "protocol": "otlp_http_mtls",
+      "purpose": "redacted application log export",
+      "enabled": false
+    },
+    {
+      "from": "prometheus",
+      "to": "alertmanager",
+      "protocol": "http_private",
+      "purpose": "alert delivery",
+      "enabled": false
+    },
+    {
+      "from": "grafana",
+      "to": "prometheus",
+      "protocol": "http_private_read_only",
+      "purpose": "metric queries",
+      "enabled": false
+    },
+    {
+      "from": "grafana",
+      "to": "loki",
+      "protocol": "http_private_read_only",
+      "purpose": "log queries",
+      "enabled": false
+    },
+    {
+      "from": "grafana",
+      "to": "tempo",
+      "protocol": "http_private_read_only",
+      "purpose": "trace queries",
+      "enabled": false
+    }
+  ],
+  "activation_gate": {
+    "critical_or_high_findings_open": 7,
+    "all_component_configuration_ready": false,
+    "all_images_pinned_by_digest": false,
+    "private_network_verified": false,
+    "openbao_initialized": false,
+    "staging_acceptance_passed": false,
+    "rollback_rehearsed": false,
+    "go_live": "NO_GO"
+  }
+}

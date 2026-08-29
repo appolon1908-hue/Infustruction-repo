@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codestra.media/schemas/observability-integration-manifest.v1.json",
+  "title": "Codestra observability integration manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "captured_at",
+    "deployment_enabled",
+    "infrastructure_authority",
+    "application_authority",
+    "review_dependencies",
+    "environments",
+    "components",
+    "connections",
+    "activation_gate"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "captured_at": { "type": "string", "format": "date" },
+    "deployment_enabled": { "type": "boolean" },
+    "infrastructure_authority": { "type": "string" },
+    "application_authority": { "type": "string" },
+    "review_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["repository", "branch", "commit", "status"],
+        "properties": {
+          "repository": { "type": "string" },
+          "branch": { "type": "string" },
+          "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+          "status": { "type": "string" }
+        }
+      }
+    },
+    "environments": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 4,
+      "uniqueItems": true
+    },
+    "components": {
+      "type": "object",
+      "minProperties": 14,
+      "additionalProperties": { "$ref": "#/$defs/component" }
+    },
+    "connections": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/connection" }
+    },
+    "activation_gate": {
+      "type": "object",
+      "required": ["critical_or_high_findings_open", "go_live"],
+      "properties": {
+        "critical_or_high_findings_open": { "type": "integer", "minimum": 0 },
+        "go_live": { "enum": ["GO", "NO_GO"] }
+      }
+    }
+  },
+  "$defs": {
+    "component": {
+      "type": "object",
+      "required": [
+        "kind",
+        "authority_repository",
+        "source_commit",
+        "upstream_repository",
+        "upstream_commit",
+        "canonical_hostname",
+        "exposure",
+        "configuration_ready",
+        "image_digest",
+        "deployment_enabled",
+        "blockers"
+      ],
+      "properties": {
+        "kind": { "type": "string" },
+        "authority_repository": { "type": "string" },
+        "source_commit": { "type": ["string", "null"] },
+        "candidate": {
+          "type": "object",
+          "required": ["branch", "commit", "status"],
+          "properties": {
+            "branch": { "type": "string" },
+            "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "status": { "type": "string" }
+          }
+        },
+        "upstream_repository": { "type": ["string", "null"] },
+        "upstream_commit": { "type": ["string", "null"] },
+        "canonical_hostname": { "type": ["string", "null"] },
+        "exposure": { "enum": ["private_only", "authenticated_https"] },
+        "configuration_ready": { "type": "boolean" },
+        "image_digest": { "type": ["string", "null"] },
+        "deployment_enabled": { "type": "boolean" },
+        "blockers": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "connection": {
+      "type": "object",
+      "required": ["from", "to", "protocol", "purpose", "enabled"],
+      "properties": {
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "protocol": { "type": "string" },
+        "purpose": { "type": "string" },
+        "enabled": { "type": "boolean" }
+      }
+    }
+  }
+}
