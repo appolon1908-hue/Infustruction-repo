@@ -21,9 +21,11 @@ GO_LIVE=NO_GO
 
 All accessible component `main` branches are upstream source mirrors with
 `deployment_enabled=false`. Validated but unaccepted private-bind/OIDC candidates exist for
-Grafana, Superset, and OpenBao, and draft infrastructure PR #2 supplies proposed network and
-firewall controls. No accepted lineage currently contains the full component-owned production
-configuration and immutable release artifacts required by its authority document.
+Grafana, Superset, and OpenBao. PostgreSQL Exporter PR #2 supplies a private runtime and
+least-privilege role template with passing CI, while hostname PR #1 remains unaccepted with open
+review findings. Draft infrastructure PR #2 supplies proposed network and firewall controls. No
+accepted lineage currently contains the full component-owned production configuration and
+immutable release artifacts required by its authority document.
 
 ### Blocking findings
 
@@ -36,7 +38,7 @@ configuration and immutable release artifacts required by its authority document
 | OBS-H5 | High | OpenBao has no upstream lock/snapshot and no initialization, unseal/recovery, workload-auth, policy, audit, backup, or rotation implementation. | Complete and rehearse the OpenBao security lifecycle before any runtime secret is authoritative. |
 | OBS-H6 | High | The canonical crawler does not yet expose the required internal metrics endpoint or reviewed OTLP pipeline. | Add bounded-cardinality metrics, trace propagation, redaction tests, and a private `/internal/metrics` path in `kyqra-crawler`. |
 | OBS-H7 | High | No staging environment proves ingestion, storage, queries, alerts, retention, backup, restore, or rollback across the stack. | Build isolated staging, execute the acceptance matrix below, and record immutable evidence before production approval. |
-| OBS-M1 | Medium | `appolon1908-hue/Codestra-Postgres-Exporter` returns 404. | Create/restore the principal repository and record its upstream and hostname authority. |
+| OBS-M1 | Medium | PostgreSQL Exporter main now exists and pins upstream commit `492776a8f00714a1091f4106d925534b3db5a5c6`, but accepted authority declares no public hostname while infrastructure maps `pgex.codestra.media`. Runtime PR #2 is unaccepted; hostname PR #1 has open authority/validator findings. | Accept the reviewed runtime through the promotion chain, reconcile the hostname in every authority and validator, then record an immutable image, private scrape, least-privilege, cardinality, and rollback evidence. |
 | OBS-M2 | Medium | `temp.codestra.media` is the declared Tempo hostname and may be an unintended abbreviation. | The repository owner must explicitly accept it or correct the authority documents before certificates and dashboards depend on it. |
 | OBS-M3 | Medium | Singleton exporter DNS names do not model per-host/per-database target discovery. | Use private service discovery or `file_sd`; keep exporter endpoints instance-specific and private. |
 

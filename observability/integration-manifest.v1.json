@@ -8,8 +8,20 @@
     {
       "repository": "appolon1908-hue/Infustruction-repo",
       "branch": "feature/observability-private-network-v1",
-      "commit": "f75d5c1a2d1558ae94412ba499ffe31766d55a8d",
+      "commit": "9b0ab98c60d3ec5bfd47ebd68431e764c91188ba",
       "status": "draft_pr_2"
+    },
+    {
+      "repository": "appolon1908-hue/Codestra-Postgres-Exporter",
+      "branch": "feature/observability/postgres-exporter-20260829",
+      "commit": "ff86dc49877633c299508681b42fe1596f06534f",
+      "status": "pr_2_ci_passed_review_pending_not_accepted"
+    },
+    {
+      "repository": "appolon1908-hue/Codestra-Postgres-Exporter",
+      "branch": "governance/canonical-pgex-hostname-20260829",
+      "commit": "dd1d5840a95392b9606945ad840f94948847d769",
+      "status": "pr_1_review_findings_open_not_accepted"
     },
     {
       "repository": "appolon1908-hue/Caddy",
@@ -175,17 +187,22 @@
     "postgres_exporter": {
       "kind": "database_metrics_exporter",
       "authority_repository": "appolon1908-hue/Codestra-Postgres-Exporter",
-      "source_commit": null,
-      "upstream_repository": null,
-      "upstream_commit": null,
+      "source_commit": "957bb3272298b1416f8f663f4f1c5d99ac895b5c",
+      "candidate": {
+        "branch": "feature/observability/postgres-exporter-20260829",
+        "commit": "ff86dc49877633c299508681b42fe1596f06534f",
+        "status": "ci_passed_review_pending_not_accepted"
+      },
+      "upstream_repository": "prometheus-community/postgres_exporter",
+      "upstream_commit": "492776a8f00714a1091f4106d925534b3db5a5c6",
       "canonical_hostname": null,
       "exposure": "private_only",
       "configuration_ready": false,
       "image_digest": null,
       "deployment_enabled": false,
       "blockers": [
-        "The supplied authority repository returns 404 and no replacement repository was found.",
-        "Monitoring-role, query policy, target discovery, and release artifacts are undefined."
+        "PR #2 supplies a hardened private runtime and least-privilege monitoring-role template with passing CI, but it is not accepted; no production image digest, installed credentials, approved role, scrape, cardinality, or rollback evidence exists.",
+        "Accepted main declares no public hostname while the infrastructure topology maps pgex.codestra.media; hostname PR #1 is unaccepted and has open authority/validator review findings."
       ]
     },
     "redis_exporter": {

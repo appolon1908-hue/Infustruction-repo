@@ -64,7 +64,16 @@ for (const [name, component] of Object.entries(manifest.components)) {
   }
 }
 
-assert.equal(manifest.components.postgres_exporter.source_commit, null);
+const postgresExporter = manifest.components.postgres_exporter;
+assert.equal(postgresExporter.source_commit, '957bb3272298b1416f8f663f4f1c5d99ac895b5c');
+assert.equal(postgresExporter.upstream_repository, 'prometheus-community/postgres_exporter');
+assert.equal(postgresExporter.upstream_commit, '492776a8f00714a1091f4106d925534b3db5a5c6');
+assert.equal(postgresExporter.canonical_hostname, null, 'accepted authority assigns no public hostname');
+assert.deepEqual(postgresExporter.candidate, {
+  branch: 'feature/observability/postgres-exporter-20260829',
+  commit: 'ff86dc49877633c299508681b42fe1596f06534f',
+  status: 'ci_passed_review_pending_not_accepted',
+});
 assert.equal(manifest.components.openbao.upstream_commit, null);
 
 const externalSources = new Set(['kyqra_crawler']);
