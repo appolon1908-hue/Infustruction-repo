@@ -1,0 +1,35 @@
+name: Validate observability topology
+
+on:
+  pull_request:
+    paths:
+      - config/observability/**
+      - scripts/validate-observability-topology.py
+      - scripts/smoke-observability-edge.sh
+      - docs/OBSERVABILITY-PRIVATE-NETWORK.md
+      - .github/workflows/validate-observability-topology.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate desired state
+        run: python3 scripts/validate-observability-topology.py
+
+      - name: Shell syntax
+        run: bash -n scripts/smoke-observability-edge.sh
