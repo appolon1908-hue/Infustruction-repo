@@ -6,8 +6,7 @@ on:
       - config/observability/**
       - scripts/validate-observability-topology.py
       - scripts/smoke-observability-edge.sh
-      - docs/OBSERVABILITY-PRIVATE-NETWORK.md
-      - docs/OBSERVABILITY-FIREWALL-IMPLEMENTATION.md
+      - docs/**
       - .github/workflows/validate-observability-topology.yml
   workflow_dispatch:
 
@@ -22,9 +21,9 @@ jobs:
       - name: Check out exact source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-          fetch-depth: 1
 
       - name: Validate desired state
         run: python3 scripts/validate-observability-topology.py
