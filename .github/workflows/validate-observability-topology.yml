@@ -6,7 +6,7 @@ on:
       - config/observability/**
       - scripts/validate-observability-topology.py
       - scripts/smoke-observability-edge.sh
-      - docs/OBSERVABILITY-PRIVATE-NETWORK.md
+      - docs/**
       - .github/workflows/validate-observability-topology.yml
   workflow_dispatch:
 
@@ -18,15 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out exact source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
 
       - name: Validate desired state
         run: python3 scripts/validate-observability-topology.py
