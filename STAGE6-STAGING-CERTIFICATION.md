@@ -1,55 +1,42 @@
 # Stage 6 Staging Certification
 
-Timestamp: 2026-08-30 (America/Santo_Domingo)
+Timestamp: 2026-08-31 (Europe/Berlin)
 
 ## Decision
 
 `STAGING_CERTIFIED=NO`
 
-Promotion stopped during Phase 0 preflight. No deployment, restart, migration,
-identity apply, gateway apply, workflow activation, failure injection, rollback,
-or production canary was performed by this certification run.
+Promotion stopped during the mandatory read-only preflight. No deployment,
+restart, migration, backup, identity apply, gateway apply, workflow activation,
+failure injection, rollback, or production canary was performed by this run.
 
 ## Fail-closed blockers
 
-1. The inspected host had 101 running containers. Zero containers exposed the
-   complete required safety-state set. Only 44 exposed at least one required
-   switch. Missing switches are ambiguous and therefore fail the mandatory
-   safety gate.
-2. Multiple application workloads use mutable image tags, lack a Git revision
-   label, report an unknown revision, or combine those conditions. The running
-   release cannot be tied completely to reviewed Git and immutable deployment
-   identities.
-3. The staging middleware application command runs `alembic upgrade head`
-   during normal application startup. Two staging Odoo processes use `--init`
-   during normal startup. This violates the dedicated one-shot migration gate.
-4. The checked-out infrastructure worktree already contained unrelated modified
-   files. They were preserved and were not included in this evidence.
+1. `klyrow-gateway-1`, `klyrow-smtp-relay-1`, and `klyrow-worker-1` report
+   `LIVE_EMAIL_DELIVERY=true` on `37.27.128.39`. Public SMTP port 25 is active.
+   Production business writes therefore cannot be certified disabled.
+2. The documented observability/security server instead runs production email,
+   SMS/billing, crawler, and provider-integration workloads. OpenBao, Loki,
+   Tempo, Alloy, cAdvisor, Redis Exporter, Blackbox Exporter, and Superset are
+   absent from the running container set.
+3. General-purpose shell access to core/staging server `65.109.65.169` is
+   unavailable. A bounded forced-command key can report only provider-credential
+   state and cannot produce the mandatory fresh runtime inventory.
+4. The source lock was refreshed to the current reviewed Keycloak `main`, but
+   runtime mutation remains unauthorized. The backup-gate candidate is unmerged
+   and was not executed.
+5. A credential-shaped Klyrow worker environment value surfaced during the
+   local inspection. It was not copied into Git, but the affected RabbitMQ
+   credential must be rotated through the approved secret authority before a
+   new promotion attempt.
 
-## Observed safe values
-
-Where the inspected containers exposed delivery/dialing controls, the observed
-values were false or disabled. This is not sufficient to pass because the
-required advertising, social publishing, external-model, provider-write,
-workflow-provider-write, and call-count controls were absent from effective
-configuration across the runtime.
-
-## Required remediation before a new run
-
-- Define and expose the complete fail-closed safety contract for every relevant
-  staging and production workload, including an authoritative `CALLS_PLACED=0`
-  read-back.
-- Replace mutable/unknown application identities with images pinned by digest
-  and labeled with exact reviewed repository SHAs.
-- Remove schema migration and Odoo module initialization from normal startup;
-  execute them only as backed-up, recorded one-shot jobs.
-- Re-run Phase 0 inventory and complete the source lock before any staging
-  mutation.
-
-## Gate status
+The refreshed source lock is valid Git evidence. Every downstream gate is
+`FAIL` here because it was not safely executable or certifiable after the
+preflight stop; this does not claim that a runtime mutation was attempted.
 
 ```text
-SOURCE_LOCK=FAIL
+SOURCE_LOCK=PASS
+BACKUPS=FAIL
 STAGING_DEPLOYMENT=FAIL
 OPENBAO_BINDING=FAIL
 KEYCLOAK_CERTIFICATION=FAIL
@@ -59,11 +46,14 @@ KONG_CERTIFICATION=FAIL
 N8N_BINDINGS=FAIL
 OBSERVABILITY=FAIL
 E2E_STAGING=FAIL
+FAILURE_TESTS=FAIL
 ROLLBACK=FAIL
+STAGING_CERTIFIED=NO
 PRODUCTION_READ_ONLY_CANARY=FAIL
 
-PRODUCTION_BUSINESS_WRITES=DISABLED
+PRODUCTION_BUSINESS_WRITES=NOT_PROVEN_DISABLED
 ```
 
-`FAIL` after the Phase 0 stop means not certified/not executed, not that a
-mutation was attempted and failed.
+Required remediation is to disable and independently read back the production
+email-delivery path, provide an authorized core-server inventory shell, and then
+restart from Phase 0. Do not infer `DISABLED` from missing settings.

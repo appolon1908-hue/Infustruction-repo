@@ -81,12 +81,18 @@ def main() -> None:
     assert gates["unverified_workloads_frozen_from_automatic_replacement"] is True
     assert gates["rollback_digests_recorded_for_all_workloads"] is True
     assert gates["source_lock"] == "PASS"
-    assert gates["stage6_preflight"] == "PASS"
+    assert gates["stage6_preflight"] == "FAIL"
+    assert gates["backup_preparation_allowed"] is False
     assert gates["runtime_reconciliation_allowed"] is False
-    assert gates["production_business_writes"] == "DISABLED"
+    assert gates["production_business_writes"] == "NOT_PROVEN_DISABLED"
+    runtime_safety = lock["current_runtime_safety"]
+    assert runtime_safety["status"] == "FAIL"
+    assert runtime_safety["production_business_writes"] == "NOT_PROVEN_DISABLED"
+    assert runtime_safety["LIVE_EMAIL_DELIVERY"] is True
+    assert runtime_safety["core_runtime_readback"] == "BLOCKED_NO_GENERAL_SSH"
     print("SOURCE_LOCK=PASS")
-    print("STAGE6_PREFLIGHT=PASS")
-    print("PRODUCTION_BUSINESS_WRITES=DISABLED")
+    print("STAGE6_PREFLIGHT=FAIL")
+    print("PRODUCTION_BUSINESS_WRITES=NOT_PROVEN_DISABLED")
     print("STAGE6_SOURCE_LOCK_VALIDATION=PASS")
 
 
