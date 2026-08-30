@@ -23,8 +23,8 @@ failure injection, rollback, or production canary was performed by this run.
    unavailable. A bounded forced-command key can report only provider-credential
    state and cannot produce the mandatory fresh runtime inventory.
 4. The source lock was refreshed to the current reviewed Keycloak `main`, but
-   runtime mutation remains unauthorized. The backup-gate candidate is unmerged
-   and was not executed.
+   runtime mutation remains unauthorized. The backup gate is merged, but it was
+   not executed after the safety failure.
 5. A credential-shaped Klyrow worker environment value surfaced during the
    local inspection. It was not copied into Git, but the affected RabbitMQ
    credential must be rotated through the approved secret authority before a

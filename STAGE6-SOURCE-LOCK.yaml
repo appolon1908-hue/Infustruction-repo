@@ -23,7 +23,7 @@ source_refresh:
   branch_authority: main
   result: PASS_AFTER_KEYCLOAK_REFRESH
   n8n_checked_separately: true
-  infrastructure_evidence_base_sha: 65018df89571042c1e7550adf3180d47bb495187
+  infrastructure_evidence_base_sha: c451ff0b39d6087f2c60e98fa45a7aaadb1d0b3d
 
 safety:
   authority: REQUIRED_CANDIDATE_STATE_NOT_CURRENT_RUNTIME_READBACK
