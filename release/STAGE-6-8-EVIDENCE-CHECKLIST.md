@@ -42,12 +42,14 @@
 ## Stage 8 — Production Read-Only Canary
 - [ ] Exact production artifacts/digests are recorded.
 - [ ] Production backup/restore readiness passes.
-- [ ] Production deployment uses the fail-closed kill-switch baseline.
+- [ ] Production deployment uses the fail-closed kill-switch baseline, including META_READ_SYNC_ENABLED=false and SOCIAL_READ_SYNC_ENABLED=false unless separately approved for a bounded read-only test.
 - [ ] Keycloak and Kong runtime state read back to the expected Git configuration.
 - [ ] TLS/auth/authz/health/service-discovery checks pass.
 - [ ] Metrics/logs/traces appear for the canary.
 - [ ] Read-only/internal dry-run tests pass.
 - [ ] Rollback is demonstrated.
+- [ ] Release approval is recorded.
+- [ ] Security approval is recorded.
 - [ ] No advertising spend occurs.
 - [ ] No external customer messages are delivered.
 - [ ] No social publishing occurs.
