@@ -49,6 +49,20 @@ def main() -> None:
             for key, expected in SAFETY.items():
                 assert str(environment[key]) == expected, (filename, service, key)
 
+    source_services = set()
+    for filename in (
+        "compose.middleware-source-remediation.yaml",
+        "compose.odoo-source-remediation.yaml",
+        "compose.n8n-safety-remediation.yaml",
+        "compose.legacy-application-safety-hold.yaml",
+    ):
+        compose = yaml.safe_load((COMPOSE_DIR / filename).read_text())
+        source_services.update(
+            name for name in compose["services"]
+            if "migration" not in name
+        )
+    assert len(source_services) == 17, source_services
+
     middleware = yaml.safe_load((COMPOSE_DIR / "compose.middleware-source-remediation.yaml").read_text())
     app_command = " ".join(middleware["services"]["middleware-staging"]["command"])
     assert "migrat" not in app_command.lower() and "alembic" not in app_command.lower()
@@ -61,6 +75,18 @@ def main() -> None:
     for service in ("odoo19-module-migration", "odoo19-master-module-migration"):
         assert odoo["services"][service]["restart"] == "no"
         assert "--stop-after-init" in odoo["services"][service]["command"]
+    gates = lock["gates"]
+    assert gates["dispositions_resolved"] is True
+    assert gates["all_planned_replacement_images_reviewed_and_digest_pinned"] is True
+    assert gates["unverified_workloads_frozen_from_automatic_replacement"] is True
+    assert gates["rollback_digests_recorded_for_all_workloads"] is True
+    assert gates["source_lock"] == "PASS"
+    assert gates["stage6_preflight"] == "PASS"
+    assert gates["runtime_reconciliation_allowed"] is False
+    assert gates["production_business_writes"] == "DISABLED"
+    print("SOURCE_LOCK=PASS")
+    print("STAGE6_PREFLIGHT=PASS")
+    print("PRODUCTION_BUSINESS_WRITES=DISABLED")
     print("STAGE6_SOURCE_LOCK_VALIDATION=PASS")
 
 

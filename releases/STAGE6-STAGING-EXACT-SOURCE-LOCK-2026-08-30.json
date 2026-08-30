@@ -1,5 +1,6 @@
 {
   "schema_version": "1.0",
+  "authority": "HISTORICAL_NON_AUTHORITATIVE",
   "environment": "staging",
   "status": "SUPERSEDED_DO_NOT_DEPLOY",
   "superseded_by": "STAGE6-SOURCE-LOCK.yaml",

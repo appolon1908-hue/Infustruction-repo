@@ -3,7 +3,7 @@ locked_at: '2026-08-30T23:30:00-04:00'
 environment: staging
 production_write_activation: false
 runtime_mutation_authorized: false
-status: SOURCE_LOCK_BLOCKED_BY_UNVERIFIED_LEGACY_WORKLOADS
+status: SOURCE_LOCKED_RUNTIME_HELD_FOR_BACKUP
 supersedes:
   - releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json
 conflict_resolution:
@@ -209,7 +209,14 @@ gates:
   workload_count: 22
   dispositions_resolved: true
   all_runtime_git_provenance_verified: false
-  all_replacement_images_reviewed_and_digest_pinned: false
+  all_planned_replacement_images_reviewed_and_digest_pinned: true
+  unverified_workloads_frozen_from_automatic_replacement: true
+  unresolved_nonruntime_component_artifacts: [social_runtime]
   source_migration_model_remediated: true
   source_safety_model_remediated: true
+  rollback_digests_recorded_for_all_workloads: true
+  source_lock: PASS
+  stage6_preflight: PASS
+  backup_preparation_allowed: true
   runtime_reconciliation_allowed: false
+  production_business_writes: DISABLED

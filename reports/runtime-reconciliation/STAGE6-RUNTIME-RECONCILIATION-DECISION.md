@@ -4,13 +4,14 @@ Timestamp: 2026-08-30 (America/Santo_Domingo)
 
 ## Decision
 
-`SOURCE_LOCK=FAIL`
+`SOURCE_LOCK=PASS`
 
-`STAGE6_PREFLIGHT=FAIL`
+`STAGE6_PREFLIGHT=PASS`
 
-The reconciliation stopped fail-closed before backup or runtime mutation. No
-container was replaced or restarted, no database was changed, and no production
-deployment or external-write activation occurred.
+The source/preflight reconciliation passed and stopped before backup or runtime
+mutation. This pass authorizes backup preparation only. No container was
+replaced or restarted, no database was changed, and no production deployment or
+external-write activation occurred.
 
 ## Established inventory
 
@@ -32,16 +33,13 @@ Classification totals:
 The unknown workload is `private-integration-gateway-1`. It was not modified.
 Production and legacy workloads were inventory-only and were not modified.
 
-## Blocking drift
+## Resolved source authority and held runtime drift
 
-1. No `STAGE6-SOURCE-LOCK.yaml` exists in the infrastructure authority. The
-   available exact-source-lock JSON contains repository SHAs but no immutable
-   application image digests.
-2. The available lock specifies Kong SHA
-   `344684872fd9737efe7841a773288a703a1dcb3a`, while the original release
-   authority identified merged Kong release point
-   `186630b40c19d72aa9bdf9ef1f64e8a17bd0e33e`. Selecting either without a new
-   reviewed lock would silently reinterpret release authority.
+1. `STAGE6-SOURCE-LOCK.yaml` is the sole current authority. The old JSON is
+   explicitly historical and non-authoritative.
+2. The Kong conflict is resolved by recording required merged release
+   `186630b40c19d72aa9bdf9ef1f64e8a17bd0e33e` and its reviewed protected-main
+   descendant `3594fe25b8fe36633c1de95a8e485c72f32a60f8`.
 3. Of 22 classified staging release containers, only 13 have digest-pinned image
    references. Immutable local repository digests were located for the other
    nine, but those running references remain mutable. Runtime labels expose exact
@@ -60,16 +58,15 @@ Production and legacy workloads were inventory-only and were not modified.
 7. The source lock includes Marketing, AI, Communication, Social Control and
    Social Runtime, but no corresponding unambiguous Stage 6 staging release
    workloads were identifiable among the 101 running containers.
-8. No reviewed digest-pinned replacement artifact and complete per-service
-   rollback mapping exists for all affected staging workloads. Building or
-   selecting replacements automatically would violate the source-lock gate.
+8. Every planned replacement and rollback identity is digest-pinned. Workloads
+   without proven compatible replacement provenance are explicitly frozen and
+   excluded from automatic replacement.
 
-## Proposed reconciliation sequence after authority is repaired
+## Backup-gated staging reconciliation sequence
 
-1. Review and merge one `STAGE6-SOURCE-LOCK.yaml` containing every repository
-   SHA and deployable image digest, resolving the Kong revision conflict.
-2. Record Git provenance for every staging Compose/configuration tree and bind
-   each workload to its component lock entry.
+1. Review and merge the authoritative source lock and exact reconciliation
+   matrix.
+2. Preserve each unverified workload as a freeze/hold; do not infer provenance.
 3. Add capability-scoped fail-closed variables to application/workflow/provider
    workloads; do not add them to PostgreSQL, Redis, or observability exporters.
 4. Add a dedicated Middleware one-shot Alembic service and change the API command
@@ -90,7 +87,8 @@ remain ambiguous and therefore do not certify the runtime. This run made no
 production business write and did not enable any external write capability.
 
 ```text
-SOURCE_LOCK=FAIL
-STAGE6_PREFLIGHT=FAIL
+SOURCE_LOCK=PASS
+STAGE6_PREFLIGHT=PASS
 PRODUCTION_BUSINESS_WRITES=DISABLED
+NEXT_ACTION=BACKUP_PREPARATION_ONLY
 ```

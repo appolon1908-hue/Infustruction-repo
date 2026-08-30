@@ -65,12 +65,17 @@ unverified. It was not restarted, replaced, or reclassified as release scope.
 - Unknown workloads: 1
 - Runtime containers changed by this mission: 0
 
-The source gate is improved but cannot be certified while unverified replacement
-provenance, the Social Runtime image, and unchanged runtime drift remain. Per the
-mission, backups and actual staging reconciliation do not begin until PASS.
+Phase 0 source/preflight certification passes because every runtime workload has
+a resolved disposition, every planned replacement is digest-pinned, unverified
+workloads are frozen from automatic replacement, source migration and safety
+models are explicit, and every rollback digest exists. Runtime drift remains
+expected and is the subject of the subsequent backup-gated staging
+reconciliation. The unresolved Social Runtime artifact is not a running member
+of the 22-workload set and is not authorized for deployment.
 
 ```text
-SOURCE_LOCK=FAIL
-STAGE6_PREFLIGHT=FAIL
+SOURCE_LOCK=PASS
+STAGE6_PREFLIGHT=PASS
 PRODUCTION_BUSINESS_WRITES=DISABLED
+NEXT_ACTION=BACKUP_PREPARATION_ONLY
 ```
