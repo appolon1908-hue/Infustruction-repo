@@ -1,7 +1,10 @@
 {
   "schema_version": "1.0",
+  "authority": "HISTORICAL_NON_AUTHORITATIVE",
   "environment": "staging",
-  "status": "SOURCE_LOCKED_RUNTIME_NOT_APPLIED",
+  "status": "SUPERSEDED_DO_NOT_DEPLOY",
+  "superseded_by": "STAGE6-SOURCE-LOCK.yaml",
+  "superseded_reason": "Newer reviewed protected-main revisions and immutable runtime provenance were resolved after this snapshot.",
   "locked_at": "2026-08-30",
   "repositories": {
     "marketing": {"repo": "appolon1908-hue/Codestra-Marketing-", "ref": "main", "sha": "460ff98f64ef9f0724fe4d2afc51a1a6c5b053dd"},
@@ -22,5 +25,5 @@
     "external_ai_calls": false,
     "production_cutover": false
   },
-  "rule": "Staging runtime may deploy only these exact revisions or a subsequent explicitly reviewed source lock. No floating branch/tag deployment is authorized."
+  "rule": "This snapshot is historical and MUST NOT be used for deployment. STAGE6-SOURCE-LOCK.yaml is the sole current authority."
 }
