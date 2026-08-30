@@ -1,0 +1,229 @@
+name: Reusable observability offline OCI evidence build
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        description: Canonical lowercase component name.
+        required: true
+        type: string
+      source_sha:
+        description: Exact 40-character source SHA to build.
+        required: true
+        type: string
+      context:
+        description: Repository-relative Docker build context.
+        required: true
+        type: string
+      dockerfile:
+        description: Repository-relative Dockerfile path.
+        required: true
+        type: string
+      target:
+        description: Optional Dockerfile target.
+        required: false
+        default: ''
+        type: string
+      platform:
+        description: Exact build platform; V1 permits linux/amd64 only.
+        required: false
+        default: linux/amd64
+        type: string
+      build_args:
+        description: Non-secret KEY=VALUE build arguments; image values must be digest-pinned.
+        required: false
+        default: ''
+        type: string
+      configuration_paths:
+        description: Newline-separated repository-relative files/directories included in the configuration checksum.
+        required: true
+        type: string
+      github_attestation:
+        description: Generate a GitHub-hosted provenance attestation for the checksum subjects.
+        required: false
+        default: false
+        type: boolean
+      retention_days:
+        description: Workflow artifact retention in days.
+        required: false
+        default: 14
+        type: number
+    outputs:
+      image-digest:
+        description: Buildx image digest.
+        value: ${{ jobs.build.outputs.image-digest }}
+      artifact-name:
+        description: Uploaded evidence artifact name.
+        value: ${{ jobs.build.outputs.artifact-name }}
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      artifact-name: ${{ steps.names.outputs.artifact_name }}
+    env:
+      LOCAL_IMAGE: codestra-offline/${{ inputs.component }}:${{ inputs.source_sha }}
+      EVIDENCE_DIR: evidence
+    steps:
+      - name: Check out the exact caller source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.13'
+
+      - name: Validate exact-source and non-secret build inputs
+        env:
+          BUILD_ARGS_INPUT: ${{ inputs.build_args }}
+          CONFIGURATION_PATHS_INPUT: ${{ inputs.configuration_paths }}
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/render-observability-offline-oci-evidence.py
+          python scripts/render-observability-offline-oci-evidence.py validate \
+            --repository . \
+            --component '${{ inputs.component }}' \
+            --source-sha '${{ inputs.source_sha }}' \
+            --github-sha "$GITHUB_SHA" \
+            --context '${{ inputs.context }}' \
+            --dockerfile '${{ inputs.dockerfile }}' \
+            --target '${{ inputs.target }}' \
+            --platform '${{ inputs.platform }}' \
+            --build-args "$BUILD_ARGS_INPUT" \
+            --configuration-paths "$CONFIGURATION_PATHS_INPUT"
+
+      - name: Record build start and immutable artifact name
+        id: names
+        run: |
+          set -euo pipefail
+          echo "started_at=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=codestra-${{ inputs.component }}-offline-oci-${{ inputs.source_sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+        with:
+          install: true
+
+      - name: Build exact source into the local runner only
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          target: ${{ inputs.target }}
+          platforms: ${{ inputs.platform }}
+          build-args: ${{ inputs.build_args }}
+          tags: ${{ env.LOCAL_IMAGE }}
+          labels: |
+            org.opencontainers.image.revision=${{ inputs.source_sha }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            codestra.release-stage=test-evidence
+            codestra.deployment-authorized=false
+          load: true
+          pull: true
+          push: false
+          provenance: false
+          sbom: false
+
+      - name: Export the local image and inspection record
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          docker image inspect "$LOCAL_IMAGE" > "$EVIDENCE_DIR/image-inspect.json"
+          docker save --output "$EVIDENCE_DIR/${{ inputs.component }}.docker.tar" "$LOCAL_IMAGE"
+          test -s "$EVIDENCE_DIR/${{ inputs.component }}.docker.tar"
+          test -s "$EVIDENCE_DIR/image-inspect.json"
+
+      - name: Generate SPDX JSON SBOM from the local image
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610
+        with:
+          image: ${{ env.LOCAL_IMAGE }}
+          format: spdx-json
+          output-file: evidence/${{ inputs.component }}.spdx.json
+          artifact-name: codestra-${{ inputs.component }}-${{ inputs.source_sha }}.spdx.json
+          dependency-snapshot: false
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Render provenance, configuration checksum, and evidence manifest
+        env:
+          BUILD_ARGS_INPUT: ${{ inputs.build_args }}
+          CONFIGURATION_PATHS_INPUT: ${{ inputs.configuration_paths }}
+          BUILDX_METADATA: ${{ steps.build.outputs.metadata }}
+        run: |
+          set -euo pipefail
+          python scripts/render-observability-offline-oci-evidence.py render \
+            --repository . \
+            --output-dir "$EVIDENCE_DIR" \
+            --component '${{ inputs.component }}' \
+            --source-sha '${{ inputs.source_sha }}' \
+            --context '${{ inputs.context }}' \
+            --dockerfile '${{ inputs.dockerfile }}' \
+            --target '${{ inputs.target }}' \
+            --platform '${{ inputs.platform }}' \
+            --build-args "$BUILD_ARGS_INPUT" \
+            --configuration-paths "$CONFIGURATION_PATHS_INPUT" \
+            --local-image "$LOCAL_IMAGE" \
+            --image-digest '${{ steps.build.outputs.digest }}' \
+            --build-metadata "$BUILDX_METADATA" \
+            --image-archive "$EVIDENCE_DIR/${{ inputs.component }}.docker.tar" \
+            --sbom "$EVIDENCE_DIR/${{ inputs.component }}.spdx.json" \
+            --image-inspect "$EVIDENCE_DIR/image-inspect.json" \
+            --github-repository "$GITHUB_REPOSITORY" \
+            --github-ref "$GITHUB_REF" \
+            --github-workflow-ref "$GITHUB_WORKFLOW_REF" \
+            --github-run-id "$GITHUB_RUN_ID" \
+            --github-run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --build-started-at '${{ steps.names.outputs.started_at }}'
+          test -s "$EVIDENCE_DIR/SHA256SUMS"
+          test -s "$EVIDENCE_DIR/evidence.json"
+          test -s "$EVIDENCE_DIR/provenance.slsa.json"
+
+      - name: Generate optional GitHub provenance attestation
+        if: ${{ inputs.github_attestation }}
+        id: attest
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
+        with:
+          subject-checksums: evidence/SHA256SUMS
+          push-to-registry: false
+          show-summary: true
+
+      - name: Add optional attestation bundle to the evidence artifact
+        if: ${{ inputs.github_attestation }}
+        run: |
+          set -euo pipefail
+          bundle='${{ steps.attest.outputs.bundle-path }}'
+          test -f "$bundle"
+          cp "$bundle" "$EVIDENCE_DIR/github-attestation.bundle.json"
+          sha256sum "$EVIDENCE_DIR/github-attestation.bundle.json" > "$EVIDENCE_DIR/GITHUB_ATTESTATION_SHA256"
+
+      - name: Upload the immutable offline evidence bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.names.outputs.artifact_name }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention_days }}
+          compression-level: 0
+
+      - name: Confirm no registry or deployment side effect occurred
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          evidence = json.load(open('evidence/evidence.json', encoding='utf-8'))
+          assert evidence['build']['registryPushed'] is False
+          assert evidence['build']['packagesPermissionRequired'] is False
+          assert all(value is False for value in evidence['safety'].values())
+          PY
