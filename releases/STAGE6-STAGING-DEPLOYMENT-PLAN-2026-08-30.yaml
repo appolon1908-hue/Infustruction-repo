@@ -1,0 +1,63 @@
+schema_version: '1.0'
+environment: staging
+status: PLAN_READY_NOT_EXECUTED
+source_lock: releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json
+preconditions:
+  - OpenBao staging paths and workload policies applied/read-back
+  - Keycloak staging plan CHECK passes
+  - Kong staging declarative validation passes
+  - backups/snapshots exist for stateful staging services
+migration_policy:
+  one_shot_jobs_only: true
+  migrations_on_application_startup: false
+  rollback_or_forward_recovery_evidence_required: true
+order:
+  - step: 1
+    component: databases
+    action: verify connectivity, backup, and target schema ownership
+  - step: 2
+    component: middleware
+    action: run one-shot migration, inspect schema, start API/workers with external writes disabled
+  - step: 3
+    component: marketing
+    action: run one-shot migration, inspect campaigns/audiences/creatives/approvals, start API with provider writes disabled
+  - step: 4
+    component: ai
+    action: run one-shot migration, inspect audit/request schema, start API with external model calls disabled
+  - step: 5
+    component: communication
+    action: run one-shot migration, inspect messages/consent/suppression, start API with external delivery disabled
+  - step: 6
+    component: social-control
+    action: run one-shot migration, inspect accounts/posts/checkpoints, start API with publishing disabled
+  - step: 7
+    component: odoo
+    action: upgrade/install codestra_marketing_crm using Odoo one-shot module upgrade process, verify attribution fields and ACL/record rules
+  - step: 8
+    component: social-runtime
+    action: deploy reviewed runtime candidate with publishing kill switch enabled; no migration in replica startup
+  - step: 9
+    component: keycloak
+    action: CHECK then staging APPLY then read-back service clients/scopes/roles/negative permissions
+  - step: 10
+    component: kong
+    action: validate then staging APPLY then route/auth/scope/upstream/read-back tests
+  - step: 11
+    component: n8n
+    action: bind verified endpoint/credential/editor/policy references, import workflows inactive
+  - step: 12
+    component: observability
+    action: enable staging OpenTelemetry/Alloy collection and Prometheus/Loki/Tempo/Grafana/exporter targets
+safety:
+  LIVE_ADVERTISING_ENABLED: false
+  EXTERNAL_MODEL_CALLS_ENABLED: false
+  EXTERNAL_DELIVERY_ENABLED: false
+  SOCIAL_PUBLISHING_ENABLED: false
+  N8N_WORKFLOW_ACTIVATION: false
+exit_gate:
+  - all workloads healthy
+  - all migrations/read-backs verified
+  - identity and gateway negative tests pass
+  - observability receives metrics/logs/traces
+  - rollback instructions validated
+  - no external business write observed
