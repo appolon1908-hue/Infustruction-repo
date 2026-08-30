@@ -1,7 +1,7 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "environment": "staging",
-  "status": "SOURCE_LOCKED_RUNTIME_NOT_APPLIED",
+  "status": "SOURCE_LOCK_REFRESHED_RUNTIME_NOT_APPLIED",
   "locked_at": "2026-08-30",
   "repositories": {
     "marketing": {"repo": "appolon1908-hue/Codestra-Marketing-", "ref": "main", "sha": "460ff98f64ef9f0724fe4d2afc51a1a6c5b053dd"},
@@ -10,17 +10,33 @@
     "social_control": {"repo": "appolon1908-hue/Codesrea-Social-", "ref": "main", "sha": "7bc0dd9ee8a13abbd1463ca106629ad63d957145"},
     "middleware": {"repo": "appolon1908-hue/Middleware-", "ref": "main", "sha": "0227e9d0380bf4808540d61c6f168fee584d138c"},
     "odoo": {"repo": "appolon1908-hue/Odoo", "ref": "main", "sha": "16356fa57fbda080fe78831507eccd63d9a00fc4"},
-    "n8n": {"repo": "appolon1908-hue/N8N", "ref": "main", "sha": "1ef1f2f5dbc794c23159ca89a0422af0aa3df4af"},
-    "kong": {"repo": "appolon1908-hue/Kong", "ref": "main", "sha": "344684872fd9737efe7841a773288a703a1dcb3a"},
-    "keycloak": {"repo": "appolon1908-hue/Keycloak", "ref": "main", "sha": "d455afc9ae1265fac4044ec66a9934b683babae7"},
-    "social_runtime": {"repo": "appolon1908-hue/social.codestra.co", "ref": "feat/codestra-social-adapter-foundation-20260830", "sha": "26dd3d91e867ab72765d9596be537a4e6b7a4191", "promotion_blocker": "classic required status contexts are expected even though Backend CI and Codestra Social Adapter Stage 5 are successful"}
+    "n8n": {"repo": "appolon1908-hue/N8N", "ref": "main", "sha": "c4ddc351a58c14c0d298eea91139a548eb9d5e42"},
+    "kong": {"repo": "appolon1908-hue/Kong", "ref": "main", "sha": "344684872fd9737efe7841a773288a703a1dcb3a", "pending_release_pr": 37, "candidate_sha": "81658bf936c2120de6c324949722643cbf38db42"},
+    "keycloak": {"repo": "appolon1908-hue/Keycloak", "ref": "main", "sha": "e6c1f95e88c0fd188958031659043447f7684702"},
+    "social_runtime": {"repo": "appolon1908-hue/social.codestra.co", "ref": "feat/codestra-social-adapter-foundation-20260830", "sha": "26dd3d91e867ab72765d9596be537a4e6b7a4191", "promotion_blocker": "classic required status contexts remain pending with zero commit statuses even though Actions checks are green"}
+  },
+  "observability": {
+    "prometheus": {"repo": "appolon1908-hue/Codestra-Prometheus", "ref": "development", "sha": "c1727e3d410fdf97c52a0d1987eee43f25ac267f"},
+    "grafana": {"repo": "appolon1908-hue/Codestra-Grafana-", "ref": "development", "sha": "922360db4bfc943b93aa301950862d300a3fa179"},
+    "loki": {"repo": "appolon1908-hue/Codestra-Loki", "ref": "development", "sha": "8cdeb2643edaf6d739cc04db91e21da92cae35c2"},
+    "tempo": {"repo": "appolon1908-hue/Codestra-Tempo", "ref": "development", "sha": "4f2c913594192679c1c992886412a89e876d21d9"},
+    "telemetry": {"repo": "appolon1908-hue/Codestra-Telemetry", "ref": "development", "sha": "b5cab3486239188b4796983356f2f6ef6b3242bb"},
+    "alloy": {"repo": "appolon1908-hue/Codestra-Alloy", "ref": "development", "sha": "02bdd522717f6be7f380106e6b196b55a6dd84ed"},
+    "node_exporter": {"repo": "appolon1908-hue/Codestra-Node-Exporter", "ref": "development", "sha": "db46cfc69f40d11d3b8f5eda82c41dc980baeb05"},
+    "cadvisor": {"repo": "appolon1908-hue/Codestra-cAdvisor", "ref": "development", "sha": "f680f1f3459f7340d77b15b86f9be967556a349b"},
+    "redis_exporter": {"repo": "appolon1908-hue/Codestra-Redis-Exporter", "ref": "development", "sha": "60567cbbdc5433588f5e6b82864a16ac4823f13e"},
+    "blackbox_exporter": {"repo": "appolon1908-hue/Codestra-Blackbox-Exporter", "ref": "development", "sha": "f368abf3302fda893bc00d0248f4010bfe693657"},
+    "superset": {"repo": "appolon1908-hue/Superset", "ref": "development", "sha": "12c52fa76464c7159029bb7a5c6e272732613e7d"},
+    "openbao": {"repo": "appolon1908-hue/Codestra-OpenBao", "ref": "development", "sha": "a15a05b6e7a35f09521263dac131e6332e3c83ae"}
   },
   "safety": {
     "live_advertising": false,
     "external_delivery": false,
     "social_publishing": false,
     "external_ai_calls": false,
+    "meta_read_sync": false,
+    "social_read_sync": false,
     "production_cutover": false
   },
-  "rule": "Staging runtime may deploy only these exact revisions or a subsequent explicitly reviewed source lock. No floating branch/tag deployment is authorized."
+  "rule": "Staging runtime may deploy only explicitly locked exact revisions. A candidate SHA does not replace its locked main SHA until the release PR is merged and this source lock is reviewed again. No floating branch or tag deployment is authorized."
 }
