@@ -25,3 +25,10 @@ jobs:
           grep -q 'runtime_reconciliation_allowed: false' scripts/backup_stage6_staging.sh
           grep -q 'PRODUCTION_TOUCHED=NO' scripts/backup_stage6_staging.sh
           ! grep -Eq 'docker (restart|stop|rm)|docker compose (up|down)|alembic|--update|--init' scripts/backup_stage6_staging.sh
+      - name: Validate version-matched restore inspection
+        run: |
+          set -Eeuo pipefail
+          grep -q "approved_postgres_digest='sha256:" scripts/verify_stage6_staging_backup.sh
+          grep -q "State.Health.Status" scripts/verify_stage6_staging_backup.sh
+          grep -q 'docker exec -i "\$restore_container" pg_restore --list' scripts/verify_stage6_staging_backup.sh
+          ! grep -Eq 'docker (restart|stop|rm)|docker compose (up|down)|pg_restore .*--restore' scripts/verify_stage6_staging_backup.sh
