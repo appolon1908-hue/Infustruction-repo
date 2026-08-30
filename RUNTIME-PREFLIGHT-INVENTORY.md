@@ -83,11 +83,13 @@ historical evidence, but it does not replace a fresh read-back for this run.
 
 ## Existing Git authority
 
-Protected `main` at `65018df` contains `STAGE6-SOURCE-LOCK.yaml` with
-`SOURCE_LOCK=PASS` and authorizes backup preparation only. It does not authorize
-runtime reconciliation. Pull request 25 (`release/stage6-staging-backup-preparation-v1`)
-is open and unmerged. No backup from that candidate was executed during this
-run.
+Protected `main` at `65018df` was the evidence base. A fresh GitHub read-back
+matched every locked component `main` except Keycloak. Keycloak had advanced by
+reviewed merge 48 from `ef1212d53ec8a136421dd20873183aef7845a46f` to descendant
+`80fc33c7159440e357219903f62ea7fb84914d59`; this branch refreshes the lock to
+that revision. The resulting source identity is locked, but runtime mutation is
+still unauthorized. Pull request 25 (`release/stage6-staging-backup-preparation-v1`)
+is open and unmerged. No backup from that candidate was executed during this run.
 
 ## Stop conditions
 

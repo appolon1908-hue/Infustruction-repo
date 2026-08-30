@@ -22,11 +22,16 @@ failure injection, rollback, or production canary was performed by this run.
 3. General-purpose shell access to core/staging server `65.109.65.169` is
    unavailable. A bounded forced-command key can report only provider-credential
    state and cannot produce the mandatory fresh runtime inventory.
-4. The current protected-main source lock authorizes backup preparation only.
-   The backup-gate candidate remains unmerged and was not executed.
+4. The source lock was refreshed to the current reviewed Keycloak `main`, but
+   runtime mutation remains unauthorized. The backup-gate candidate is unmerged
+   and was not executed.
+5. A credential-shaped Klyrow worker environment value surfaced during the
+   local inspection. It was not copied into Git, but the affected RabbitMQ
+   credential must be rotated through the approved secret authority before a
+   new promotion attempt.
 
-The previous source lock remains valid as Git evidence. Every downstream gate
-is `FAIL` here because it was not safely executable or certifiable after the
+The refreshed source lock is valid Git evidence. Every downstream gate is
+`FAIL` here because it was not safely executable or certifiable after the
 preflight stop; this does not claim that a runtime mutation was attempted.
 
 ```text
