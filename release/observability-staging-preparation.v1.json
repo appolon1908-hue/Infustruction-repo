@@ -3,7 +3,7 @@
   "releaseTrain": "codestra-observability-security-v1",
   "milestone": "STAGING_DEPLOYMENT_PREPARATION",
   "state": "PREPARATION_IN_PROGRESS_NO_DEPLOYMENT",
-  "generatedAt": "2026-08-30T19:03:42Z",
+  "generatedAt": "2026-08-30T19:39:35Z",
   "targetEnvironment": "staging",
   "promotionPolicy": ["development", "test", "staging", "production", "main"],
   "deploymentAuthorized": false,
@@ -36,7 +36,7 @@
       "nativeExposure": "internal_private",
       "sourceStage": "test",
       "sourceRef": "test",
-      "sourceSha": "8c9a1a8c3f89e4bbb6dfef8033b0838a71d5c85b",
+      "sourceSha": "88ce0a78d34fe1d16a730f515daf89f7966a39bf",
       "exactHeadCiGreen": true,
       "sourceTrainGate": "pass",
       "artifact": {
@@ -76,7 +76,7 @@
       "nativeExposure": "internal_private",
       "sourceStage": "test",
       "sourceRef": "test",
-      "sourceSha": "a9c0435bfccaaa9de3c53df65f8dc8f1dc3f0768",
+      "sourceSha": "3523a73c4e269c070d9090a9a1d30e713bc27142",
       "exactHeadCiGreen": true,
       "sourceTrainGate": "pass",
       "artifact": {
@@ -136,7 +136,7 @@
       "nativeExposure": "loopback_edge_only",
       "sourceStage": "test",
       "sourceRef": "test",
-      "sourceSha": "7d9c166f2494c66e64832c8c71176b97179d2d0c",
+      "sourceSha": "dae1136634cc430d6b65e1dfd8a9e0e79c4f5522",
       "exactHeadCiGreen": true,
       "sourceTrainGate": "pass",
       "artifact": {
@@ -156,7 +156,7 @@
       "nativeExposure": "internal_private",
       "sourceStage": "test",
       "sourceRef": "test",
-      "sourceSha": "05719787f97c907a6e282d1b68125a6f2f0ec87d",
+      "sourceSha": "10f89b4c0da31af496c22b3fb350e09a78eac9ed",
       "exactHeadCiGreen": true,
       "sourceTrainGate": "pass",
       "artifact": {
@@ -176,7 +176,7 @@
       "nativeExposure": "internal_private",
       "sourceStage": "test",
       "sourceRef": "test",
-      "sourceSha": "3209b20d9cbfb2083893529c37988ecab650455f",
+      "sourceSha": "09b224c78cfc4e9c57c9eba791630132cd5a5e4a",
       "exactHeadCiGreen": true,
       "sourceTrainGate": "pass",
       "artifact": {
@@ -216,7 +216,7 @@
       "nativeExposure": "internal_private",
       "sourceStage": "test",
       "sourceRef": "test",
-      "sourceSha": "02a58a1774ce91c47155ecc01e0dd6edaa90b421",
+      "sourceSha": "8347bb29dd7cca3ff72cfb132324863bb80d7b2e",
       "exactHeadCiGreen": true,
       "sourceTrainGate": "pass",
       "artifact": {
@@ -236,7 +236,7 @@
       "nativeExposure": "internal_private",
       "sourceStage": "test",
       "sourceRef": "test",
-      "sourceSha": "7aa0fdf27404ab77e512bedeca0aaf7a1bd146f3",
+      "sourceSha": "57e290792842d81f9c00b362be9789c974f780c6",
       "exactHeadCiGreen": true,
       "sourceTrainGate": "pass",
       "artifact": {
@@ -276,7 +276,7 @@
       "nativeExposure": "private_strong_auth",
       "sourceStage": "test",
       "sourceRef": "test",
-      "sourceSha": "eefa6ce157a498bbf8093ae9a2d9075588512a53",
+      "sourceSha": "6667709d257cdd97ceb22a97aeff798928c1bf28",
       "exactHeadCiGreen": true,
       "sourceTrainGate": "pass",
       "artifact": {
@@ -373,6 +373,7 @@
     "go": false,
     "status": "NO_GO_PREPARATION_INCOMPLETE",
     "blockers": [
+      "The CODESTRA_AUTOMATION_TOKEN Actions secret is absent from Node Exporter, cAdvisor, and Blackbox Exporter, so future upstream synchronization fails closed until an approved GitHub App or fine-grained token is installed.",
       "All immutable artifact, SBOM, provenance, signature, and checksum evidence is absent.",
       "No read-only server inventory, backup, isolated restore, rollback, or disposable-lab evidence is recorded.",
       "Keycloak, Caddy, firewall, and OpenBao remain plan-only and unapplied.",
