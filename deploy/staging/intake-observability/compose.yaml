@@ -1,0 +1,99 @@
+name: codestra-intake-observability-staging
+
+x-middleware-environment: &middleware-environment
+  env_file:
+    - path: ${MIDDLEWARE_ENV_FILE:?MIDDLEWARE_ENV_FILE is required}
+      required: true
+
+services:
+  postgres:
+    image: postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: middleware_staging
+      POSTGRES_DB: codestra_middleware_staging
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    networks: [private]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U middleware_staging -d codestra_middleware_staging]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=32m
+    command:
+      - sh
+      - -ec
+      - exec redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction --requirepass "$$(cat /run/secrets/redis_password)"
+    secrets: [redis_password]
+    volumes: [redis_data:/data]
+    networks: [private]
+    healthcheck:
+      test: [CMD-SHELL, redis-cli -a "$$(cat /run/secrets/redis_password)" ping | grep -qx PONG]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  middleware-migrate:
+    image: ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820
+    <<: *middleware-environment
+    restart: "no"
+    read_only: true
+    user: "65532:65532"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=32m,uid=65532,gid=65532
+    command: [/app/scripts/migrate_runtime.py]
+    networks: [private, identity_egress]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  middleware:
+    image: ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820
+    <<: *middleware-environment
+    restart: unless-stopped
+    read_only: true
+    user: "65532:65532"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 256
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=65532,gid=65532
+    expose: ["8080"]
+    networks:
+      private:
+        aliases: [middleware-intake-staging]
+      identity_egress: {}
+    depends_on:
+      middleware-migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+
+networks:
+  private:
+    internal: true
+    name: codestra-intake-observability-staging_private
+  identity_egress:
+    name: codestra-intake-observability-staging_identity_egress
+
+volumes:
+  postgres_data:
+  redis_data:
+
+secrets:
+  postgres_password:
+    file: ${POSTGRES_PASSWORD_FILE:?POSTGRES_PASSWORD_FILE is required}
+  redis_password:
+    file: ${REDIS_PASSWORD_FILE:?REDIS_PASSWORD_FILE is required}
