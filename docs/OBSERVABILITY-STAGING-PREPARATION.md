@@ -14,18 +14,18 @@ Keycloak remains plan-only. Caddy and firewall changes remain render-only. OpenB
 
 ## Current source position
 
-Twelve component authorities are recorded at `test`. OpenTelemetry is recorded at `development` pending its refreshed fourteen-authority compatibility gate and test promotion. Alloy is recorded on its feature review head pending the locked-source exact-head workflow and promotion through `development` and `test`.
+All fourteen component authorities are recorded at exact `test` SHAs with green exact-head and merge-result CI. The refreshed OpenTelemetry compatibility gate covers all fourteen authorities, and Alloy's locked-source corporate-agent workflow is accepted at `test`.
 
 The staging decision remains `NO_GO_PREPARATION_INCOMPLETE`.
 
-## Phase A — finish the source train
+## Phase A — source train complete
 
-1. Require Alloy's exact-head policy, formatter, locked-source build, configuration validation, and enterprise-profile workflows to pass.
-2. Promote Alloy to `development`, verify merge-result CI, then promote to `test`.
-3. Refresh the Telemetry suite contract to cover all fourteen authorities, including Alertmanager and PostgreSQL Exporter.
-4. Require exact repository, ref, SHA, workflow result, and unresolved-review evidence.
-5. Promote Telemetry to `development`, verify merge-result CI, then promote to `test`.
-6. Record all fourteen immutable test SHAs in the staging-preparation manifest.
+1. Alloy's exact-head policy, formatter, locked-source build, configuration validation, and enterprise-profile workflows passed.
+2. Alloy promoted through `development` to `test`, with merge-result CI verified.
+3. The Telemetry suite contract now covers all fourteen authorities, including Alertmanager and PostgreSQL Exporter.
+4. Exact repository, ref, SHA, workflow result, and unresolved-review evidence was required for promotion.
+5. Telemetry promoted through `development` to `test`, with merge-result CI verified.
+6. All fourteen immutable test SHAs are recorded in the staging-preparation manifest.
 
 No `test → staging` promotion may merge until every later gate in this document is evidenced.
 
