@@ -76,8 +76,10 @@ mandatory_evidence:
 
 kill_switches:
   LIVE_ADVERTISING_ENABLED: false
+  META_READ_SYNC_ENABLED: false
   EXTERNAL_MODEL_CALLS_ENABLED: false
   EXTERNAL_DELIVERY_ENABLED: false
+  SOCIAL_READ_SYNC_ENABLED: false
   SOCIAL_PUBLISHING_ENABLED: false
   PUBLISHING_KILL_SWITCH: true
 
@@ -91,3 +93,4 @@ canary:
     - backup_restore_validation
     - exact_artifact_digests
     - release_approval
+    - security_approval
