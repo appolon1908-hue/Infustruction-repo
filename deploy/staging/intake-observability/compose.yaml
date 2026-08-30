@@ -5,45 +5,102 @@ x-middleware-environment: &middleware-environment
     - path: ${MIDDLEWARE_ENV_FILE:?MIDDLEWARE_ENV_FILE is required}
       required: true
 
+x-entrypoint-capabilities: &entrypoint-capabilities
+  cap_drop: [ALL]
+  cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+  security_opt: [no-new-privileges:true]
+
 services:
   postgres:
     image: postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
     restart: unless-stopped
+    read_only: true
+    <<: *entrypoint-capabilities
     environment:
       POSTGRES_USER: middleware_staging
-      POSTGRES_DB: codestra_middleware_staging
+      POSTGRES_DB: codestra_staging
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --auth-local=trust
+    command:
+      - postgres
+      - -c
+      - ssl=on
+      - -c
+      - ssl_cert_file=/run/tls/server.crt
+      - -c
+      - ssl_key_file=/run/tls/server.key
+      - -c
+      - ssl_ca_file=/run/tls/ca.crt
+      - -c
+      - hba_file=/run/tls/pg_hba.conf
+      - -c
+      - password_encryption=scram-sha-256
     secrets: [postgres_password]
-    volumes: [postgres_data:/var/lib/postgresql/data]
-    networks: [private]
-    cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ${POSTGRES_TLS_CERT_FILE:?POSTGRES_TLS_CERT_FILE is required}:/run/tls/server.crt:ro
+      - ${POSTGRES_TLS_KEY_FILE:?POSTGRES_TLS_KEY_FILE is required}:/run/tls/server.key:ro
+      - ${STAGING_CA_CERT_FILE:?STAGING_CA_CERT_FILE is required}:/run/tls/ca.crt:ro
+      - ${POSTGRES_HBA_FILE:?POSTGRES_HBA_FILE is required}:/run/tls/pg_hba.conf:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=32m
+      - /var/run/postgresql:rw,noexec,nosuid,nodev,size=16m,uid=70,gid=70
+    networks:
+      private:
+        aliases:
+          - postgresql.middleware-staging.svc.cluster.local
     healthcheck:
-      test: [CMD-SHELL, pg_isready -U middleware_staging -d codestra_middleware_staging]
+      test: [CMD-SHELL, pg_isready -h /var/run/postgresql -U middleware_staging -d codestra_staging]
       interval: 5s
       timeout: 3s
       retries: 30
+      start_period: 10s
 
   redis:
     image: redis:7.4-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2
     restart: unless-stopped
     read_only: true
-    cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
+    <<: *entrypoint-capabilities
+    command:
+      - redis-server
+      - --port
+      - "0"
+      - --tls-port
+      - "6379"
+      - --tls-cert-file
+      - /run/tls/server.crt
+      - --tls-key-file
+      - /run/tls/server.key
+      - --tls-ca-cert-file
+      - /run/tls/ca.crt
+      - --tls-auth-clients
+      - "no"
+      - --aclfile
+      - /run/secrets/redis_acl
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - noeviction
+    secrets: [redis_password, redis_acl]
+    volumes:
+      - redis_data:/data
+      - ${REDIS_TLS_CERT_FILE:?REDIS_TLS_CERT_FILE is required}:/run/tls/server.crt:ro
+      - ${REDIS_TLS_KEY_FILE:?REDIS_TLS_KEY_FILE is required}:/run/tls/server.key:ro
+      - ${STAGING_CA_CERT_FILE:?STAGING_CA_CERT_FILE is required}:/run/tls/ca.crt:ro
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
-    command:
-      - sh
-      - -ec
-      - exec redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction --requirepass "$$(cat /run/secrets/redis_password)"
-    secrets: [redis_password]
-    volumes: [redis_data:/data]
-    networks: [private]
+    networks:
+      private:
+        aliases:
+          - redis.middleware-staging.svc.cluster.local
     healthcheck:
-      test: [CMD-SHELL, redis-cli -a "$$(cat /run/secrets/redis_password)" ping | grep -qx PONG]
+      test: [CMD-SHELL, REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli --tls --cacert /run/tls/ca.crt --sni redis.middleware-staging.svc.cluster.local -h redis.middleware-staging.svc.cluster.local -p 6379 --user middleware-staging ping | grep -qx PONG]
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 30
+      start_period: 10s
 
   middleware-migrate:
     image: ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820
@@ -55,6 +112,8 @@ services:
     security_opt: [no-new-privileges:true]
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m,uid=65532,gid=65532
+    volumes:
+      - ${MIDDLEWARE_CA_BUNDLE_FILE:?MIDDLEWARE_CA_BUNDLE_FILE is required}:/etc/ssl/certs/ca-certificates.crt:ro
     command: [/app/scripts/migrate_runtime.py]
     networks: [private, identity_egress]
     depends_on:
@@ -72,6 +131,8 @@ services:
     pids_limit: 256
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=65532,gid=65532
+    volumes:
+      - ${MIDDLEWARE_CA_BUNDLE_FILE:?MIDDLEWARE_CA_BUNDLE_FILE is required}:/etc/ssl/certs/ca-certificates.crt:ro
     expose: ["8080"]
     networks:
       private:
@@ -97,3 +158,5 @@ secrets:
     file: ${POSTGRES_PASSWORD_FILE:?POSTGRES_PASSWORD_FILE is required}
   redis_password:
     file: ${REDIS_PASSWORD_FILE:?REDIS_PASSWORD_FILE is required}
+  redis_acl:
+    file: ${REDIS_ACL_FILE:?REDIS_ACL_FILE is required}
