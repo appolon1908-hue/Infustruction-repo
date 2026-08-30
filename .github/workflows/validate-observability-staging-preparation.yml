@@ -47,6 +47,7 @@ jobs:
       - name: Confirm no deployment command or secret-shaped material is introduced
         run: |
           ! grep -RInE --exclude='*.pyc' --exclude-dir='__pycache__' \
+            -- \
             '-----BEGIN (OPENSSH |RSA |EC |DSA )?PRIVATE KEY-----|AKIA[0-9A-Z]{16}' \
             release/observability-staging-preparation.v1.json \
             docs/OBSERVABILITY-STAGING-PREPARATION.md \

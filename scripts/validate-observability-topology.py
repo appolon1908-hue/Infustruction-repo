@@ -145,7 +145,13 @@ def validate_topology(topology: dict) -> None:
         listeners.extend(component.get("ingestListeners") or [])
         if not listeners:
             fail(f"{component_id}: reference listener missing")
-        if any("0.0.0.0" in listener or listener.startswith(":::") for listener in listeners):
+        if any(
+            "0.0.0.0" in listener
+            or "[::]" in listener
+            or listener.startswith("::")
+            or listener.startswith("*:")
+            for listener in listeners
+        ):
             fail(f"{component_id}: public wildcard listener forbidden")
 
     required_connections = {
@@ -187,7 +193,7 @@ def validate_communication(data: dict) -> None:
         fail("communication flow allowlist mismatch or duplicate")
 
 
-def validate_firewall(firewall: dict) -> None:
+def validate_firewall(firewall: dict, communication: dict) -> None:
     if firewall.get("version") != 1:
         fail("firewall version must be 1")
     if firewall.get("scope") != "observability-additions-on-shared-provider-host":
@@ -224,6 +230,15 @@ def validate_firewall(firewall: dict) -> None:
         if set(private_by_component[component_id].get("ports") or []) != expected_ports:
             fail(f"{component_id}: private port reference mismatch")
 
+    for flow in communication.get("flows") or []:
+        destination = flow.get("destination")
+        if destination not in private_by_component:
+            continue
+        source = flow.get("source")
+        allowed_sources = set(private_by_component[destination].get("allowedSources") or [])
+        if source not in allowed_sources:
+            fail(f"{source} -> {destination}: approved flow is absent from firewall allowlist")
+
     if set(firewall.get("forbiddenPublicNativePorts") or []) != FORBIDDEN_PUBLIC_PORTS:
         fail("forbidden public native port set mismatch")
     listener_policy = firewall.get("nativeListenerPolicy") or {}
@@ -253,8 +268,9 @@ def validate_firewall(firewall: dict) -> None:
 
 def main() -> None:
     validate_topology(load(TOPOLOGY))
-    validate_communication(load(COMMUNICATION))
-    validate_firewall(load(FIREWALL))
+    communication = load(COMMUNICATION)
+    validate_communication(communication)
+    validate_firewall(load(FIREWALL), communication)
     print("OBSERVABILITY_SERVICE_COUNT=14")
     print("BROWSER_EDGE_HOSTS=graf.codestra.media,supe.codestra.media,bao.codestra.media")
     print("PRIVATE_CADDY_POLICY=DENY_ONLY")

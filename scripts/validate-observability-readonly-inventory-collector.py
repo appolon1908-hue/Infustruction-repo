@@ -10,6 +10,18 @@ from types import ModuleType
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 COLLECTOR = ROOT / "scripts" / "collect-observability-readonly-inventory.py"
+DOCKER_CONTAINER_FORMAT = (
+    '{"id":{{json .ID}},"image":{{json .Image}},"names":{{json .Names}},'
+    '"state":{{json .State}},"status":{{json .Status}},'
+    '"ports":{{json .Ports}},"networks":{{json .Networks}}}'
+)
+DOCKER_NETWORK_FORMAT = (
+    '{"id":{{json .ID}},"name":{{json .Name}},"driver":{{json .Driver}},'
+    '"scope":{{json .Scope}},"ipv6":{{json .IPv6}},"internal":{{json .Internal}}}'
+)
+DOCKER_VOLUME_FORMAT = (
+    '{"name":{{json .Name}},"driver":{{json .Driver}},"scope":{{json .Scope}}}'
+)
 EXPECTED_PROBES = {
     "kernel": ("uname", "-a"),
     "identity": ("id",),
@@ -18,9 +30,9 @@ EXPECTED_PROBES = {
     "listeners": ("ss", "-H", "-lntup"),
     "time": ("timedatectl", "show", "--no-pager"),
     "docker_version": ("docker", "version", "--format", "{{json .}}"),
-    "docker_containers": ("docker", "ps", "-a", "--format", "{{json .}}"),
-    "docker_networks": ("docker", "network", "ls", "--format", "{{json .}}"),
-    "docker_volumes": ("docker", "volume", "ls", "--format", "{{json .}}"),
+    "docker_containers": ("docker", "ps", "-a", "--format", DOCKER_CONTAINER_FORMAT),
+    "docker_networks": ("docker", "network", "ls", "--format", DOCKER_NETWORK_FORMAT),
+    "docker_volumes": ("docker", "volume", "ls", "--format", DOCKER_VOLUME_FORMAT),
     "systemd_services": (
         "systemctl",
         "list-units",
@@ -117,6 +129,12 @@ def main() -> int:
             if actual[name] != EXPECTED_PROBES[name]
         )
         fail(f"probe allowlist changed; missing={missing}, unexpected={unexpected}, changed={changed}")
+    for probe_name in ("docker_containers", "docker_networks", "docker_volumes"):
+        output_template = actual[probe_name][-1]
+        if output_template == "{{json .}}":
+            fail(f"{probe_name} must not serialize the unrestricted Docker template context")
+        if any(field in output_template for field in (".Command", ".Labels")):
+            fail(f"{probe_name} exposes a command or label field")
     if module.minimal_environment().keys() != {"PATH", "LANG", "LC_ALL"}:
         fail("collector subprocess environment must remain minimal")
     if len(module.CANONICAL_HOSTS) != 14 or len(set(module.CANONICAL_HOSTS)) != 14:

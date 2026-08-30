@@ -38,6 +38,19 @@ CANONICAL_HOSTS = [
     "bao.codestra.media",
 ]
 
+DOCKER_CONTAINER_FORMAT = (
+    '{"id":{{json .ID}},"image":{{json .Image}},"names":{{json .Names}},'
+    '"state":{{json .State}},"status":{{json .Status}},'
+    '"ports":{{json .Ports}},"networks":{{json .Networks}}}'
+)
+DOCKER_NETWORK_FORMAT = (
+    '{"id":{{json .ID}},"name":{{json .Name}},"driver":{{json .Driver}},'
+    '"scope":{{json .Scope}},"ipv6":{{json .IPv6}},"internal":{{json .Internal}}}'
+)
+DOCKER_VOLUME_FORMAT = (
+    '{"name":{{json .Name}},"driver":{{json .Driver}},"scope":{{json .Scope}}}'
+)
+
 
 @dataclass(frozen=True)
 class Probe:
@@ -61,12 +74,12 @@ PROBES = (
             "ps",
             "-a",
             "--format",
-            "{{json .}}",
+            DOCKER_CONTAINER_FORMAT,
         ),
         30,
     ),
-    Probe("docker_networks", ("docker", "network", "ls", "--format", "{{json .}}"), 30),
-    Probe("docker_volumes", ("docker", "volume", "ls", "--format", "{{json .}}"), 30),
+    Probe("docker_networks", ("docker", "network", "ls", "--format", DOCKER_NETWORK_FORMAT), 30),
+    Probe("docker_volumes", ("docker", "volume", "ls", "--format", DOCKER_VOLUME_FORMAT), 30),
     Probe(
         "systemd_services",
         (

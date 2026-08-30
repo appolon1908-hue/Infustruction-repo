@@ -5,6 +5,7 @@ on:
     paths:
       - config/observability/**
       - scripts/validate-observability-topology.py
+      - scripts/test-observability-topology-negative.py
       - scripts/smoke-observability-edge.sh
       - docs/**
       - .github/workflows/validate-observability-topology.yml
@@ -26,7 +27,9 @@ jobs:
           persist-credentials: false
 
       - name: Validate desired state
-        run: python3 scripts/validate-observability-topology.py
+        run: |
+          python3 scripts/validate-observability-topology.py
+          python3 scripts/test-observability-topology-negative.py
 
       - name: Shell syntax
         run: bash -n scripts/smoke-observability-edge.sh
