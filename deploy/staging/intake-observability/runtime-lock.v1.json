@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "deployment_id": "codestra-intake-observability-staging-v1",
   "environment": "staging",
   "project_name": "codestra-intake-observability-staging",
@@ -8,18 +8,43 @@
     "image_reference": "ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820",
     "image_digest": "sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820",
     "schema_head": "0003_immutable_event_ledger",
-    "runtime_profile_id": "codestra-middleware-staging-intake-observability-v1"
+    "runtime_profile_id": "codestra-middleware-staging-v1"
+  },
+  "embedded_profile_identities": {
+    "postgres_host": "postgresql.middleware-staging.svc.cluster.local",
+    "postgres_port": 5432,
+    "postgres_database": "codestra_staging",
+    "postgres_username": "middleware_staging",
+    "postgres_sslmode": "verify-full",
+    "redis_host": "redis.middleware-staging.svc.cluster.local",
+    "redis_port": 6379,
+    "redis_database": 14,
+    "redis_username": "middleware-staging",
+    "redis_scheme": "rediss"
   },
   "support_images": {
     "postgres": "postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
     "redis": "redis:7.4-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2",
     "collector_python": "python:3.13.15-slim-bookworm@sha256:00faa2debb87529f9f0764e9491d8ba400a3678976616c3bd7cb193745ac20d1"
   },
+  "transport": {
+    "private_ca_generated_outside_git": true,
+    "postgres_tls": true,
+    "redis_tls": true,
+    "hostname_verification": true,
+    "middleware_trust_bundle_mounted_read_only": true
+  },
   "network": {
     "middleware_host_ports": [],
     "private_network": "codestra-intake-observability-staging_private",
     "private_network_internal": true,
     "identity_egress_network": "codestra-intake-observability-staging_identity_egress"
+  },
+  "persistence": {
+    "named_volumes": ["postgres_data", "redis_data"],
+    "preserve_on_redeploy": true,
+    "preserve_on_failure_rollback": true,
+    "destructive_reset_requires_explicit_confirmation": true
   },
   "identity": {
     "client_id": "monitoring-readonly",
