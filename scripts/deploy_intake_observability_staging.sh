@@ -132,9 +132,6 @@ EXT
 issue_server_certificate postgres "$POSTGRES_HOST"
 issue_server_certificate redis "$REDIS_HOST"
 
-docker run --rm -v "$STATE_ROOT/tls/postgres:/work" "$POSTGRES_IMAGE" sh -ec 'chown postgres:postgres /work/server.key /work/server.crt && chmod 600 /work/server.key && chmod 644 /work/server.crt'
-docker run --rm -v "$STATE_ROOT/tls/redis:/work" "$REDIS_IMAGE" sh -ec 'chown redis:redis /work/server.key /work/server.crt && chmod 600 /work/server.key && chmod 644 /work/server.crt'
-
 cat >"$STATE_ROOT/tls/pg_hba.conf" <<'HBA'
 local all all trust
 hostssl all all 0.0.0.0/0 scram-sha-256
@@ -144,22 +141,19 @@ hostnossl all all ::/0 reject
 HBA
 chmod 644 "$STATE_ROOT/tls/pg_hba.conf"
 
-postgres_password="$(cat "$STATE_ROOT/secrets/postgres_password")"
-redis_password="$(cat "$STATE_ROOT/secrets/redis_password")"
-printf 'user default off\nuser middleware-staging on >%s ~* +@all\n' "$redis_password" >"$STATE_ROOT/secrets/redis.acl"
-chmod 600 "$STATE_ROOT/secrets/redis.acl"
-docker run --rm -v "$STATE_ROOT/secrets:/work" "$REDIS_IMAGE" sh -ec 'chown redis:redis /work/redis.acl && chmod 600 /work/redis.acl'
-
 SYSTEM_CA="$STATE_ROOT/tls/system-ca-certificates.crt"
 COMBINED_CA="$STATE_ROOT/tls/combined-ca-certificates.crt"
 temporary_container="$(docker create "$EXPECTED_IMAGE")"
-trap 'docker rm -f "$temporary_container" >/dev/null 2>&1 || true' RETURN
-docker cp "$temporary_container:/etc/ssl/certs/ca-certificates.crt" "$SYSTEM_CA"
+if ! docker cp "$temporary_container:/etc/ssl/certs/ca-certificates.crt" "$SYSTEM_CA"; then
+  docker rm -f "$temporary_container" >/dev/null 2>&1 || true
+  fail 'unable to extract immutable image CA bundle'
+fi
 docker rm "$temporary_container" >/dev/null
-trap - RETURN
 cat "$SYSTEM_CA" "$CA_CERT" >"$COMBINED_CA"
 chmod 644 "$SYSTEM_CA" "$COMBINED_CA"
 
+postgres_password="$(cat "$STATE_ROOT/secrets/postgres_password")"
+redis_password="$(cat "$STATE_ROOT/secrets/redis_password")"
 cat >"$STATE_ROOT/middleware.env" <<ENV
 APP_ENV=staging
 RUNTIME_PROFILE_ID=$EXPECTED_PROFILE
@@ -236,7 +230,6 @@ cat >"$STATE_ROOT/deployment.env" <<ENV
 MIDDLEWARE_ENV_FILE=$STATE_ROOT/middleware.env
 POSTGRES_PASSWORD_FILE=$STATE_ROOT/secrets/postgres_password
 REDIS_PASSWORD_FILE=$STATE_ROOT/secrets/redis_password
-REDIS_ACL_FILE=$STATE_ROOT/secrets/redis.acl
 STAGING_CA_CERT_FILE=$CA_CERT
 POSTGRES_TLS_CERT_FILE=$STATE_ROOT/tls/postgres/server.crt
 POSTGRES_TLS_KEY_FILE=$STATE_ROOT/tls/postgres/server.key
