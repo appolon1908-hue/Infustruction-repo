@@ -1,0 +1,43 @@
+name: Validate observability topology
+
+on:
+  pull_request:
+    paths:
+      - config/observability/**
+      - scripts/validate-observability-topology.py
+      - scripts/test-observability-topology-negative.py
+      - scripts/smoke-observability-edge.sh
+      - docs/**
+      - .github/workflows/validate-observability-topology.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Validate desired state
+        run: |
+          python3 scripts/validate-observability-topology.py
+          python3 scripts/test-observability-topology-negative.py
+
+      - name: Shell syntax
+        run: bash -n scripts/smoke-observability-edge.sh
+
+      - name: Reject committed secret material
+        run: |
+          set -Eeuo pipefail
+          if grep -RInE --exclude-dir=.git 'BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|client_secret[[:space:]]*[:=][[:space:]]*[^<$[:space:]]|password[[:space:]]*[:=][[:space:]]*[^<$[:space:]]' .; then
+            echo 'ERROR=possible_secret_material' >&2
+            exit 1
+          fi
