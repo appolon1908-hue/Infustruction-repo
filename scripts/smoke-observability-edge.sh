@@ -46,8 +46,8 @@ esac
 check_dns() {
   local host="$1"
   local addresses
-  addresses="$(dig +short A "$host" | sort -u | tr '\n' ' ')"
-  [[ " $addresses " == *" $EXPECTED_IP "* ]] || fail "$host does not resolve to $EXPECTED_IP; got: ${addresses:-none}"
+  addresses="$(dig +short A "$host" | sed '/^$/d' | sort -u)"
+  [[ "$addresses" == "$EXPECTED_IP" ]] || fail "$host must resolve only to $EXPECTED_IP; got: ${addresses:-none}"
   printf 'DNS_OK=%s\n' "$host"
 }
 
