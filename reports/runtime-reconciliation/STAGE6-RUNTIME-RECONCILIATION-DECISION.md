@@ -43,9 +43,11 @@ Production and legacy workloads were inventory-only and were not modified.
    `186630b40c19d72aa9bdf9ef1f64e8a17bd0e33e`. Selecting either without a new
    reviewed lock would silently reinterpret release authority.
 3. Of 22 classified staging release containers, only 13 have digest-pinned image
-   references and only 3 expose an established Git revision. Vendor database and
-   Redis images are pinned, but their Git-controlled Compose provenance is not
-   established on the host.
+   references. Immutable local repository digests were located for the other
+   nine, but those running references remain mutable. Runtime labels expose exact
+   full revisions for four containers; tag-to-Git evidence resolves three social
+   workers to one additional commit. The remaining workloads use vendor images,
+   mounted-source models, or images with unverified provenance.
 4. All 17 safety-applicable staging release containers fail the complete explicit
    safety-set read-back. The five remaining release containers are PostgreSQL or
    Redis and were correctly treated as infrastructure to which business-write

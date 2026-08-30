@@ -7,9 +7,11 @@ import subprocess
 from collections import Counter
 from pathlib import Path
 
+import yaml
+
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCK = ROOT / "releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json"
+LOCK = ROOT / "STAGE6-SOURCE-LOCK.yaml"
 OUT = ROOT / "reports/runtime-reconciliation"
 SAFETY_KEYS = (
     "LIVE_ADVERTISING_ENABLED", "EXTERNAL_DELIVERY_ENABLED",
@@ -67,7 +69,10 @@ def component(name: str) -> str:
 def main() -> None:
     ids = subprocess.check_output(["docker", "ps", "-q"], text=True).split()
     containers = json.loads(subprocess.check_output(["docker", "inspect", *ids], text=True))
-    locked = json.loads(LOCK.read_text())["repositories"]
+    image_ids = sorted({container["Image"] for container in containers})
+    images = json.loads(subprocess.check_output(["docker", "image", "inspect", *image_ids], text=True))
+    repo_digests = {image["Id"]: image.get("RepoDigests") or [] for image in images}
+    locked = yaml.safe_load(LOCK.read_text())["repositories"]
     rows = []
     for c in sorted(containers, key=lambda item: item["Name"]):
         name = c["Name"].lstrip("/")
@@ -77,15 +82,18 @@ def main() -> None:
             for item in c["Config"].get("Env", []) if "=" in item
         }
         image_ref = c["Config"]["Image"]
-        image_digest = image_ref.split("@", 1)[1] if "@sha256:" in image_ref else "UNESTABLISHED"
-        sha = (
-            labels.get("org.opencontainers.image.revision")
-            or labels.get("build.revision")
-            or labels.get("io.codestra.build.revision")
-            or "UNESTABLISHED"
+        if "@sha256:" in image_ref:
+            image_digest = image_ref.split("@", 1)[1]
+        elif repo_digests[c["Image"]]:
+            image_digest = repo_digests[c["Image"]][0].rsplit("@", 1)[1]
+        else:
+            image_digest = "UNESTABLISHED"
+        candidates = (
+            labels.get("org.opencontainers.image.revision"),
+            labels.get("build.revision"),
+            labels.get("io.codestra.build.revision"),
         )
-        if sha == "unknown":
-            sha = "UNESTABLISHED"
+        sha = next((value for value in candidates if value and value.lower() != "unknown"), "UNESTABLISHED")
         mounts = sorted({
             m.get("Source", "") for m in c.get("Mounts", [])
             if "secret" in m.get("Source", "").lower()
@@ -105,9 +113,9 @@ def main() -> None:
             "container": name,
             "classification": classify(name),
             "component": comp,
-            "repository": labels.get("org.opencontainers.image.source") or expected.get("repo") or "UNESTABLISHED",
+            "repository": labels.get("org.opencontainers.image.source") or expected.get("repository") or "UNESTABLISHED",
             "git_sha": sha,
-            "expected_git_sha": expected.get("sha", "NOT_IN_SOURCE_LOCK"),
+            "expected_git_sha": expected.get("revision", "NOT_IN_SOURCE_LOCK"),
             "image": image_ref,
             "immutable_image_digest": image_digest,
             "local_image_id": c["Image"],
@@ -125,7 +133,7 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     csv_path = OUT / "STAGE6-RUNTIME-INVENTORY.csv"
     with csv_path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+        writer = csv.DictWriter(handle, fieldnames=rows[0].keys(), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -135,7 +143,10 @@ def main() -> None:
     for row in release_rows:
         problems = []
         if row["git_sha"] == "UNESTABLISHED": problems.append("Git SHA unestablished")
-        if row["immutable_image_digest"] == "UNESTABLISHED": problems.append("image not digest-pinned")
+        if row["immutable_image_digest"] == "UNESTABLISHED":
+            problems.append("immutable image digest unestablished")
+        elif "@sha256:" not in row["image"]:
+            problems.append("runtime image reference mutable; immutable local digest located")
         if row["expected_git_sha"] != "NOT_IN_SOURCE_LOCK" and row["git_sha"] != row["expected_git_sha"]:
             problems.append("runtime SHA differs from lock")
         if "alembic upgrade" in row["startup_command"]: problems.append("migration in startup")
