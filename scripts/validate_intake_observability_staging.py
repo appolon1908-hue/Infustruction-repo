@@ -11,13 +11,16 @@ ROOT = Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / "deploy/staging/intake-observability"
 EXPECTED_DIGEST = "sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820"
 EXPECTED_PROFILE = "codestra-middleware-staging-v1"
+EXPECTED_KEYCLOAK_PUBLIC_URL = "https://auth-staging.codestra.co"
+EXPECTED_KEYCLOAK_ISSUER = EXPECTED_KEYCLOAK_PUBLIC_URL + "/realms/codestra"
+EXPECTED_KEYCLOAK_JWKS_URI = EXPECTED_KEYCLOAK_ISSUER + "/protocol/openid-connect/certs"
 POSTGRES_HOST = "postgresql.middleware-staging.svc.cluster.local"
 REDIS_HOST = "redis.middleware-staging.svc.cluster.local"
 
 
 def main() -> None:
     lock = json.loads((DEPLOY / "runtime-lock.v1.json").read_text())
-    assert lock["schema_version"] == "1.1" and lock["environment"] == "staging"
+    assert lock["schema_version"] == "1.2" and lock["environment"] == "staging"
     assert lock["middleware"]["image_digest"] == EXPECTED_DIGEST
     assert lock["middleware"]["image_reference"].endswith("@" + EXPECTED_DIGEST)
     assert lock["middleware"]["runtime_profile_id"] == EXPECTED_PROFILE
@@ -48,8 +51,26 @@ def main() -> None:
         "preserve_on_failure_rollback": True,
         "destructive_reset_requires_explicit_confirmation": True,
     }
-    assert lock["identity"]["maximum_token_ttl_seconds"] == 300
-    assert lock["activation"] == {"prometheus_target": "pending", "blackbox_target": "pending", "production_authorized": False}
+    assert lock["identity"] == {
+        "public_url": EXPECTED_KEYCLOAK_PUBLIC_URL,
+        "admin_api_base_url": EXPECTED_KEYCLOAK_PUBLIC_URL,
+        "issuer": EXPECTED_KEYCLOAK_ISSUER,
+        "jwks_uri": EXPECTED_KEYCLOAK_JWKS_URI,
+        "realm": "codestra",
+        "admin_authentication_realm": "master",
+        "client_id": "monitoring-readonly",
+        "audience": "middleware-api",
+        "metrics_scope": "metrics.read",
+        "health_scope": "health.read",
+        "maximum_token_ttl_seconds": 300,
+        "token_values_committed": False,
+        "production_identity_endpoint_allowed": False,
+    }
+    assert lock["activation"] == {
+        "prometheus_target": "pending",
+        "blackbox_target": "pending",
+        "production_authorized": False,
+    }
     assert lock["external_effects_enabled"] is False
     for value in lock["support_images"].values():
         assert re.fullmatch(r"[^\s]+@sha256:[0-9a-f]{64}", value)
@@ -96,8 +117,16 @@ def main() -> None:
         "LIVE_PSTN_DIALING=false",
         "DATA_VOLUMES=PRESERVED",
         "DELETE_CODESTRA_STAGE6_STAGING_DATA",
+        "EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth-staging.codestra.co'",
+        "EXPECTED_KEYCLOAK_ISSUER=\"${EXPECTED_KEYCLOAK_PUBLIC_URL}/realms/codestra\"",
+        "EXPECTED_KEYCLOAK_JWKS_URI=\"${EXPECTED_KEYCLOAK_ISSUER}/protocol/openid-connect/certs\"",
+        "KEYCLOAK_ISSUER=$EXPECTED_KEYCLOAK_ISSUER",
+        "KEYCLOAK_JWKS_URI=$EXPECTED_KEYCLOAK_JWKS_URI",
+        "keycloak_public_url",
+        "keycloak_issuer",
     ):
         assert required in script, required
+    assert "https://auth.codestra.co" not in script
     assert script.count("compose down --volumes --remove-orphans") == 1
     assert script.count("compose down --remove-orphans") >= 3
     assert "compose down --volumes --remove-orphans >/dev/null 2>&1 || true" not in script

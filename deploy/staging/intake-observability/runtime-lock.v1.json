@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "deployment_id": "codestra-intake-observability-staging-v1",
   "environment": "staging",
   "project_name": "codestra-intake-observability-staging",
@@ -47,12 +47,19 @@
     "destructive_reset_requires_explicit_confirmation": true
   },
   "identity": {
+    "public_url": "https://auth-staging.codestra.co",
+    "admin_api_base_url": "https://auth-staging.codestra.co",
+    "issuer": "https://auth-staging.codestra.co/realms/codestra",
+    "jwks_uri": "https://auth-staging.codestra.co/realms/codestra/protocol/openid-connect/certs",
+    "realm": "codestra",
+    "admin_authentication_realm": "master",
     "client_id": "monitoring-readonly",
     "audience": "middleware-api",
     "metrics_scope": "metrics.read",
     "health_scope": "health.read",
     "maximum_token_ttl_seconds": 300,
-    "token_values_committed": false
+    "token_values_committed": false,
+    "production_identity_endpoint_allowed": false
   },
   "activation": {
     "prometheus_target": "pending",

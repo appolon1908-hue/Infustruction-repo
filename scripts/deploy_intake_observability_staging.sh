@@ -11,6 +11,10 @@ EXPECTED_IMAGE='ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50b
 EXPECTED_DIGEST='sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820'
 EXPECTED_SOURCE='f6748a58f8d2590520a4f28776770957061cdea1'
 EXPECTED_PROFILE='codestra-middleware-staging-v1'
+EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth-staging.codestra.co'
+EXPECTED_KEYCLOAK_ISSUER="${EXPECTED_KEYCLOAK_PUBLIC_URL}/realms/codestra"
+EXPECTED_KEYCLOAK_JWKS_URI="${EXPECTED_KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
+EXPECTED_KEYCLOAK_REALM='codestra'
 POSTGRES_IMAGE='postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73'
 REDIS_IMAGE='redis:7.4-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2'
 PROJECT='codestra-intake-observability-staging'
@@ -53,9 +57,35 @@ chmod 700 "$STATE_ROOT" "$STATE_ROOT/secrets" "$STATE_ROOT/evidence" "$STATE_ROO
 
 case "$ACTION" in
   render)
-    jq -e --arg image "$EXPECTED_IMAGE" --arg digest "$EXPECTED_DIGEST" --arg source "$EXPECTED_SOURCE" --arg profile "$EXPECTED_PROFILE" \
-      '.schema_version == "1.1" and .environment == "staging" and .middleware.image_reference == $image and .middleware.image_digest == $digest and .middleware.source_sha == $source and .middleware.runtime_profile_id == $profile and .transport.postgres_tls == true and .transport.redis_tls == true and .persistence.preserve_on_redeploy == true and .persistence.preserve_on_failure_rollback == true and .activation.prometheus_target == "pending" and .activation.blackbox_target == "pending" and .external_effects_enabled == false' \
-      "$LOCK_FILE" >/dev/null
+    jq -e \
+      --arg image "$EXPECTED_IMAGE" \
+      --arg digest "$EXPECTED_DIGEST" \
+      --arg source "$EXPECTED_SOURCE" \
+      --arg profile "$EXPECTED_PROFILE" \
+      --arg publicUrl "$EXPECTED_KEYCLOAK_PUBLIC_URL" \
+      --arg issuer "$EXPECTED_KEYCLOAK_ISSUER" \
+      --arg jwksUri "$EXPECTED_KEYCLOAK_JWKS_URI" '
+        .schema_version == "1.2"
+        and .environment == "staging"
+        and .middleware.image_reference == $image
+        and .middleware.image_digest == $digest
+        and .middleware.source_sha == $source
+        and .middleware.runtime_profile_id == $profile
+        and .identity.public_url == $publicUrl
+        and .identity.admin_api_base_url == $publicUrl
+        and .identity.issuer == $issuer
+        and .identity.jwks_uri == $jwksUri
+        and .identity.realm == "codestra"
+        and .identity.admin_authentication_realm == "master"
+        and .identity.production_identity_endpoint_allowed == false
+        and .transport.postgres_tls == true
+        and .transport.redis_tls == true
+        and .persistence.preserve_on_redeploy == true
+        and .persistence.preserve_on_failure_rollback == true
+        and .activation.prometheus_target == "pending"
+        and .activation.blackbox_target == "pending"
+        and .external_effects_enabled == false
+      ' "$LOCK_FILE" >/dev/null
     printf 'STAGING_RUNTIME_LOCK=PASS\n'
     exit 0
     ;;
@@ -85,8 +115,8 @@ esac
 
 : "${KEYCLOAK_PUBLIC_URL:?KEYCLOAK_PUBLIC_URL is required}"
 : "${KEYCLOAK_REALM:?KEYCLOAK_REALM is required}"
-[[ "${KEYCLOAK_PUBLIC_URL%/}" == 'https://auth.codestra.co' ]] || fail 'immutable image requires canonical Keycloak URL https://auth.codestra.co'
-[[ "$KEYCLOAK_REALM" == 'codestra' ]] || fail 'immutable image requires Keycloak realm codestra'
+[[ "${KEYCLOAK_PUBLIC_URL%/}" == "$EXPECTED_KEYCLOAK_PUBLIC_URL" ]] || fail "staging runtime requires canonical Keycloak URL $EXPECTED_KEYCLOAK_PUBLIC_URL"
+[[ "$KEYCLOAK_REALM" == "$EXPECTED_KEYCLOAK_REALM" ]] || fail 'staging runtime requires Keycloak realm codestra'
 
 ensure_secret "$STATE_ROOT/secrets/postgres_password"
 ensure_secret "$STATE_ROOT/secrets/redis_password"
@@ -162,8 +192,8 @@ APP_SOURCE_SHA=$EXPECTED_SOURCE
 IMAGE_DIGEST=$EXPECTED_DIGEST
 SCHEMA_HEAD=0003_immutable_event_ledger
 BUILD_TIME=2026-08-30T13:24:37Z
-KEYCLOAK_ISSUER=https://auth.codestra.co/realms/codestra
-KEYCLOAK_JWKS_URI=https://auth.codestra.co/realms/codestra/protocol/openid-connect/certs
+KEYCLOAK_ISSUER=$EXPECTED_KEYCLOAK_ISSUER
+KEYCLOAK_JWKS_URI=$EXPECTED_KEYCLOAK_JWKS_URI
 MIDDLEWARE_AUDIENCE=middleware-api
 JWKS_TIMEOUT_SECONDS=3
 READINESS_TIMEOUT_SECONDS=3
@@ -288,7 +318,7 @@ container_image="$(docker inspect --format '{{.Config.Image}}' "${PROJECT}-middl
 python3 - <<PY >"$STATE_ROOT/runtime-context.json"
 import json
 print(json.dumps({
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "environment": "staging",
   "project": "$PROJECT",
   "middleware_source_sha": "$EXPECTED_SOURCE",
@@ -300,6 +330,8 @@ print(json.dumps({
   "host_ports_published": False,
   "postgres_tls": True,
   "redis_tls": True,
+  "keycloak_public_url": "$EXPECTED_KEYCLOAK_PUBLIC_URL",
+  "keycloak_issuer": "$EXPECTED_KEYCLOAK_ISSUER",
   "named_volumes_preserved_on_redeploy": True,
   "deployment_result": "PASS",
   "external_effects_enabled": False
