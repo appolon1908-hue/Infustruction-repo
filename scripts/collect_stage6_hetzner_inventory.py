@@ -104,8 +104,8 @@ def main() -> None:
                 "status": server.get("status"),
                 "labels": sanitized_labels(server.get("labels", {})),
                 "location": server.get("datacenter", {}).get("location", {}).get("name"),
-                "public_ipv4": public_net.get("ipv4", {}).get("ip"),
-                "public_ipv6": public_net.get("ipv6", {}).get("ip"),
+                "public_ipv4": (public_net.get("ipv4") or {}).get("ip"),
+                "public_ipv6": (public_net.get("ipv6") or {}).get("ip"),
                 "private_network_attachments": [
                     {"network_id": x.get("network"), "private_ip": x.get("ip"), "aliases": x.get("alias_ips", [])}
                     for x in server.get("private_net", [])
