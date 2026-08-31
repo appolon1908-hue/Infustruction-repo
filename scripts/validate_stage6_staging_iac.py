@@ -65,6 +65,7 @@ for port, label in (("5432", "postgresql"), ("6379", "redis"), ("2375", "docker"
 require('source_ips = ["0.0.0.0/0"]' not in main, "global_ingress_cidr")
 require('destination_ips = ["0.0.0.0/0"]' in main, "gateway_public_egress")
 require("approved_egress_fqdns" in main, "fqdn_egress_policy")
+require('"pkg-containers.githubusercontent.com"' in (IAC / "variables.tf").read_text(encoding="utf-8"), "reviewed_fqdn_catalog")
 require(re.search(r'port\s*=\s*"3128"', main) is not None, "proxy_only_runtime_egress")
 require("hcloud_network" in main and "hcloud_network_subnet" in main, "network_created_by_authority")
 require("private_network_id" not in (IAC / "variables.tf").read_text(encoding="utf-8"), "preexisting_network_input_removed")

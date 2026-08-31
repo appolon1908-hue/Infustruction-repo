@@ -4,6 +4,8 @@ approved_egress_fqdns = [
   "archive.ubuntu.com",
   "github.com",
   "ghcr.io",
+  "objects.githubusercontent.com",
+  "pkg-containers.githubusercontent.com",
   "security.ubuntu.com",
 ]
 dns_upstream_cidrs = ["192.0.2.53/32"]

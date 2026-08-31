@@ -104,9 +104,19 @@ variable "approved_egress_fqdns" {
   type        = set(string)
   validation {
     condition = length(var.approved_egress_fqdns) > 0 && alltrue([
-      for name in var.approved_egress_fqdns : can(regex("^[a-z0-9][a-z0-9.-]*[a-z0-9]$", name)) && !startswith(name, ".")
+      for name in var.approved_egress_fqdns : contains([
+        "api.github.com",
+        "archive.ubuntu.com",
+        "azure.archive.ubuntu.com",
+        "github.com",
+        "ghcr.io",
+        "objects.githubusercontent.com",
+        "pkg-containers.githubusercontent.com",
+        "release-assets.githubusercontent.com",
+        "security.ubuntu.com",
+      ], name)
     ])
-    error_message = "Egress destinations must be explicit normalized FQDN suffixes."
+    error_message = "Egress destinations must come from the Git-reviewed bootstrap catalog."
   }
 }
 
