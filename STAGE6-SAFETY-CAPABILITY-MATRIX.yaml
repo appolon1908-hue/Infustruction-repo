@@ -1,0 +1,30 @@
+schema: codestra.stage6.safety-capability-matrix.v1
+status: INCOMPLETE_FAIL_CLOSED
+reviewed: false
+services:
+  klyrow-gateway:
+    runtime_containers: [klyrow-gateway-1, klyrow-worker-1]
+    capabilities:
+      email_delivery: UNKNOWN
+    reason: live allowlisted read-back interrupted by SSH connection refusal
+  klyrow-smtp-relay:
+    runtime_containers: [klyrow-smtp-relay-1]
+    capabilities:
+      email_delivery: UNKNOWN
+    reason: live allowlisted read-back interrupted by SSH connection refusal
+  klyrow-postal-smtp:
+    runtime_containers: [klyrow-postal-smtp-1]
+    capabilities:
+      smtp_transport: true
+      stage6_customer_email_route: UNKNOWN
+    reason: public SMTP exists but application-layer Stage 6 routing is unresolved
+  codestra-middleware-production:
+    runtime_containers: 9_with_noncanonical_production_dialing
+    capabilities:
+      pstn_dialing: UNKNOWN
+    production_dialing_runtime_value: 'false'
+    canonical_value: UNKNOWN
+    reason: parser and Git authority require review before normalization
+aggregate:
+  calls_placed_source: UNKNOWN
+  production_business_writes: UNKNOWN
