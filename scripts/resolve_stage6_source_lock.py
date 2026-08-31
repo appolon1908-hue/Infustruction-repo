@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import socket
 import subprocess
@@ -51,6 +52,7 @@ IMAGE_REFERENCES = {
 CORE_COMPONENTS = {"middleware", "odoo", "n8n"}
 MIDDLEWARE_RUN_ID = 33401833572
 INSPECTION_HOST = "37.27.128.39"
+DOCKER_ENDPOINT = "unix:///var/run/docker.sock"
 
 
 def run(*args: str, cwd: Path | None = None) -> str:
@@ -83,8 +85,8 @@ def registry_resolution(reference: str, digest: str) -> dict:
     try:
         with tempfile.TemporaryDirectory(prefix="stage6-docker-config-") as config:
             output = run(
-                "docker", "--config", config, "buildx", "imagetools", "inspect",
-                result["reference"],
+                "docker", "--config", config, "--host", DOCKER_ENDPOINT,
+                "buildx", "imagetools", "inspect", result["reference"],
             )
         match = re.search(r"^Digest:\s+(sha256:[0-9a-f]{64})$", output, re.MULTILINE)
         result["resolved_digest"] = match.group(1) if match else None
@@ -98,19 +100,25 @@ def registry_resolution(reference: str, digest: str) -> dict:
 
 def local_image_labels(reference: str) -> dict:
     try:
-        image = json.loads(run("docker", "image", "inspect", reference))[0]
+        image = json.loads(
+            run("docker", "--host", DOCKER_ENDPOINT, "image", "inspect", reference)
+        )[0]
         return image["Config"].get("Labels") or {}
     except (OSError, subprocess.CalledProcessError, json.JSONDecodeError, KeyError):
         return {}
 
 
 def docker_runtime() -> list[dict]:
-    ids = run("docker", "ps", "-q").split()
+    ids = run("docker", "--host", DOCKER_ENDPOINT, "ps", "-q").split()
     if not ids:
         return []
-    containers = json.loads(run("docker", "inspect", *ids))
+    containers = json.loads(
+        run("docker", "--host", DOCKER_ENDPOINT, "inspect", *ids)
+    )
     image_ids = sorted({container["Image"] for container in containers})
-    images = json.loads(run("docker", "image", "inspect", *image_ids))
+    images = json.loads(
+        run("docker", "--host", DOCKER_ENDPOINT, "image", "inspect", *image_ids)
+    )
     image_by_id = {image["Id"]: image for image in images}
     rows = []
     for container in sorted(containers, key=lambda item: item["Name"]):
@@ -152,6 +160,11 @@ def docker_runtime() -> list[dict]:
 
 
 def verify_inspection_host() -> dict:
+    docker_host_environment = os.environ.get("DOCKER_HOST", "")
+    if docker_host_environment and docker_host_environment != DOCKER_ENDPOINT:
+        raise RuntimeError(
+            f"refusing Docker evidence: DOCKER_HOST is {docker_host_environment!r}"
+        )
     try:
         interfaces = json.loads(run("ip", "-json", "address", "show"))
         addresses = sorted(
@@ -167,10 +180,23 @@ def verify_inspection_host() -> dict:
         raise RuntimeError(
             f"refusing Docker evidence: expected host address {INSPECTION_HOST} is absent"
         )
+    try:
+        context_name = run("docker", "context", "show")
+        context = json.loads(run("docker", "context", "inspect", context_name))[0]
+        context_endpoint = context["Endpoints"]["docker"]["Host"]
+    except (OSError, subprocess.CalledProcessError, json.JSONDecodeError, KeyError) as exc:
+        raise RuntimeError("cannot verify the active Docker context") from exc
+    if context_endpoint != DOCKER_ENDPOINT:
+        raise RuntimeError(
+            f"refusing Docker evidence: active context endpoint is {context_endpoint!r}"
+        )
     return {
         "expected_address": INSPECTION_HOST,
         "address_present": True,
         "hostname": socket.gethostname(),
+        "docker_endpoint": DOCKER_ENDPOINT,
+        "docker_context": context_name,
+        "docker_host_environment": docker_host_environment or "UNSET",
     }
 
 

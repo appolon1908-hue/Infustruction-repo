@@ -115,6 +115,10 @@ def main() -> None:
         == resolution["bounded_inventory"]["host"]
         == "37.27.128.39"
     )
+    assert (
+        resolution["bounded_inventory"]["host_identity"]["docker_endpoint"]
+        == "unix:///var/run/docker.sock"
+    )
 
     extensions = resolution["component_catalog_extensions"]
     assert extensions["legacy_stage6_core_runtime"]["classification"] == "frozen_observed_digest"

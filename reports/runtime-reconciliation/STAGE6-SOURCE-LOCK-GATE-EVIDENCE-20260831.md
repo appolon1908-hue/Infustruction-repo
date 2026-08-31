@@ -49,6 +49,9 @@ so the workflow requires a least-privilege `STAGE6_SOURCE_READ_TOKEN` with
 read-only Contents access to those repositories; the repository-scoped default
 token cannot certify them. CI remains fail-closed while that credential is
 absent.
+The workflow also runs for merge-queue candidates and on a 15-minute drift
+schedule, so an external protected-head advance cannot rely indefinitely on a
+stale pull-request result.
 
 ## Independent gates
 
@@ -99,8 +102,11 @@ rollback target is absent runtime plus Nginx backup
 
 The local bounded Docker inventory inspected running container identity,
 configured image digest, OCI revision, Compose identity, networks, and named
-safety flags. It found one verified digest match: OpenBao. This satisfies the
-nonzero-match floor but not the complete runtime read-back gate.
+safety flags. Every Docker read is explicitly bound to the verified local
+`unix:///var/run/docker.sock` endpoint; remote contexts and conflicting
+`DOCKER_HOST` values are rejected. It found one verified digest match:
+OpenBao. This satisfies the nonzero-match floor but not the complete runtime
+read-back gate.
 
 The core host `65.109.65.169` still returns
 `DENIED: unsupported forced command` for the available bounded credential, so

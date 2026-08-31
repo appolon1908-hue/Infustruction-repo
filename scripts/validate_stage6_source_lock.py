@@ -96,6 +96,27 @@ def main() -> None:
         source_services.update(name for name in compose["services"] if "migration" not in name)
     assert len(source_services) == 17, source_services
 
+    middleware_compose = yaml.safe_load(
+        (COMPOSE_DIR / "compose.middleware-source-remediation.yaml").read_text()
+    )
+    app_command = " ".join(
+        middleware_compose["services"]["middleware-staging"]["command"]
+    )
+    assert "migrat" not in app_command.lower()
+    assert "alembic" not in app_command.lower()
+    assert middleware_compose["services"]["middleware-migration"]["restart"] == "no"
+
+    odoo_compose = yaml.safe_load(
+        (COMPOSE_DIR / "compose.odoo-source-remediation.yaml").read_text()
+    )
+    for service in ("odoo19-staging", "odoo19-master-staging"):
+        command = " ".join(odoo_compose["services"][service]["command"])
+        assert "--init" not in command
+        assert "--update" not in command
+    for service in ("odoo19-module-migration", "odoo19-master-module-migration"):
+        assert odoo_compose["services"][service]["restart"] == "no"
+        assert "--stop-after-init" in odoo_compose["services"][service]["command"]
+
     gates = lock["gates"]
     assert set(("repository_integrity", "artifact_provenance", "runtime_readback", "activation_eligibility")) <= set(gates)
     assert gates["repository_integrity"]["status"] == "PASS"

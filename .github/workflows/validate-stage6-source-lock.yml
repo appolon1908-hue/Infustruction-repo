@@ -1,6 +1,10 @@
 name: Validate Stage 6 authoritative source lock
 
 on:
+  merge_group:
+  workflow_dispatch:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
   pull_request:
     paths:
       - "STAGE6-SOURCE-LOCK.yaml"

@@ -590,7 +590,7 @@ gates:
   out_of_scope_production_writes: ACTIVE_DO_NOT_TOUCH
 runtime_resolution:
   schema: codestra.stage6.source-lock-resolution.v2
-  resolved_at: '2026-08-31T16:44:32.477525+00:00'
+  resolved_at: '2026-08-31T16:56:16.620050+00:00'
   authoritative_lock_path: /root/codestra-infrastructure-stage6-reconcile/STAGE6-SOURCE-LOCK.yaml
   authoritative_lock_sha256: sha256:496413c5f23cbce2b0aaccd285a62d7c1453de2bdfc36c9c5a2d0dcb1179ba6a
   infrastructure_evidence_base_sha: 244a743a771d1f93c1445392bb45f8325908ca72
@@ -655,6 +655,9 @@ runtime_resolution:
       expected_address: 37.27.128.39
       address_present: true
       hostname: Ubuntu-jammy-latest-amd64-base.zst
+      docker_endpoint: unix:///var/run/docker.sock
+      docker_context: default
+      docker_host_environment: UNSET
     running_containers_inspected: 42
     fresh_verified_digest_matches: 1
     minimum_required: 1
