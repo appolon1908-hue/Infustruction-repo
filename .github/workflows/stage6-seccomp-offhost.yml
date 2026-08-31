@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "scripts/run_stage6_seccomp_offhost_qemu.sh"
+      - "docs/STAGE6-SECCOMP-DIFFERENTIAL-DIAGNOSIS-20260831.md"
       - ".github/workflows/stage6-seccomp-offhost.yml"
   workflow_dispatch:
 
