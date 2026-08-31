@@ -10,6 +10,11 @@ on:
       - "STAGE6-STAGING-HOST-PROVISIONING.md"
       - "STAGE6-STAGING-HOST-BASELINE.md"
       - "STAGE6-STAGING-NETWORK-ISOLATION.md"
+      - "docs/STAGE6-SECCOMP-DIFFERENTIAL-DIAGNOSIS-20260831.md"
+      - "operations/stage6-bpf-jit-limit-canary.yaml"
+      - "scripts/validate_stage6_bpf_jit_limit_canary.py"
+      - "scripts/run_stage6_seccomp_offhost_qemu.sh"
+      - ".github/workflows/stage6-seccomp-offhost.yml"
   workflow_dispatch:
     inputs:
       confirmation:
