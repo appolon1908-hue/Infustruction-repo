@@ -3,10 +3,13 @@
 
 from __future__ import annotations
 
+import json
+import os
 import re
-import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 import yaml
 
@@ -19,24 +22,32 @@ FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 def authority_head(component: str, definition: dict) -> tuple[str, str, str]:
     repository = definition["repository"]
     expected = definition["revision"]
-    url = f"https://github.com/{repository}.git"
-    completed = subprocess.run(
-        ["git", "ls-remote", "--refs", url, "refs/heads/main"],
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        timeout=45,
-    )
-    if completed.returncode != 0:
-        detail = completed.stderr.strip() or f"exit {completed.returncode}"
-        raise RuntimeError(f"{component}: cannot query {url}: {detail}")
-    rows = [line.split() for line in completed.stdout.splitlines() if line.strip()]
-    if len(rows) != 1 or len(rows[0]) != 2 or rows[0][1] != "refs/heads/main":
-        raise RuntimeError(
-            f"{component}: expected exactly one refs/heads/main result, got {rows!r}"
+    url = f"https://api.github.com/repos/{repository}/git/ref/heads/main"
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "codestra-stage6-authority-head-validator",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    token = os.environ.get("STAGE6_SOURCE_READ_TOKEN", "").strip()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    try:
+        with urlopen(Request(url, headers=headers), timeout=45) as response:
+            payload = json.load(response)
+    except HTTPError as exc:
+        hint = (
+            "; configure a read-only STAGE6_SOURCE_READ_TOKEN for private repositories"
+            if exc.code in {401, 403, 404}
+            else ""
         )
-    observed = rows[0][0]
+        raise RuntimeError(
+            f"{component}: cannot query {repository} main: HTTP {exc.code}{hint}"
+        ) from exc
+    except (URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{component}: cannot query {repository} main: {exc}") from exc
+    if payload.get("ref") != "refs/heads/main":
+        raise RuntimeError(f"{component}: unexpected ref response {payload.get('ref')!r}")
+    observed = (payload.get("object") or {}).get("sha", "")
     if not FULL_SHA.fullmatch(observed):
         raise RuntimeError(f"{component}: invalid authoritative SHA {observed!r}")
     if observed != expected:

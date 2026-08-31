@@ -44,6 +44,11 @@ Seven heads advanced relative to the Infrastructure evidence base lock:
 | Grafana | `ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6` | `30b736f98e7bbf16f54280251c6d51a877ff2d8a` |
 
 No newer development or floating head replaced an authoritative `main` SHA.
+The exact-head CI re-queries all 23 GitHub refs. Kong and Keycloak are private,
+so the workflow requires a least-privilege `STAGE6_SOURCE_READ_TOKEN` with
+read-only Contents access to those repositories; the repository-scoped default
+token cannot certify them. CI remains fail-closed while that credential is
+absent.
 
 ## Independent gates
 
