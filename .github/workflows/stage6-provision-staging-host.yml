@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: "Type APPLY_STAGE6_ISOLATED_HOST"
+        description: "Type PLAN_STAGE6_ISOLATED_HOST for plan-only, or APPLY_STAGE6_ISOLATED_HOST for a separately authorized apply"
         required: true
         type: string
 
@@ -109,7 +109,7 @@ jobs:
           tofu -chdir="$IAC_DIR" validate
 
   plan-remote:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirmation == 'APPLY_STAGE6_ISOLATED_HOST'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (inputs.confirmation == 'PLAN_STAGE6_ISOLATED_HOST' || inputs.confirmation == 'APPLY_STAGE6_ISOLATED_HOST')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: stage6-infrastructure-provisioning
@@ -197,8 +197,9 @@ jobs:
           {
             echo '## Stage 6 remote-state plan awaiting approval'
             echo
-            echo 'Download and review the checksummed plan artifact before approving the apply job.'
-            echo 'The apply job consumes only this saved plan and refuses delete actions.'
+            echo 'Download and review the checksummed plan artifact.'
+            echo 'PLAN_STAGE6_ISOLATED_HOST stops after this job; it cannot schedule apply.'
+            echo 'APPLY_STAGE6_ISOLATED_HOST requires separate authorization and protected-environment approval before the apply job can consume this saved plan.'
           } >> "$GITHUB_STEP_SUMMARY"
 
   apply:
