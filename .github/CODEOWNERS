@@ -1,0 +1,4 @@
+/infra/hetzner/stage6-staging/ @kazan555
+/.github/workflows/stage6-provision-staging-host.yml @kazan555
+/scripts/validate_stage6_staging_iac.py @kazan555
+/STAGE6-STAGING-HOST-*.md @kazan555
