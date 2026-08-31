@@ -4,6 +4,7 @@ manage_etc_hosts: true
 ssh_pwauth: false
 disable_root: true
 bootcmd:
+  - [sh, -c, "printf 'nameserver ${dns_upstream_ips[0]}\\n' > /etc/resolv.conf"]
 %{ for cidr in production_deny_cidrs ~}
   - [iptables, -I, OUTPUT, -d, "${cidr}", -j, DROP]
 %{ endfor ~}

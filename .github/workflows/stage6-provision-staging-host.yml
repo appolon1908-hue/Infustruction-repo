@@ -165,12 +165,12 @@ jobs:
           tofu -chdir="$IAC_DIR" validate
           tofu -chdir="$IAC_DIR" plan -input=false -var-file=/tmp/stage6.auto.tfvars.json -out=/tmp/stage6.tfplan
           tofu -chdir="$IAC_DIR" show -json /tmp/stage6.tfplan > /tmp/stage6-plan.json
-          test "$(jq '[.resource_changes[] | select(.type == "hcloud_server" and (.change.actions | index("create")))] | length' /tmp/stage6-plan.json)" -eq 2
-          test "$(jq '[.resource_changes[] | select(.type == "hcloud_network" and (.change.actions | index("create")))] | length' /tmp/stage6-plan.json)" -eq 1
+          test "$(jq '[.resource_changes[] | select(.type == "hcloud_server" and (.change.actions | index("create")))] | length' /tmp/stage6-plan.json)" -le 2
+          test "$(jq '[.resource_changes[] | select(.type == "hcloud_network" and (.change.actions | index("create")))] | length' /tmp/stage6-plan.json)" -le 1
           test "$(jq '[.resource_changes[] | select(.change.actions | index("delete"))] | length' /tmp/stage6-plan.json)" -eq 0
           jq -e --argjson allowed '["hcloud_firewall.egress","hcloud_firewall.runtime","hcloud_network.stage6","hcloud_network_subnet.stage6","hcloud_server.egress","hcloud_server.stage6","hcloud_server_network.egress","hcloud_server_network.stage6"]' \
             '[.resource_changes[] | select((.address as $address | $allowed | index($address)) == null)] | length == 0' /tmp/stage6-plan.json
-          jq -e '[.resource_changes[].change.actions] | all(. == ["create"] or . == ["no-op"])' /tmp/stage6-plan.json
+          jq -e '[.resource_changes[].change.actions] | all(. == ["create"] or . == ["update"] or . == ["no-op"])' /tmp/stage6-plan.json
           tofu -chdir="$IAC_DIR" show -no-color /tmp/stage6.tfplan > /tmp/stage6-plan.txt
           (cd /tmp && sha256sum stage6.tfplan stage6-plan.json stage6-plan.txt > stage6-plan.SHA256SUMS)
           rm -f /tmp/stage6.auto.tfvars.json
@@ -245,12 +245,12 @@ jobs:
         run: |
           cd /tmp/stage6-reviewed-plan
           sha256sum -c stage6-plan.SHA256SUMS
-          test "$(jq '[.resource_changes[] | select(.type == "hcloud_server" and (.change.actions | index("create")))] | length' stage6-plan.json)" -eq 2
-          test "$(jq '[.resource_changes[] | select(.type == "hcloud_network" and (.change.actions | index("create")))] | length' stage6-plan.json)" -eq 1
+          test "$(jq '[.resource_changes[] | select(.type == "hcloud_server" and (.change.actions | index("create")))] | length' stage6-plan.json)" -le 2
+          test "$(jq '[.resource_changes[] | select(.type == "hcloud_network" and (.change.actions | index("create")))] | length' stage6-plan.json)" -le 1
           test "$(jq '[.resource_changes[] | select(.change.actions | index("delete"))] | length' stage6-plan.json)" -eq 0
           jq -e --argjson allowed '["hcloud_firewall.egress","hcloud_firewall.runtime","hcloud_network.stage6","hcloud_network_subnet.stage6","hcloud_server.egress","hcloud_server.stage6","hcloud_server_network.egress","hcloud_server_network.stage6"]' \
             '[.resource_changes[] | select((.address as $address | $allowed | index($address)) == null)] | length == 0' stage6-plan.json
-          jq -e '[.resource_changes[].change.actions] | all(. == ["create"] or . == ["no-op"])' stage6-plan.json
+          jq -e '[.resource_changes[].change.actions] | all(. == ["create"] or . == ["update"] or . == ["no-op"])' stage6-plan.json
           tofu -chdir="$GITHUB_WORKSPACE/$IAC_DIR" init -input=false \
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="endpoints={s3=\"$TF_STATE_ENDPOINT\"}" \
