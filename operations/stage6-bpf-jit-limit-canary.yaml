@@ -8,8 +8,20 @@ diagnosis:
   config_bpf_jit_always_on: true
   bpf_jit_enabled: true
   current_bpf_jit_limit: 528482304
-  observed_bpf_jit_mappings: 65157
-  observed_bpf_jit_vmalloc_bytes: 1192161280
+  x86_64_modules_len: 1593835520
+  observed_bpf_jit_mappings: 32587
+  observed_bpf_jit_vmalloc_bytes: 661848064
+  burn_rate_measurement:
+    started_at: "2026-08-31T12:52:02-04:00"
+    ended_at: "2026-08-31T13:02:07-04:00"
+    elapsed_seconds: 605
+    mappings_t0: 32584
+    mappings_t1: 32587
+    bytes_t0: 662261760
+    bytes_t1: 661848064
+    mappings_per_hour: 17.851240
+    bytes_per_hour: -2461662
+    hours_to_modules_len: UNBOUNDED_NO_POSITIVE_BYTE_BURN
   zombie_processes: 32048
   zombie_command: ssl_client
   zombie_parents:
@@ -17,8 +29,8 @@ diagnosis:
     - codestra-odoo-internal-proxy
 canary:
   persistence: NONE
-  proposed_bpf_jit_limit: 2000000000
-  apply: sysctl -w net.core.bpf_jit_limit=2000000000
+  proposed_bpf_jit_limit: 1400000000
+  apply: sysctl -w net.core.bpf_jit_limit=1400000000
   probes:
     - docker exec codestra-n8n-staging-n8n-1 true
     - docker exec codestra-identity-staging-keycloak-staging-1 true
@@ -34,7 +46,7 @@ risk:
   executable_kernel_memory_ceiling_increased: true
   unprivileged_bpf_disabled: 2
   accepted: false
-  note: temporary diagnostic only; remove after the proxy reaper fix releases retained filters
+  note: short, non-persistent diagnostic bridge only; the measured 605-second interval showed no positive byte burn, so it is not justified by a one-day exhaustion estimate and must be removed after the proxy reaper fix releases retained filters
 authorization:
   source_pr_merge_authorizes_execution: false
   exact_plan_fingerprint_approval_required: true

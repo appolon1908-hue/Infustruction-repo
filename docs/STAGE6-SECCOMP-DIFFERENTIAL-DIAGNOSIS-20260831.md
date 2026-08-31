@@ -24,13 +24,34 @@ children:
 | LSMs | lockdown, capability, landlock, yama, AppArmor | same |
 | Available seccomp actions | kill, trap, errno, user notification, trace, log, allow | same |
 | `ssl_client` zombies | 32,048 | 0 |
-| BPF/JIT mappings observed | 65,161 | clean disposable baseline |
-| BPF/JIT mapped bytes observed | 1,192,366,080 | clean disposable baseline |
+| `bpf_jit` mappings observed at T1 | 32,587 | clean disposable baseline |
+| `bpf_jit` mapped bytes observed at T1 | 661,848,064 | clean disposable baseline |
 | configured `net.core.bpf_jit_limit` | 528,482,304 | clean disposable baseline |
 
 The runtime values are point-in-time read-backs and do not authorize a runtime
 change. Vmalloc totals are diagnostic correlation, not by themselves proof of
 kernel accounting or causation.
+
+## Ten-minute burn-rate measurement
+
+The required 605-second read-only sample produced:
+
+```text
+BPF_MAPPINGS_T0=32584
+BPF_MAPPINGS_T1=32587
+BPF_JIT_BYTES_T0=662261760
+BPF_JIT_BYTES_T1=661848064
+MAPPINGS_PER_HOUR=17.851240
+BYTES_PER_HOUR=-2461662
+HOURS_TO_MODULES_LEN=UNBOUNDED_NO_POSITIVE_BYTE_BURN
+```
+
+Mapping count rose by three while mapped bytes decreased by 413,696. The sample
+therefore does not support a positive byte burn or a finite exhaustion deadline.
+The earlier approximately 1.19 GB observation matched both `bpf_jit` and
+`bpf_prog` lines; it is not interchangeable with the mission's `bpf_jit`-only
+measurement. The zombie leak remains a demonstrated source defect and must be
+fixed, but authorization must not rely on the disproved one-day estimate.
 
 ## Ownership of the leaked children
 
@@ -58,6 +79,12 @@ increase of `net.core.bpf_jit_limit` can therefore serve as a reversible causal
 canary. The exact proposal and rollback are recorded in
 `operations/stage6-bpf-jit-limit-canary.yaml`; merging its source does not
 authorize execution.
+
+The canary ceiling is `1,400,000,000`, below the fixed x86-64 module mapping
+region (`MODULES_LEN=1,593,835,520`). It is a short bridge measured in hours at
+the observed allocation rate, not remediation and not additional address
+space. Raising the sysctl above `MODULES_LEN` cannot make that address space
+available.
 
 ## Reviewed remediation path
 
