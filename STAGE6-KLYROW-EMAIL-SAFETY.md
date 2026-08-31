@@ -32,9 +32,41 @@ Fail-closed correction PR:
 `appolon1908-hue/klyrow.com#57`, exact head
 `9aa9cde6c28e9c19ce4b3673916d93095d3b7bbe`. It forces safe mode and gate
 approval off in base production Compose and makes `LIVE_EMAIL_DELIVERY` an
-independent code-level opt-in. Focused regression tests passed (17 tests); the
-protected test, frontend, and secret checks passed. Merge and deployment remain
-blocked pending the image check and required CODEOWNER/last-push approval.
+independent code-level opt-in. Focused regression tests passed (17 tests), and
+all protected checks later passed.
+
+## Protected merge and deployment attempt
+
+PR #57 received CODEOWNER approval on its exact head, passed all protected
+checks, and was squash-merged as
+`24619abe4e8b1b3f2c231bca5d138dd45c014a07`. Post-merge main CI run
+`33393511697` passed.
+
+Before deployment, restricted operator backup
+`/var/backups/codestra-operators/klyrow/20260831T125047Z` validated. The
+rollback-plan read-back identified root-maintained override checksum
+`345093a338012f9d32f6d7569f20b8c62503058731e0d4c5a7765dbe667dcc6e`.
+
+`klyrow-stack stage` passed. `klyrow-stack deploy` then failed because the
+Compose candidate attempted to create `klyrow-gateway-1` while the existing
+healthy container still owned that name. The restricted rollback command was
+attempted and denied because its root-maintained approval marker was absent.
+No direct Docker or host workaround was used.
+
+The original gateway remained healthy on revision
+`9684fd55bdbc64a971a17a291ff293a178a2ebac`. Its final GET-only read-back was:
+
+```text
+safe_mode=false
+production_gate_approved=true
+production_gate_open=true
+outbox_active=0
+```
+
+Consequently the fail-closed correction is merged but not deployed. The live
+email path remains enabled. `outbox_active=0` is not an authoritative sent-mail
+counter, so emails sent during remediation remain UNKNOWN rather than being
+asserted as zero.
 
 ## Current live safety read-back
 

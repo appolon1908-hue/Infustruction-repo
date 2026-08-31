@@ -29,6 +29,9 @@ No Docker authorization, Stage 6 workflow, email send, PSTN call, advertising
 action, social publication, or external-model call was performed by this
 investigation.
 
-Remediation PR `appolon1908-hue/klyrow.com#57` is pending protected CI and
-CODEOWNER approval. Runtime remains unchanged until it is merged and the
-restricted `klyrow-stack` deployment path has a verified rollback target.
+PR #57 subsequently merged as
+`24619abe4e8b1b3f2c231bca5d138dd45c014a07`, and post-merge CI passed. The
+restricted deployment failed on a container-name conflict; restricted rollback
+was denied because the required root-maintained approval marker was absent.
+The original gateway remains healthy but fail-open, so this aggregate gate
+remains blocked and no call-counter or Docker-authorization work may proceed.
