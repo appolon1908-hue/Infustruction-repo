@@ -115,6 +115,45 @@ require("sha256sum -c stage6-plan.SHA256SUMS" in workflow, "plan_checksum_verifi
 require("needs: plan-remote" in workflow, "plan_before_apply")
 require("push:" not in workflow, "automatic_push_apply_forbidden")
 
+
+def workflow_step(name: str) -> str:
+    """Return one named workflow step without parsing protected values."""
+    match = re.search(
+        rf"(?ms)^      - name: {re.escape(name)}\n(?P<body>.*?)(?=^      - name: |^  [a-zA-Z0-9_-]+:|\Z)",
+        workflow,
+    )
+    require(match is not None, f"missing_workflow_step_{name.lower().replace(' ', '_')}")
+    return match.group("body")
+
+
+def require_state_credentials(step: str, label: str) -> None:
+    require(
+        "AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}" in step,
+        f"{label}_state_access_key",
+    )
+    require(
+        "AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}" in step,
+        f"{label}_state_secret_key",
+    )
+
+
+require_state_credentials(
+    workflow_step("Initialize protected remote state"), "plan_init"
+)
+require_state_credentials(
+    workflow_step("Generate exact remote-state plan for review"), "remote_plan"
+)
+require_state_credentials(
+    workflow_step("Verify artifact and initialize protected remote state"), "apply_init"
+)
+apply_step = workflow_step("Apply only the exact saved plan")
+require_state_credentials(apply_step, "saved_plan_apply")
+require(
+    "apply -input=false /tmp/stage6-reviewed-plan/stage6.tfplan" in apply_step,
+    "apply_saved_plan_only",
+)
+require("tofu -chdir=\"$IAC_DIR\" plan" not in apply_step, "apply_replan_forbidden")
+
 secret_patterns = (
     re.compile(r"(?i)(password|token|private[_-]?key)\s*[=:]\s*['\"]?[^\s$<{][^\s]*"),
     re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),

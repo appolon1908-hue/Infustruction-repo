@@ -266,6 +266,8 @@ jobs:
       - name: Apply only the exact saved plan
         env:
           HCLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}
         run: |
           tofu -chdir="$IAC_DIR" apply -input=false /tmp/stage6-reviewed-plan/stage6.tfplan
           tofu -chdir="$IAC_DIR" output -json | jq 'with_entries(.value.value = (if (.key | test("ipv4|private_ip")) then "REDACTED_IN_LOG" else .value.value end))'
