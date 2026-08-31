@@ -86,6 +86,7 @@ install_tuple() {
 }
 
 install_tuple "${CURRENT_DOCKER}" "${CURRENT_CONTAINERD}" "${CURRENT_BUILDX}" "${CURRENT_COMPOSE}"
+remote 'printf "OFFHOST_KERNEL=%s\n" "$(uname -r)"; printf "OFFHOST_LIBSECCOMP=%s\n" "$(dpkg-query -W -f='"'"'${Version}'"'"' libseccomp2)"; sudo docker version --format "OFFHOST_DOCKER={{.Server.Version}}"; containerd --version | sed "s/^/OFFHOST_CONTAINERD=/"; sudo runc --version | head -n 1 | sed "s/^/OFFHOST_RUNC=/"; printf "OFFHOST_LSM="; cat /sys/kernel/security/lsm 2>/dev/null || true; printf "OFFHOST_SECCOMP_ACTIONS="; cat /proc/sys/kernel/seccomp/actions_avail'
 remote 'sudo docker run --detach --name seccomp-probe alpine:3.22.1 sleep infinity >/dev/null'
 
 set +e
@@ -93,9 +94,16 @@ current_output="$(remote 'sudo docker exec seccomp-probe true' 2>&1)"
 current_status=$?
 set -e
 if (( current_status == 0 )); then
-  printf '%s\n' 'SECCOMP_REPRODUCED_OFFHOST=NO' 'FIX_PROVEN_OFFHOST=NO'
-  printf 'CURRENT_TUPLE_EXEC_OUTPUT=%q\n' "${current_output}"
-  exit 2
+  printf '%s\n' 'DEFAULT_PROFILE_EXEC=PASS'
+  remote 'sudo docker run --detach --name seccomp-hardened --security-opt no-new-privileges:true --cap-drop ALL --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m alpine:3.22.1 sleep infinity >/dev/null'
+  set +e
+  current_output="$(remote 'sudo docker exec seccomp-hardened true' 2>&1)"
+  current_status=$?
+  set -e
+  if (( current_status == 0 )); then
+    printf '%s\n' 'HARDENED_PROFILE_EXEC=PASS' 'SECCOMP_REPRODUCED_OFFHOST=NO' 'FIX_PROVEN_OFFHOST=NO'
+    exit 2
+  fi
 fi
 if [[ "${current_output}" != *"unable to init seccomp"* || "${current_output}" != *"errno 524"* ]]; then
   printf '%s\n' 'SECCOMP_REPRODUCED_OFFHOST=NO' 'FIX_PROVEN_OFFHOST=NO'
@@ -105,8 +113,8 @@ fi
 printf '%s\n' 'SECCOMP_REPRODUCED_OFFHOST=YES'
 
 install_tuple "${CANDIDATE_DOCKER}" "${CANDIDATE_CONTAINERD}" "${CANDIDATE_BUILDX}" "${CANDIDATE_COMPOSE}"
-remote 'sudo systemctl is-active --quiet docker; sudo docker start seccomp-probe >/dev/null || true'
-if ! remote 'sudo docker exec seccomp-probe true'; then
+remote 'sudo systemctl is-active --quiet docker; sudo docker start seccomp-probe >/dev/null || true; sudo docker start seccomp-hardened >/dev/null || true'
+if ! remote 'sudo docker exec seccomp-probe true; if sudo docker inspect seccomp-hardened >/dev/null 2>&1; then sudo docker exec seccomp-hardened true; fi'; then
   printf '%s\n' 'FIX_PROVEN_OFFHOST=NO'
   exit 4
 fi
