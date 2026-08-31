@@ -41,8 +41,8 @@ require(request_methods == ["GET"], "request_count")
 require('COLLECTIONS = ("locations", "servers", "networks", "ssh_keys", "firewalls")' in collector, "endpoint_allowlist")
 for field in (
     "network_cidr", "staging_subnet_cidr", "egress_gateway_private_ip",
-    "approved_egress_fqdns", "approved_egress_ports", "dns_upstream_cidrs",
-    "ntp_upstream_cidrs", "known_internal_production_deny_cidrs",
+    "approved_egress_fqdns", "approved_egress_ports", "approved_ntp_fqdns",
+    "known_internal_production_deny_cidrs",
 ):
     require(f'"{field}"' in collector, f"current_schema_{field}")
 require("HETZNER_CLOUD_TOKEN" not in collector.split("print(")[-1], "token_print")

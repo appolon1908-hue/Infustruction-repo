@@ -4,7 +4,6 @@ manage_etc_hosts: true
 ssh_pwauth: false
 disable_root: true
 bootcmd:
-  - [sh, -c, "printf 'nameserver ${dns_upstream_ips[0]}\\n' > /etc/resolv.conf"]
 %{ for cidr in production_deny_cidrs ~}
   - [iptables, -I, OUTPUT, -d, "${cidr}", -j, DROP]
 %{ endfor ~}
@@ -47,17 +46,13 @@ write_files:
         access-control: ${staging_subnet_cidr} allow
         hide-identity: yes
         hide-version: yes
-      forward-zone:
-        name: "."
-%{ for ip in dns_upstream_ips ~}
-        forward-addr: ${ip}
-%{ endfor ~}
+        auto-trust-anchor-file: "/var/lib/unbound/root.key"
   - path: /etc/chrony/chrony.conf
     owner: root:root
     permissions: "0644"
     content: |
-%{ for ip in ntp_upstream_ips ~}
-      server ${ip} iburst
+%{ for fqdn in approved_ntp_fqdns ~}
+      server ${fqdn} iburst
 %{ endfor ~}
       allow ${staging_subnet_cidr}
       makestep 1.0 3

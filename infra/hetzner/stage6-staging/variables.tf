@@ -130,25 +130,13 @@ variable "approved_egress_ports" {
   }
 }
 
-variable "dns_upstream_cidrs" {
-  description = "Explicit owner-approved recursive DNS upstream addresses used only by the gateway."
+variable "approved_ntp_fqdns" {
+  description = "Git-reviewed time authorities used only by the staging gateway."
   type        = set(string)
+  default     = ["ntp.ubuntu.com"]
   validation {
-    condition = length(var.dns_upstream_cidrs) > 0 && alltrue([
-      for cidr in var.dns_upstream_cidrs : can(cidrhost(cidr, 0)) && !contains(["0.0.0.0/0", "::/0"], cidr)
-    ])
-    error_message = "DNS upstreams must be explicit non-global CIDRs."
-  }
-}
-
-variable "ntp_upstream_cidrs" {
-  description = "Explicit owner-approved NTP upstream addresses used only by the gateway."
-  type        = set(string)
-  validation {
-    condition = length(var.ntp_upstream_cidrs) > 0 && alltrue([
-      for cidr in var.ntp_upstream_cidrs : can(cidrhost(cidr, 0)) && !contains(["0.0.0.0/0", "::/0"], cidr)
-    ])
-    error_message = "NTP upstreams must be explicit non-global CIDRs."
+    condition     = var.approved_ntp_fqdns == toset(["ntp.ubuntu.com"])
+    error_message = "Changing the reviewed Stage 6 time authority requires review."
   }
 }
 

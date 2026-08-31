@@ -8,5 +8,3 @@ approved_egress_fqdns = [
   "pkg-containers.githubusercontent.com",
   "security.ubuntu.com",
 ]
-dns_upstream_cidrs = ["192.0.2.53/32"]
-ntp_upstream_cidrs = ["192.0.2.123/32"]

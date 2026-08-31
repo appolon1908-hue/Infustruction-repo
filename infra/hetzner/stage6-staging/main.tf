@@ -133,22 +133,22 @@ resource "hcloud_firewall" "egress" {
     direction       = "out"
     protocol        = "tcp"
     port            = "53"
-    destination_ips = sort(tolist(var.dns_upstream_cidrs))
-    description     = "Approved DNS upstreams"
+    destination_ips = ["0.0.0.0/0"]
+    description     = "Gateway-only DNS recursion"
   }
   rule {
     direction       = "out"
     protocol        = "udp"
     port            = "53"
-    destination_ips = sort(tolist(var.dns_upstream_cidrs))
-    description     = "Approved DNS upstreams"
+    destination_ips = ["0.0.0.0/0"]
+    description     = "Gateway-only DNS recursion"
   }
   rule {
     direction       = "out"
     protocol        = "udp"
     port            = "123"
-    destination_ips = sort(tolist(var.ntp_upstream_cidrs))
-    description     = "Approved NTP upstreams"
+    destination_ips = ["0.0.0.0/0"]
+    description     = "Gateway-only NTP to Git-reviewed authority"
   }
 }
 
@@ -168,8 +168,7 @@ resource "hcloud_server" "egress" {
     gateway_private_ip    = var.egress_gateway_private_ip
     runtime_private_ip    = var.private_ip
     staging_subnet_cidr   = var.staging_subnet_cidr
-    dns_upstream_ips      = [for cidr in sort(tolist(var.dns_upstream_cidrs)) : cidrhost(cidr, 0)]
-    ntp_upstream_ips      = [for cidr in sort(tolist(var.ntp_upstream_cidrs)) : cidrhost(cidr, 0)]
+    approved_ntp_fqdns    = sort(tolist(var.approved_ntp_fqdns))
     production_deny_cidrs = sort(tolist(var.known_internal_production_deny_cidrs))
   })
   firewall_ids = [hcloud_firewall.egress.id]

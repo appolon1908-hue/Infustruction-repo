@@ -25,8 +25,7 @@ FIELDS = (
     "approved_ssh_source_cidrs",
     "approved_egress_fqdns",
     "approved_egress_ports",
-    "dns_upstream_cidrs",
-    "ntp_upstream_cidrs",
+    "approved_ntp_fqdns",
     "known_internal_production_deny_cidrs",
 )
 

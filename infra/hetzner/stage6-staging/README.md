@@ -35,8 +35,10 @@ Terraform rejects private-network overlap and gateway nftables denies these
 authorities. External SaaS providers remain excluded by default rather than
 being modeled as unstable CIDR lists.
 
-The runtime uses the gateway as its private DNS and NTP boundary. Only the
-gateway may contact explicit owner-approved DNS and NTP upstream CIDRs.
+The runtime uses the gateway as its private DNS and NTP boundary. Unbound
+performs DNSSEC-validating recursion only on the gateway; workloads have no
+direct public DNS path. Chrony on the gateway uses the Git-reviewed
+`ntp.ubuntu.com` authority, and workloads have no direct public NTP path.
 `approved_ssh_source_cidrs` remains a required owner-provided VPN, bastion, or
 operator allowlist; global SSH is rejected.
 
