@@ -189,3 +189,9 @@ FINAL_SOURCE_LOCK=FAIL
 PRODUCTION_BUSINESS_WRITES=NOT_PROVEN_DISABLED
 NEXT_ALLOWED_STAGE=STOP
 ```
+
+PR #47 CI read-back: run `33446411176` passed the structural validation job.
+Run `33446411259` failed the authority-head job because the PR-scoped
+`GITHUB_TOKEN` receives HTTP 404 for the private Keycloak and Kong repositories.
+The failure is fail-closed and is not bypassed; a trusted, non-PR-controlled,
+read-only credential boundary is still required.

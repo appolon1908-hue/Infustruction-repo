@@ -80,6 +80,15 @@ The core host is reachable and Docker read-back now succeeds, replacing the form
 
 No Docker permission was changed and the runner was not switched to root.
 
+## Source-lock CI read-back
+
+PR #47 produced structural-validation run `33446411176`, which passed. The
+authority-head validation run `33446411259` failed because its PR-scoped token
+cannot query the private Keycloak and Kong repositories (HTTP 404). This is an
+expected fail-closed credential-boundary blocker, not a runtime test failure.
+
+`SOURCE_LOCK_CI=FAIL`
+
 ## Rollback readiness
 
 Existing current images remain available for Middleware, n8n, Odoo, Kong, and Keycloak. Rollback configuration cannot be certified for Kong/Keycloak, and no current runtime or rollback runtime exists for Marketing, AI, Communication, Social Control, or Social Runtime. Therefore component rollback readiness is incomplete.
