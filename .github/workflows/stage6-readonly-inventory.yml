@@ -1,4 +1,4 @@
-name: Stage 6 protected read-only Hetzner inventory
+name: Stage 6 read-only Hetzner inventory
 
 on:
   workflow_dispatch:
@@ -6,84 +6,70 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: stage6-readonly-inventory
+  cancel-in-progress: false
+
 jobs:
-  inventory:
-    if: github.ref == 'refs/heads/main'
+  validate-static-policy:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v6.1.0
+        with:
+          python-version: "3.13"
+      - run: python scripts/validate_stage6_readonly_inventory.py
+
+  inventory:
+    needs: validate-static-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     environment: stage6-infrastructure-provisioning
     steps:
-      - name: Check out exact protected main SHA
+      - name: Require exact protected main
+        env:
+          EXPECTED_REF: ${{ github.ref }}
+          REF_PROTECTED: ${{ github.ref_protected }}
+        run: |
+          set -Eeuo pipefail
+          test "$EXPECTED_REF" = refs/heads/main
+          test "$REF_PROTECTED" = true
+      - name: Check out exact merged main SHA
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Prove protected main authority
+      - name: Prove exact source and static policy
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -Eeuo pipefail
-          test "$GITHUB_REF" = refs/heads/main
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
           test -z "$(git status --porcelain)"
-      - name: Require protected bindings without printing values
+          python scripts/validate_stage6_readonly_inventory.py
+      - name: Collect sanitized GET-only inventory
         env:
-          HCLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}
-          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
-          TF_STATE_ENDPOINT: ${{ vars.TF_STATE_ENDPOINT }}
-          TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+          HETZNER_CLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
         run: |
           set -Eeuo pipefail
-          test -n "$HCLOUD_TOKEN"
-          test -n "$AWS_ACCESS_KEY_ID"
-          test -n "$AWS_SECRET_ACCESS_KEY"
-          test -n "$TF_STATE_BUCKET"
-          test -n "$TF_STATE_ENDPOINT"
-          test -n "$TF_STATE_REGION"
-      - name: Capture sanitized read-only inventory
-        env:
-          HCLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
-        run: |
-          set -Eeuo pipefail
+          test -n "$HETZNER_CLOUD_TOKEN"
           umask 077
-          api=https://api.hetzner.cloud/v1
-          auth="Authorization: Bearer $HCLOUD_TOKEN"
-          curl --fail --silent --show-error -H "$auth" "$api/servers?per_page=50" > /tmp/servers.raw.json
-          curl --fail --silent --show-error -H "$auth" "$api/networks?per_page=50" > /tmp/networks.raw.json
-          curl --fail --silent --show-error -H "$auth" "$api/ssh_keys?per_page=50" > /tmp/ssh_keys.raw.json
-          curl --fail --silent --show-error -H "$auth" "$api/locations?per_page=50" > /tmp/locations.raw.json
-          jq -n \
-            --slurpfile servers /tmp/servers.raw.json \
-            --slurpfile networks /tmp/networks.raw.json \
-            --slurpfile ssh_keys /tmp/ssh_keys.raw.json \
-            --slurpfile locations /tmp/locations.raw.json \
-            --arg source_sha "$GITHUB_SHA" \
-            '{
-              source_sha: $source_sha,
-              servers: [$servers[0].servers[] | {
-                id, name, status,
-                location: .datacenter.location.name,
-                public_ipv4: .public_net.ipv4.ip,
-                private_net: [.private_net[] | {network, ip}]
-              }],
-              networks: [$networks[0].networks[] | {
-                id, name, ip_range, labels, subnets, routes,
-                server_ids: .servers
-              }],
-              ssh_keys: [$ssh_keys[0].ssh_keys[] | {id, name, fingerprint, labels}],
-              locations: [$locations[0].locations[] | {id, name, city, country, network_zone}]
-            }' > /tmp/stage6-hetzner-inventory.json
-          jq -e '
-            (.servers | type == "array") and
-            (.networks | type == "array") and
-            (.ssh_keys | type == "array") and
-            (.locations | type == "array")
-          ' /tmp/stage6-hetzner-inventory.json >/dev/null
-          rm -f /tmp/*.raw.json
+          python scripts/collect_stage6_hetzner_inventory.py --output-dir stage6-readonly-inventory
+          python -m json.tool stage6-readonly-inventory/stage6-input-resolution.json >/dev/null
+          python -m json.tool stage6-readonly-inventory/hetzner-inventory.sanitized.json >/dev/null
+      - name: Publish non-secret resolution summary
+        run: |
+          set -Eeuo pipefail
+          jq -r '.fields | to_entries[] | "\(.key)=\(if .value == null then "UNRESOLVED" else (.value|if type=="array" then join(",") else tostring end) end)"' stage6-readonly-inventory/stage6-input-resolution.json | tee -a "$GITHUB_STEP_SUMMARY"
+          jq -r '"UNRESOLVED_NON_SECRET_FIELDS=" + (if (.unresolved|length)==0 then "NONE" else (.unresolved|join(",")) end)' stage6-readonly-inventory/stage6-input-resolution.json | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload sanitized inventory
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: stage6-hetzner-readonly-inventory-${{ github.sha }}
-          path: /tmp/stage6-hetzner-inventory.json
+          name: stage6-readonly-inventory-${{ github.sha }}
+          path: stage6-readonly-inventory/
           if-no-files-found: error
           retention-days: 1

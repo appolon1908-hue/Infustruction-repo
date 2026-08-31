@@ -1,6 +1,7 @@
 variable "location" {
-  description = "Hetzner location containing the approved private staging network."
+  description = "Owner-approved EU Hetzner location for the isolated Stage 6 network."
   type        = string
+  default     = "hel1"
   validation {
     condition     = contains(["fsn1", "nbg1", "hel1"], var.location)
     error_message = "Stage 6 must use an approved EU Hetzner location."
@@ -8,12 +9,22 @@ variable "location" {
 }
 
 variable "server_type" {
-  description = "Reviewed minimum size for 22 workloads, migrations, and monitoring agents."
+  description = "Reviewed minimum runtime size for 22 workloads and monitoring agents."
   type        = string
   default     = "cx43"
   validation {
     condition     = var.server_type == "cx43"
     error_message = "Changing the reviewed CX43 size requires a new sizing review."
+  }
+}
+
+variable "egress_gateway_server_type" {
+  description = "Small dedicated proxy host; it carries no application or production workload."
+  type        = string
+  default     = "cx23"
+  validation {
+    condition     = var.egress_gateway_server_type == "cx23"
+    error_message = "Changing the reviewed egress-gateway size requires review."
   }
 }
 
@@ -27,99 +38,118 @@ variable "image" {
   }
 }
 
-variable "private_network_id" {
-  description = "Existing approved Hetzner private-network ID."
-  type        = number
+variable "network_cidr" {
+  type        = string
+  description = "Owner-approved isolated Stage 6 network range."
+  default     = "10.250.0.0/16"
   validation {
-    condition     = var.private_network_id > 0
-    error_message = "An existing private-network ID is required."
+    condition     = var.network_cidr == "10.250.0.0/16"
+    error_message = "Changing the reviewed network requires overlap review."
+  }
+}
+
+variable "staging_subnet_cidr" {
+  type        = string
+  description = "Owner-approved Stage 6 runtime subnet."
+  default     = "10.250.6.0/24"
+  validation {
+    condition     = var.staging_subnet_cidr == "10.250.6.0/24"
+    error_message = "Changing the reviewed subnet requires overlap review."
   }
 }
 
 variable "private_ip" {
-  description = "Unused IP in the approved staging subnet; never a production address."
   type        = string
+  description = "Deterministic runtime address inside the new Stage 6 subnet."
+  default     = "10.250.6.10"
   validation {
-    condition     = can(cidrhost("10.0.0.0/8", 1)) && can(regex("^10\\.", var.private_ip))
-    error_message = "The staging private IP must be in RFC1918 10/8 space."
+    condition     = var.private_ip == "10.250.6.10"
+    error_message = "Changing the reviewed runtime address requires review."
+  }
+}
+
+variable "egress_gateway_private_ip" {
+  type        = string
+  description = "Deterministic address of the staging-only controlled egress gateway."
+  default     = "10.250.6.2"
+  validation {
+    condition     = var.egress_gateway_private_ip == "10.250.6.2"
+    error_message = "Changing the reviewed gateway address requires review."
   }
 }
 
 variable "approved_ssh_key_ids" {
-  description = "Existing Hetzner SSH-key IDs approved for Stage 6 operators."
+  description = "Dedicated Hetzner Stage 6 administrative key IDs."
   type        = set(number)
+  default     = [118172836]
   validation {
-    condition     = length(var.approved_ssh_key_ids) > 0 && alltrue([for id in var.approved_ssh_key_ids : id > 0])
-    error_message = "At least one existing approved Hetzner SSH key is required."
+    condition     = var.approved_ssh_key_ids == toset([118172836])
+    error_message = "Only the owner-approved codestra-stage6-admin key is permitted."
   }
 }
 
 variable "approved_ssh_source_cidrs" {
-  description = "Narrow operator or VPN CIDRs allowed to reach SSH."
+  description = "Narrow owner-approved operator, VPN, or bastion CIDRs."
   type        = set(string)
   validation {
     condition = length(var.approved_ssh_source_cidrs) > 0 && alltrue([
-      for cidr in var.approved_ssh_source_cidrs :
-      can(cidrhost(cidr, 0)) && !contains(["0.0.0.0/0", "::/0"], cidr)
+      for cidr in var.approved_ssh_source_cidrs : can(cidrhost(cidr, 0)) && !contains(["0.0.0.0/0", "::/0"], cidr)
     ])
-    error_message = "SSH requires explicit non-global approved source CIDRs."
+    error_message = "SSH requires explicit non-global operator, VPN, or bastion CIDRs."
   }
 }
 
-variable "approved_private_cidrs" {
-  description = "Approved staging-only private service and observability CIDRs."
+variable "approved_egress_fqdns" {
+  description = "Reviewed FQDN suffix allowlist enforced by the staging proxy."
   type        = set(string)
   validation {
-    condition = length(var.approved_private_cidrs) > 0 && alltrue([
-      for cidr in var.approved_private_cidrs : can(regex("^10\\.", cidr))
+    condition = alltrue([
+      for required in ["archive.ubuntu.com", "security.ubuntu.com"] : contains(var.approved_egress_fqdns, required)
+      ]) && alltrue([
+      for name in var.approved_egress_fqdns : contains([
+        "api.github.com",
+        "archive.ubuntu.com",
+        "azure.archive.ubuntu.com",
+        "github.com",
+        "ghcr.io",
+        "objects.githubusercontent.com",
+        "pkg-containers.githubusercontent.com",
+        "release-assets.githubusercontent.com",
+        "security.ubuntu.com",
+      ], name)
     ])
-    error_message = "Only explicit 10/8 staging-private CIDRs are accepted."
+    error_message = "Egress destinations must come from the Git-reviewed catalog and include both required Ubuntu mirrors."
   }
 }
 
-variable "approved_bootstrap_egress_cidrs" {
-  description = "Reviewed package-mirror, GitHub, GHCR, DNS and NTP CIDRs; production providers are forbidden."
-  type        = set(string)
+variable "approved_egress_ports" {
+  description = "Reviewed proxy destination ports."
+  type        = set(number)
+  default     = [80, 443]
   validation {
-    condition = length(var.approved_bootstrap_egress_cidrs) > 0 && alltrue([
-      for cidr in var.approved_bootstrap_egress_cidrs :
-      can(cidrhost(cidr, 0)) && !contains(["0.0.0.0/0", "::/0"], cidr)
-    ])
-    error_message = "Bootstrap egress must be a reviewed, non-global CIDR allowlist."
+    condition     = var.approved_egress_ports == toset([80, 443])
+    error_message = "The initial gateway authority permits only HTTP and HTTPS."
   }
 }
 
-variable "dns_resolver_cidrs" {
-  description = "Approved recursive DNS resolver CIDRs."
+variable "approved_ntp_fqdns" {
+  description = "Git-reviewed time authorities used only by the staging gateway."
   type        = set(string)
+  default     = ["ntp.ubuntu.com"]
   validation {
-    condition = length(var.dns_resolver_cidrs) > 0 && alltrue([
-      for cidr in var.dns_resolver_cidrs :
-      can(cidrhost(cidr, 0)) && !contains(["0.0.0.0/0", "::/0"], cidr)
-    ])
-    error_message = "DNS must use explicit approved resolver CIDRs."
+    condition     = var.approved_ntp_fqdns == toset(["ntp.ubuntu.com"])
+    error_message = "Changing the reviewed Stage 6 time authority requires review."
   }
 }
 
-variable "ntp_server_cidrs" {
-  description = "Approved NTP server CIDRs."
+variable "known_internal_production_deny_cidrs" {
+  description = "Git-reviewed internal production hosts and networks denied from Stage 6."
   type        = set(string)
+  default     = ["37.27.128.39/32", "65.109.65.169/32", "10.40.0.0/24"]
   validation {
-    condition = length(var.ntp_server_cidrs) > 0 && alltrue([
-      for cidr in var.ntp_server_cidrs :
-      can(cidrhost(cidr, 0)) && !contains(["0.0.0.0/0", "::/0"], cidr)
+    condition = alltrue([
+      for required in ["37.27.128.39/32", "65.109.65.169/32", "10.40.0.0/24"] : contains(var.known_internal_production_deny_cidrs, required)
     ])
-    error_message = "NTP must use explicit approved server CIDRs."
-  }
-}
-
-variable "forbidden_production_cidrs" {
-  description = "Reviewed Klyrow, Postal, SMTP/SMS/PSTN, social, advertising and model-provider production CIDRs."
-  type        = set(string)
-  validation {
-    condition = length(var.forbidden_production_cidrs) > 0 && alltrue([
-      for cidr in var.forbidden_production_cidrs : can(cidrhost(cidr, 0))
-    ])
-    error_message = "A nonempty reviewed production-provider CIDR deny inventory is required."
+    error_message = "The reviewed Klyrow/Postal, shared-host and production VLAN inventory is mandatory."
   }
 }

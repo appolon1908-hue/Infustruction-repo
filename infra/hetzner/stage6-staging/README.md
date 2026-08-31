@@ -1,9 +1,10 @@
 # Isolated Stage 6 staging host
 
 This directory is the only provisioning authority for
-`codestra-stage6-staging-01`. It creates one non-production Hetzner Cloud
-server, attaches it to an existing staging-only private network, and applies a
-dedicated deny-by-default firewall. It does not deploy applications.
+`codestra-stage6-staging-01`. It creates the isolated
+`codestra-stage6-staging-net`, one application runtime host, and a separate
+staging-only controlled egress gateway. It does not deploy applications or
+production credentials.
 
 ## Protected inputs
 
@@ -13,8 +14,8 @@ supports it. It requires these names:
 
 Secrets:
 
-- `HETZNER_CLOUD_TOKEN` — project-scoped token permitted to manage the single
-  staging server, firewall and network attachment.
+- `HETZNER_CLOUD_TOKEN` — project-scoped token permitted to manage only the
+  reviewed Stage 6 network, runtime, gateway, and firewalls.
 - `TF_STATE_ACCESS_KEY` and `TF_STATE_SECRET_KEY` — credentials for the isolated
   state bucket only.
 
@@ -23,16 +24,23 @@ Variables:
 - `TF_STATE_BUCKET`, `TF_STATE_ENDPOINT`, `TF_STATE_REGION`.
 - `STAGE6_TFVARS_JSON` — reviewed non-secret values matching `variables.tf`.
 
-`STAGE6_TFVARS_JSON` must include a nonempty
-`forbidden_production_cidrs` inventory covering Klyrow, Postal and every known
-production provider route. OpenTofu rejects an apply if any allowed egress CIDR
-overlaps that inventory. This explicit deny inventory complements the firewall's
-default-deny behavior; it is not an allow rule.
+Dynamic GitHub, GHCR and package endpoints are not represented by guessed
+public CIDRs. The runtime host can reach public HTTP(S) only through the gateway
+private address. Squid applies an explicit FQDN/port allowlist, rejects arbitrary
+destinations, and logs decisions without request credentials.
 
-The private network must contain staging services only. It must not route to
-Klyrow, Postal, production SMTP/SMS/PSTN, advertising-write, social-publishing,
-or production model-provider networks. CIDR values are explicit allowlists;
-global egress CIDRs are rejected.
+`known_internal_production_deny_cidrs` includes `37.27.128.39/32`,
+`65.109.65.169/32`, and the Git-recorded `10.40.0.0/24` production VLAN.
+Terraform rejects private-network overlap and gateway nftables denies these
+authorities. External SaaS providers remain excluded by default rather than
+being modeled as unstable CIDR lists.
+
+The runtime uses the gateway as its private DNS and NTP boundary. Unbound
+performs DNSSEC-validating recursion only on the gateway; workloads have no
+direct public DNS path. Chrony on the gateway uses the Git-reviewed
+`ntp.ubuntu.com` authority, and workloads have no direct public NTP path.
+`approved_ssh_source_cidrs` remains a required owner-provided VPN, bastion, or
+operator allowlist; global SSH is rejected.
 
 ## Plan and apply
 
@@ -45,7 +53,8 @@ staging host` from the exact protected `main` SHA with confirmation
 `APPLY_STAGE6_ISOLATED_HOST`. A protected job first generates a checksummed
 plan against remote state and publishes it for review. A separate protected
 apply job consumes only that saved plan; stale state fails closed. It creates
-at most one server and refuses delete actions.
+exactly the reviewed runtime and gateway plus their new network authority and
+refuses delete actions.
 
 ## Baseline and seccomp acceptance
 
