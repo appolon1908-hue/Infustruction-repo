@@ -12,15 +12,14 @@ LOCK = ROOT / "STAGE6-SOURCE-LOCK.yaml"
 COMPOSE_DIR = ROOT / "deploy/staging/runtime-reconciliation"
 SHA = re.compile(r"^[0-9a-f]{40}$")
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
-SAFETY = {
-    "LIVE_ADVERTISING_ENABLED": "false",
-    "EXTERNAL_DELIVERY_ENABLED": "false",
-    "SOCIAL_PUBLISHING_ENABLED": "false",
-    "EXTERNAL_MODEL_CALLS_ENABLED": "false",
-    "LIVE_SMS_DELIVERY": "false",
-    "LIVE_EMAIL_DELIVERY": "false",
-    "LIVE_PSTN_DIALING": "false",
-    "PRODUCTION_DIALING": "DISABLED",
+EFFECT_CONTROLS = {
+    "LIVE_ADVERTISING_ENABLED",
+    "SOCIAL_PUBLISHING_ENABLED",
+    "EXTERNAL_MODEL_CALLS_ENABLED",
+    "LIVE_SMS_DELIVERY",
+    "LIVE_EMAIL_DELIVERY",
+    "LIVE_PSTN_DIALING",
+    "PRODUCTION_DIALING",
 }
 
 
@@ -37,17 +36,16 @@ def main() -> None:
         value = workload.get("git_sha")
         assert value in {"UNVERIFIED", "NOT_APPLICABLE_VENDOR_IMAGE"} or SHA.fullmatch(value), (name, value)
 
-    for filename in (
-        "compose.middleware-source-remediation.yaml",
-        "compose.odoo-source-remediation.yaml",
-        "compose.n8n-safety-remediation.yaml",
-        "compose.legacy-application-safety-hold.yaml",
-    ):
-        compose = yaml.safe_load((COMPOSE_DIR / filename).read_text())
-        for service, definition in compose["services"].items():
-            environment = definition.get("environment", {})
-            for key, expected in SAFETY.items():
-                assert str(environment[key]) == expected, (filename, service, key)
+    enforcement = lock["safety_enforcement"]
+    assert enforcement["gate_model"] == "EFFECTIVE_DENIAL_NETWORK_GATEWAY_AND_NEGATIVE_READBACK"
+    assert enforcement["status"] == "DESIGN_PASS_APPLICATION_NOT_AUTHORIZED"
+    assert enforcement["enforceable_without_recreation"] == 7
+    assert enforcement["requires_unfreeze_decision"] == 0
+    assert set(enforcement["controls"]) == EFFECT_CONTROLS
+    for control, mechanisms in enforcement["controls"].items():
+        assert "internal_only_network" in mechanisms, control
+        assert "negative_probe" in mechanisms, control
+    assert "EXTERNAL_DELIVERY_ENABLED" in enforcement["derived_assertion"]
 
     source_services = set()
     for filename in (
@@ -80,6 +78,7 @@ def main() -> None:
     assert gates["all_planned_replacement_images_reviewed_and_digest_pinned"] is True
     assert gates["unverified_workloads_frozen_from_automatic_replacement"] is True
     assert gates["rollback_digests_recorded_for_all_workloads"] is True
+    assert gates["safety_gate_definition"] == "EFFECTIVE_DENIAL_NOT_ENVIRONMENT_PRESENCE"
     assert gates["source_lock"] == "PASS"
     assert gates["stage6_preflight"] == "FAIL_SCOPED_RUNTIME_READBACK"
     assert gates["backup_preparation_allowed"] is False

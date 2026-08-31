@@ -70,6 +70,7 @@ batches:
   - id: 2
     name: middleware
     mutation: true
+    changes_image: true
     workloads: [codestra-middleware-staging-middleware-staging-1]
     expected_repository: appolon1908-hue/Middleware-
     expected_sha: c720e529ea89f1f0d5d035d4ac12a1d5aa30ab62
@@ -81,6 +82,7 @@ batches:
   - id: 3
     name: n8n_runtime_configuration
     mutation: true
+    changes_image: false
     workloads:
       - codestra-n8n-staging-n8n-1
       - codestra-n8n-staging-webhook-1
@@ -95,6 +97,7 @@ batches:
   - id: 4
     name: odoo_startup_and_addons
     mutation: true
+    changes_image: false
     workloads:
       - codestra-odoo19-staging-odoo19-master-staging-1
       - codestra-odoo19-staging-odoo19-staging-1

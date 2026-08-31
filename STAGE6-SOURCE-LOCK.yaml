@@ -26,7 +26,7 @@ source_refresh:
   infrastructure_evidence_base_sha: c451ff0b39d6087f2c60e98fa45a7aaadb1d0b3d
 
 safety:
-  authority: REQUIRED_CANDIDATE_STATE_NOT_CURRENT_RUNTIME_READBACK
+  authority: DESIRED_DECLARATIONS_NOT_RUNTIME_ENFORCEMENT_EVIDENCE
   LIVE_ADVERTISING_ENABLED: false
   EXTERNAL_DELIVERY_ENABLED: false
   SOCIAL_PUBLISHING_ENABLED: false
@@ -35,6 +35,23 @@ safety:
   LIVE_EMAIL_DELIVERY: false
   LIVE_PSTN_DIALING: false
   PRODUCTION_DIALING: DISABLED
+
+safety_enforcement:
+  gate_model: EFFECTIVE_DENIAL_NETWORK_GATEWAY_AND_NEGATIVE_READBACK
+  status: DESIGN_PASS_APPLICATION_NOT_AUTHORIZED
+  enforceable_without_recreation: 7
+  requires_unfreeze_decision: 0
+  controls:
+    LIVE_ADVERTISING_ENABLED: [internal_only_network, host_egress_deny, gateway_capability_deny, negative_probe]
+    SOCIAL_PUBLISHING_ENABLED: [internal_only_network, host_egress_deny, gateway_capability_deny, negative_probe]
+    EXTERNAL_MODEL_CALLS_ENABLED: [internal_only_network, host_egress_deny, gateway_capability_deny, negative_probe]
+    LIVE_SMS_DELIVERY: [internal_only_network, host_egress_deny, gateway_capability_deny, negative_probe]
+    LIVE_EMAIL_DELIVERY: [internal_only_network, smtp_and_provider_egress_deny, gateway_capability_deny, negative_probe]
+    LIVE_PSTN_DIALING: [internal_only_network, sip_rtp_provider_egress_deny, gateway_capability_deny, negative_probe]
+    PRODUCTION_DIALING: [internal_only_network, telephony_provider_egress_deny, identity_and_gateway_deny, negative_probe]
+  derived_assertion:
+    EXTERNAL_DELIVERY_ENABLED: all applicable delivery controls are effectively denied
+  frozen_workload_rule: network membership may change only in a separately approved operation; recreation remains prohibited
 
 safety_scope:
   decision: APPROVED
@@ -278,6 +295,7 @@ gates:
   unresolved_nonruntime_component_artifacts: [social_runtime]
   source_migration_model_remediated: true
   source_safety_model_remediated: true
+  safety_gate_definition: EFFECTIVE_DENIAL_NOT_ENVIRONMENT_PRESENCE
   rollback_digests_recorded_for_all_workloads: true
   source_lock: PASS
   stage6_preflight: FAIL_SCOPED_RUNTIME_READBACK
