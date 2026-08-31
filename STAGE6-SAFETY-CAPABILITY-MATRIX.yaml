@@ -5,8 +5,14 @@ services:
   klyrow-gateway:
     runtime_containers: [klyrow-gateway-1, klyrow-worker-1]
     capabilities:
-      email_delivery: UNKNOWN
-    reason: live allowlisted read-back interrupted by SSH connection refusal
+      email_delivery: true
+    effective_state:
+      live_email_delivery: true
+      safe_mode: false
+      production_gate_approved: true
+      production_gate_open: true
+    revision: 9684fd55bdbc64a971a17a291ff293a178a2ebac
+    reason: current authenticated loopback GET read-back and exact deployed source semantics
   klyrow-smtp-relay:
     runtime_containers: [klyrow-smtp-relay-1]
     capabilities:
