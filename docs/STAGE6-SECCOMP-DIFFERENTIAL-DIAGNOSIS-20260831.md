@@ -51,6 +51,14 @@ seccomp-filtered zombies until new exec-path filter installation began returning
 failure appeared later, and why the clean guest cannot reproduce it from the
 package tuple alone. It is not yet a mutation-tested causal proof.
 
+The host kernel confirms the errno mechanism: `CONFIG_BPF_JIT_ALWAYS_ON=y` and
+`net.core.bpf_jit_enable=1`. With no interpreter fallback, failure to JIT a new
+filter is returned as `ENOTSUPP` (524). A separately authorized, non-persistent
+increase of `net.core.bpf_jit_limit` can therefore serve as a reversible causal
+canary. The exact proposal and rollback are recorded in
+`operations/stage6-bpf-jit-limit-canary.yaml`; merging its source does not
+authorize execution.
+
 ## Reviewed remediation path
 
 1. Fix the authoritative compose sources for both internal proxies by enabling
