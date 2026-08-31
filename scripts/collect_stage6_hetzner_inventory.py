@@ -61,7 +61,8 @@ def get_collection(token: str, collection: str) -> list[dict[str, Any]]:
 
 def labels_mark(value: dict[str, Any], *terms: str) -> bool:
     labels = {str(k).lower(): str(v).lower() for k, v in value.get("labels", {}).items()}
-    text = " ".join([str(value.get("name", "")).lower(), *labels.keys(), *labels.values()])
+    enabled_label_keys = [key for key, label_value in labels.items() if label_value in {"1", "enabled", "true", "yes"}]
+    text = " ".join([str(value.get("name", "")).lower(), *enabled_label_keys, *labels.values()])
     return all(term in text for term in terms)
 
 
