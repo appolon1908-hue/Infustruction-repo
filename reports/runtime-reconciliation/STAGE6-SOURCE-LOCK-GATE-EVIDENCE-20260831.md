@@ -110,8 +110,11 @@ Klyrow/Postal route. All observed Klyrow/Postal containers were left untouched.
   older digest `sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820`,
   and fresh scoped runtime safety read-back is unavailable.
 - The reviewed kernel-maintenance source is present on `main`, but
-  `execution_authorized=false`; no approved window or working console rollback
-  has been evidenced. No reboot or host change was attempted.
+  `execution_authorized=false`. The owner explicitly withdrew the earlier
+  conditional authorization in PR #36 pending package-causality review and
+  prohibited reboot, console-access work, kernel changes, and execution of the
+  merged plan. No approved window or working console rollback has been
+  evidenced. No reboot or host change was attempted.
 - Prometheus activation must be a separate PR changing only the private staging
   target from pending to active. Blackbox remains pending and production remains
   unchanged.
