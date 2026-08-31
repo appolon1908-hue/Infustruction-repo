@@ -1,0 +1,71 @@
+schema: codestra.stage6.critical-path-plan.v1
+authority_sha: 67b5f1273c539a6d7f2096d8442dd3c6c712943b
+apply_authorized: false
+production_authorized: false
+frozen_workloads_recreated: 0
+
+seccomp:
+  status: HOST_WIDE_REPRODUCED_NOT_REMEDIATED
+  host: 65.109.65.169
+  docker_version: 29.7.2
+  kernel: 5.15.0-187
+  libseccomp_version: 2.5.3-2ubuntu3~22.04.1
+  runc_version: 1.4.3
+  scoped_reproducer: codestra-n8n-staging-n8n-1
+  outside_scope_reproducer: codestra-monitoring-alertmanager-1
+  exact_failure: unable to init seccomp; error loading seccomp filter into kernel; errno 524
+  forbidden_workarounds: [seccomp_unconfined, privileged, relax_cap_drop, relax_no_new_privileges, relax_read_only]
+  reviewed_change:
+    preferred: update libseccomp2 from the supported Ubuntu repository and re-run both reproducers
+    fallback: update the supported kernel or pin Docker to a version proven compatible with kernel 5.15
+    preconditions:
+      - record exact installed and candidate package versions
+      - snapshot package state and current Docker configuration
+      - prove rollback packages remain available
+      - obtain owner approval for any reboot
+    rollback:
+      - restore the recorded libseccomp2, runc, Docker, and kernel package versions
+      - restart only the Docker service in an approved maintenance window
+      - verify all frozen workload IDs and digests remain unchanged
+    success:
+      - both docker exec true probes return zero with the existing security controls intact
+      - no frozen workload is recreated restarted or redeployed
+
+minimum_observability:
+  status: PROPOSED_NOT_DEPLOYED
+  blocker: container health and restart failures currently have no trusted alert path
+  required:
+    - immutable Prometheus image digest
+    - Docker or cAdvisor metrics for health status and restart count
+    - alerts for unhealthy containers, increasing restart counts, and missing scrape targets
+    - reviewed alert routing and a synthetic firing/resolution test
+    - rollback digest and configuration checksum
+  apply_authorized: false
+
+safety_gate:
+  status: REDESIGNED_NOT_APPLIED_OWNER_SCOPE_DECISION_PENDING
+  assertion: >-
+    Every in-scope effect-capable workload must have no host network, no external Docker
+    network, and membership only in reviewed internal:true networks whose egress path has
+    no provider route. Environment flags remain defense in depth but are not treated as
+    proof for already-running frozen containers.
+  runtime_readback:
+    - inspect HostConfig.NetworkMode and NetworkSettings.Networks
+    - inspect each attached network and require Internal=true
+    - reject host networking and any unreviewed or provider-facing network
+    - verify provider credentials and direct-provider routes are absent from the scoped path
+  controls:
+    LIVE_ADVERTISING_ENABLED: {without_recreation: true, mechanism: deny all provider egress and advertising gateway routes from scoped networks}
+    EXTERNAL_DELIVERY_ENABLED: {without_recreation: true, mechanism: deny all external delivery egress and require the internal Middleware boundary}
+    SOCIAL_PUBLISHING_ENABLED: {without_recreation: true, mechanism: deny social-provider egress and publishing routes from scoped networks}
+    EXTERNAL_MODEL_CALLS_ENABLED: {without_recreation: true, mechanism: deny external model-provider egress from scoped networks}
+    LIVE_SMS_DELIVERY: {without_recreation: true, mechanism: deny SMS-provider and provider-gateway egress from scoped networks}
+    LIVE_EMAIL_DELIVERY: {without_recreation: true, mechanism: deny SMTP and email-provider egress from scoped networks}
+    LIVE_PSTN_DIALING: {without_recreation: true, mechanism: deny SIP and telephony-provider egress from scoped networks}
+  live_transition:
+    supported_operations: [docker_network_disconnect, docker_network_connect]
+    recreation_required: false
+    apply_authorized: false
+  unresolved_owner_decision: >-
+    Decide whether Klyrow/Postal remains outside the Stage 6 gate or receives a separately
+    reviewed quiescence. This plan does not narrow the gate and does not touch 37.27.128.39.

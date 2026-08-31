@@ -80,10 +80,21 @@ middleware = next(batch for batch in batches if batch["name"] == "middleware")
 middleware_lock = LOCK["runtime_workloads"][middleware["workloads"][0]]
 for field in ("expected_sha", "expected_digest", "rollback_digest"):
     require(middleware[field] == middleware_lock[field], f"middleware_{field}")
-require(
-    middleware["expected_digest"] != middleware["rollback_digest"],
-    "middleware_rollback_must_precede_replacement_image",
-)
+
+for batch in batches:
+    if not batch["mutation"]:
+        continue
+    expected_digest = batch.get("expected_digest") or batch.get("expected_image_digest")
+    require(expected_digest is not None, f"mutation_batch_digest_{batch['name']}")
+    changes_image = any(
+        LOCK["runtime_workloads"][name]["image_digest"] != expected_digest
+        for name in batch["workloads"]
+    )
+    if changes_image:
+        require(
+            expected_digest != batch["rollback_digest"],
+            f"{batch['name']}_rollback_must_precede_replacement_image",
+        )
 
 require(PLAN["unknown_workload"]["disposition"] == "UNVERIFIED_DO_NOT_TOUCH", "unknown_gateway")
 print("STAGE6_STAGING_PLAN=PASS")

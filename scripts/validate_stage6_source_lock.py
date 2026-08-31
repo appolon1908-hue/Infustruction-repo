@@ -10,6 +10,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / "STAGE6-SOURCE-LOCK.yaml"
 COMPOSE_DIR = ROOT / "deploy/staging/runtime-reconciliation"
+CRITICAL_PATH_PLAN = ROOT / "releases/STAGE6-CRITICAL-PATH-PLAN-2026-08-31.yaml"
 SHA = re.compile(r"^[0-9a-f]{40}$")
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 SAFETY = {
@@ -31,6 +32,13 @@ def main() -> None:
     assert len(lock["runtime_workloads"]) == 22
     for name, repo in lock["repositories"].items():
         assert SHA.fullmatch(repo["revision"]), (name, repo)
+        assert SHA.fullmatch(repo["rollback_git_sha"]), (name, "rollback_git_sha")
+        workload_name = repo.get("runtime_identity_workload")
+        if workload_name:
+            workload = lock["runtime_workloads"][workload_name]
+            expected_digest = workload.get("expected_digest", workload["image_digest"])
+            assert repo["image_digest"] == expected_digest, (name, "image_digest_disagreement")
+            assert repo["rollback_digest"] == workload["rollback_digest"], (name, "rollback_digest_disagreement")
     for name, workload in lock["runtime_workloads"].items():
         assert DIGEST.fullmatch(workload["image_digest"]), (name, "image_digest")
         assert DIGEST.fullmatch(workload["rollback_digest"]), (name, "rollback_digest")
@@ -100,6 +108,17 @@ def main() -> None:
     assert runtime_safety["safety_complete_workloads"] == 0
     assert runtime_safety["unsafe_true_values_observed"] == 0
     assert runtime_safety["out_of_scope_active_production"] == "OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH"
+    plan = yaml.safe_load(CRITICAL_PATH_PLAN.read_text())
+    assert plan["apply_authorized"] is False
+    assert plan["production_authorized"] is False
+    assert plan["frozen_workloads_recreated"] == 0
+    assert plan["seccomp"]["status"] == "HOST_WIDE_REPRODUCED_NOT_REMEDIATED"
+    assert plan["minimum_observability"]["status"] == "PROPOSED_NOT_DEPLOYED"
+    controls = plan["safety_gate"]["controls"]
+    assert set(controls) == set(SAFETY) - {"PRODUCTION_DIALING"}
+    assert all(control["without_recreation"] is True for control in controls.values())
+    assert plan["safety_gate"]["live_transition"]["recreation_required"] is False
+    assert plan["safety_gate"]["live_transition"]["apply_authorized"] is False
     print("SOURCE_LOCK=PASS")
     print("STAGE6_PREFLIGHT=FAIL_SCOPED_RUNTIME_READBACK")
     print("STAGE6_PATH_BUSINESS_WRITES=NOT_PROVEN_DISABLED")
