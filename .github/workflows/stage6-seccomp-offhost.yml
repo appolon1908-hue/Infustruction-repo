@@ -29,7 +29,9 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq cloud-image-utils qemu-system-x86 qemu-utils
       - name: Reproduce current tuple and prove candidate fix
-        run: bash scripts/run_stage6_seccomp_offhost_qemu.sh | tee stage6-seccomp-offhost-evidence.txt
+        run: |
+          set -o pipefail
+          bash scripts/run_stage6_seccomp_offhost_qemu.sh | tee stage6-seccomp-offhost-evidence.txt
       - name: Publish sanitized evidence summary
         if: always()
         run: |
