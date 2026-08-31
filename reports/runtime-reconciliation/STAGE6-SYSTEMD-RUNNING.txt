@@ -1,0 +1,28 @@
+actions.runner.appolon1908-hue-Keycloak.kazan555.service loaded active running GitHub Actions Runner (appolon1908-hue-Keycloak.kazan555)
+atd.service                                              loaded active running Deferred execution scheduler
+caddy.service                                            loaded active running Codestra Caddy edge web server
+containerd.service                                       loaded active running containerd container runtime
+cron.service                                             loaded active running Regular background program processing daemon
+dbus.service                                             loaded active running D-Bus System Message Bus
+docker.service                                           loaded active running Docker Application Container Engine
+fail2ban.service                                         loaded active running Fail2Ban Service
+getty@tty1.service                                       loaded active running Getty on tty1
+irqbalance.service                                       loaded active running irqbalance daemon
+mdmonitor.service                                        loaded active running MD array monitor
+multipathd.service                                       loaded active running Device-Mapper Multipath Device Controller
+nats-server.service                                      loaded active running NATS Server
+networkd-dispatcher.service                              loaded active running Dispatcher daemon for systemd-networkd
+packagekit.service                                       loaded active running PackageKit Daemon
+polkit.service                                           loaded active running Authorization Manager
+rsyslog.service                                          loaded active running System Logging Service
+ssh.service                                              loaded active running OpenBSD Secure Shell server
+systemd-journald.service                                 loaded active running Journal Service
+systemd-logind.service                                   loaded active running User Login Management
+systemd-networkd.service                                 loaded active running Network Configuration
+systemd-resolved.service                                 loaded active running Network Name Resolution
+systemd-timesyncd.service                                loaded active running Network Time Synchronization
+systemd-udevd.service                                    loaded active running Rule-based Manager for Device Events and Files
+unattended-upgrades.service                              loaded active running Unattended Upgrades Shutdown
+upower.service                                           loaded active running Daemon for power management
+user@0.service                                           loaded active running User Manager for UID 0
+user@1001.service                                        loaded active running User Manager for UID 1001
