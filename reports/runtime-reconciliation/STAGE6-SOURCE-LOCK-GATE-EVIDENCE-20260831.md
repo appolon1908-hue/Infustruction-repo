@@ -1,6 +1,6 @@
 # Stage 6 Source Lock Gate Evidence
 
-Captured: `2026-08-31T14:36:23Z`
+Captured: `2026-08-31T18:54:22Z`
 
 This is source and read-only evidence. It performed no deployment, restart,
 migration, secret change, monitoring activation, production activation, or
@@ -35,7 +35,7 @@ Seven heads advanced relative to the Infrastructure evidence base lock:
 
 | Component | Current authoritative `main` | Rollback Git SHA |
 |---|---|---|
-| Middleware | `eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94` | `81c50c7447a87f7c83544cdc4ff9d27c5059a524` |
+| Middleware | `9152a04ed8df52269b30d7a9c6b18ef00a0caf75` | `eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94` |
 | n8n | `b620860c04bf0fe6998c5fc25857262aa5c89d74` | `4d35472772f60c5af616ffac1f902d626643d02d` |
 | Kong | `961edbf56e29ce78f305273c3efeec386a2bba62` | `3594fe25b8fe36633c1de95a8e485c72f32a60f8` |
 | Keycloak | `6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f` | `303e2edef2219c5eb3ac167c309a9717a766d079` |
@@ -70,8 +70,8 @@ source lock while the other three gates remain incomplete.
 
 - Source-only: Marketing, AI, Communication, Social Control, SDK, Telemetry,
   and this Infrastructure evidence base.
-- Custom signed image: Middleware. Exact-head release run `33401833572`
-  produced `sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0`.
+- Custom signed image: Middleware. Exact-head release run `33427334862`
+  produced `sha256:91b91b6ba1c828919c86102806eb2cfe6da1295cd7b4fe34df3121dd0bbff1b2`.
   Independent Cosign verification confirms the image signature, digest-bound
   SPDX attestation, and signed release-manifest bundle against the pinned
   GitHub Actions certificate identity and OIDC issuer.
