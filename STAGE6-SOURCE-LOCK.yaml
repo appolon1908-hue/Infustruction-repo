@@ -1,10 +1,10 @@
 schema: codestra.stage6.source-lock.v2
-locked_at: '2026-08-31T01:38:54+02:00'
+locked_at: '2026-08-31T02:17:02+02:00'
 environment: staging
 production_write_activation: false
 runtime_mutation_authorized: false
-status: SOURCE_LOCKED_RUNTIME_HELD_FOR_SAFETY
-runtime_revalidated_at: '2026-08-31T01:38:54+02:00'
+status: FAIL_INCOMPLETE_IMMUTABLE_ARTIFACT_LOCK
+runtime_revalidated_at: '2026-08-31T02:17:02+02:00'
 supersedes:
   - releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json
 conflict_resolution:
@@ -19,11 +19,30 @@ conflict_resolution:
   keycloak_ancestry: previous lock is an ancestor of reviewed protected-main merge 48
 
 source_refresh:
-  checked_at: '2026-08-31T01:38:54+02:00'
+  checked_at: '2026-08-31T02:17:02+02:00'
   branch_authority: main
-  result: PASS_AFTER_KEYCLOAK_REFRESH
+  result: PASS_AFTER_INFRASTRUCTURE_REFRESH
   n8n_checked_separately: true
-  infrastructure_evidence_base_sha: c451ff0b39d6087f2c60e98fa45a7aaadb1d0b3d
+  infrastructure_previous_locked_sha: 58122e4dd9446f9d9b38e17aa52a10a87baf10e8
+  infrastructure_evidence_base_sha: b71f922a8d878a47c5a41f6b1cf9e8b47f9fba68
+  matched_repository_heads: 23
+  refreshed_repository_heads: 1
+
+artifact_lock:
+  status: FAIL
+  reviewed_immutable_image_digests_present_for: [middleware, odoo, n8n]
+  deployment_components_without_reviewed_image_digest:
+    - marketing
+    - ai
+    - communication
+    - social_control
+    - social_runtime
+  unresolved_infrastructure_runtime_images:
+    - kong
+    - keycloak
+    - openbao
+    - shared_observability_stack
+  locally_rebuilding_or_inventing_artifacts_allowed: false
 
 safety:
   authority: REQUIRED_CANDIDATE_STATE_NOT_CURRENT_RUNTIME_READBACK
@@ -60,6 +79,7 @@ repositories:
   kong: {repository: appolon1908-hue/Kong, revision: 3594fe25b8fe36633c1de95a8e485c72f32a60f8, required_merge: 186630b40c19d72aa9bdf9ef1f64e8a17bd0e33e}
   keycloak: {repository: appolon1908-hue/Keycloak, revision: 80fc33c7159440e357219903f62ea7fb84914d59}
   sdk: {repository: appolon1908-hue/SDK-repository, revision: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb}
+  infrastructure: {repository: appolon1908-hue/Infustruction-repo, revision: b71f922a8d878a47c5a41f6b1cf9e8b47f9fba68}
   prometheus: {repository: appolon1908-hue/Codestra-Prometheus, revision: eec6ea7d7a63d7debef16de92ef5b6d34395d013}
   grafana: {repository: appolon1908-hue/Codestra-Grafana-, revision: 30b736f98e7bbf16f54280251c6d51a877ff2d8a}
   loki: {repository: appolon1908-hue/Codestra-Loki, revision: 75a5deb555547b557466c418af18c99f3cef5556}
@@ -233,13 +253,13 @@ gates:
   workload_count: 22
   dispositions_resolved: true
   all_runtime_git_provenance_verified: false
-  all_planned_replacement_images_reviewed_and_digest_pinned: true
+  all_planned_replacement_images_reviewed_and_digest_pinned: false
   unverified_workloads_frozen_from_automatic_replacement: true
-  unresolved_nonruntime_component_artifacts: [social_runtime]
+  unresolved_deployment_component_artifacts: [marketing, ai, communication, social_control, social_runtime]
   source_migration_model_remediated: true
   source_safety_model_remediated: true
   rollback_digests_recorded_for_all_workloads: true
-  source_lock: PASS
+  source_lock: FAIL
   stage6_preflight: FAIL
   backup_preparation_allowed: false
   runtime_reconciliation_allowed: false

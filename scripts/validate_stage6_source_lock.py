@@ -29,6 +29,7 @@ def main() -> None:
     assert lock["production_write_activation"] is False
     assert lock["runtime_mutation_authorized"] is False
     assert len(lock["runtime_workloads"]) == 22
+    assert len(lock["repositories"]) == 24
     for name, repo in lock["repositories"].items():
         assert SHA.fullmatch(repo["revision"]), (name, repo)
     for name, workload in lock["runtime_workloads"].items():
@@ -77,10 +78,10 @@ def main() -> None:
         assert "--stop-after-init" in odoo["services"][service]["command"]
     gates = lock["gates"]
     assert gates["dispositions_resolved"] is True
-    assert gates["all_planned_replacement_images_reviewed_and_digest_pinned"] is True
+    assert gates["all_planned_replacement_images_reviewed_and_digest_pinned"] is False
     assert gates["unverified_workloads_frozen_from_automatic_replacement"] is True
     assert gates["rollback_digests_recorded_for_all_workloads"] is True
-    assert gates["source_lock"] == "PASS"
+    assert gates["source_lock"] == "FAIL"
     assert gates["stage6_preflight"] == "FAIL"
     assert gates["backup_preparation_allowed"] is False
     assert gates["runtime_reconciliation_allowed"] is False
@@ -90,7 +91,15 @@ def main() -> None:
     assert runtime_safety["production_business_writes"] == "NOT_PROVEN_DISABLED"
     assert runtime_safety["LIVE_EMAIL_DELIVERY"] is True
     assert runtime_safety["core_runtime_readback"] == "BLOCKED_NO_GENERAL_SSH"
-    print("SOURCE_LOCK=PASS")
+    source_refresh = lock["source_refresh"]
+    assert source_refresh["infrastructure_evidence_base_sha"] == "b71f922a8d878a47c5a41f6b1cf9e8b47f9fba68"
+    artifact_lock = lock["artifact_lock"]
+    assert artifact_lock["status"] == "FAIL"
+    assert artifact_lock["locally_rebuilding_or_inventing_artifacts_allowed"] is False
+    assert artifact_lock["deployment_components_without_reviewed_image_digest"] == [
+        "marketing", "ai", "communication", "social_control", "social_runtime"
+    ]
+    print("SOURCE_LOCK=FAIL")
     print("STAGE6_PREFLIGHT=FAIL")
     print("PRODUCTION_BUSINESS_WRITES=NOT_PROVEN_DISABLED")
     print("STAGE6_SOURCE_LOCK_VALIDATION=PASS")
