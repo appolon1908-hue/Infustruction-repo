@@ -1,0 +1,38 @@
+name: Stage 6 off-host seccomp proof
+
+on:
+  pull_request:
+    paths:
+      - "scripts/run_stage6_seccomp_offhost_qemu.sh"
+      - ".github/workflows/stage6-seccomp-offhost.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-offhost:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate isolation and security invariants
+        run: |
+          set -Eeuo pipefail
+          ! grep -Eq '65\.109\.65\.169|37\.27\.128\.39|seccomp[=:]unconfined|--privileged' scripts/run_stage6_seccomp_offhost_qemu.sh
+          grep -q 'SECCOMP_DISABLED=NO' scripts/run_stage6_seccomp_offhost_qemu.sh
+          grep -q 'REAL_HOST_MUTATION=NO' scripts/run_stage6_seccomp_offhost_qemu.sh
+      - name: Install disposable-VM tooling
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cloud-image-utils qemu-system-x86 qemu-utils
+      - name: Reproduce current tuple and prove candidate fix
+        run: bash scripts/run_stage6_seccomp_offhost_qemu.sh | tee stage6-seccomp-offhost-evidence.txt
+      - name: Publish sanitized evidence summary
+        if: always()
+        run: |
+          if test -f stage6-seccomp-offhost-evidence.txt; then
+            cat stage6-seccomp-offhost-evidence.txt >> "$GITHUB_STEP_SUMMARY"
+          fi
