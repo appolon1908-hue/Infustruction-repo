@@ -36,7 +36,8 @@ def authority_head(component: str, definition: dict) -> tuple[str, str, str]:
             payload = json.load(response)
     except HTTPError as exc:
         hint = (
-            "; configure a read-only STAGE6_SOURCE_READ_TOKEN for private repositories"
+            "; private repositories require a trusted non-PR-controlled "
+            "read-only credential boundary"
             if exc.code in {401, 403, 404}
             else ""
         )

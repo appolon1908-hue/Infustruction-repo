@@ -68,8 +68,6 @@ jobs:
       - run: git diff --exit-code -- reports/runtime-reconciliation/STAGE6-RECONCILIATION-MATRIX.csv
       - run: python scripts/validate_stage6_source_lock.py
       - run: python scripts/validate_stage6_authority_heads.py
-        env:
-          STAGE6_SOURCE_READ_TOKEN: ${{ secrets.STAGE6_SOURCE_READ_TOKEN }}
       - run: python scripts/verify_stage6_middleware_artifact.py
       - run: python scripts/validate_stage6_staging_plan.py
       - run: python scripts/validate_stage6_resolved_source_lock.py
