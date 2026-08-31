@@ -77,6 +77,10 @@ require("environment: stage6-infrastructure-provisioning" in workflow, "protecte
 require("github.ref == 'refs/heads/main'" in workflow, "main_only_apply")
 require("HETZNER_CLOUD_TOKEN" in workflow, "token_secret_name")
 require(re.search(r"tofu(?:\s+-chdir=\S+)?\s+apply", workflow) is not None, "apply_step")
+require("actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" in workflow, "plan_artifact_upload")
+require("actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" in workflow, "plan_artifact_download")
+require("sha256sum -c stage6-plan.SHA256SUMS" in workflow, "plan_checksum_verification")
+require("needs: plan-remote" in workflow, "plan_before_apply")
 require("push:" not in workflow, "automatic_push_apply_forbidden")
 
 secret_patterns = (

@@ -94,7 +94,7 @@ jobs:
           tofu -chdir="$IAC_DIR" init -backend=false -input=false
           tofu -chdir="$IAC_DIR" validate
 
-  apply:
+  plan-remote:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirmation == 'APPLY_STAGE6_ISOLATED_HOST'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -144,7 +144,7 @@ jobs:
             -backend-config="bucket=$TF_STATE_BUCKET" \
             -backend-config="endpoints={s3=\"$TF_STATE_ENDPOINT\"}" \
             -backend-config="region=$TF_STATE_REGION"
-      - name: Validate, plan, and apply one reviewed host
+      - name: Generate exact remote-state plan for review
         env:
           HCLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
           STAGE6_TFVARS_JSON: ${{ vars.STAGE6_TFVARS_JSON }}
@@ -157,6 +157,90 @@ jobs:
           tofu -chdir="$IAC_DIR" plan -input=false -var-file=/tmp/stage6.auto.tfvars.json -out=/tmp/stage6.tfplan
           tofu -chdir="$IAC_DIR" show -json /tmp/stage6.tfplan > /tmp/stage6-plan.json
           test "$(jq '[.resource_changes[] | select(.type == "hcloud_server" and (.change.actions | index("create")))] | length' /tmp/stage6-plan.json)" -le 1
-          tofu -chdir="$IAC_DIR" apply -input=false /tmp/stage6.tfplan
+          test "$(jq '[.resource_changes[] | select(.change.actions | index("delete"))] | length' /tmp/stage6-plan.json)" -eq 0
+          tofu -chdir="$IAC_DIR" show -no-color /tmp/stage6.tfplan > /tmp/stage6-plan.txt
+          (cd /tmp && sha256sum stage6.tfplan stage6-plan.json stage6-plan.txt > stage6-plan.SHA256SUMS)
+          rm -f /tmp/stage6.auto.tfvars.json
+      - name: Publish exact plan for protected approval
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: stage6-remote-plan-${{ github.sha }}
+          path: |
+            /tmp/stage6.tfplan
+            /tmp/stage6-plan.json
+            /tmp/stage6-plan.txt
+            /tmp/stage6-plan.SHA256SUMS
+          if-no-files-found: error
+          retention-days: 1
+      - name: Record exact-plan review requirement
+        run: |
+          {
+            echo '## Stage 6 remote-state plan awaiting approval'
+            echo
+            echo 'Download and review the checksummed plan artifact before approving the apply job.'
+            echo 'The apply job consumes only this saved plan and refuses delete actions.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    needs: plan-remote
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirmation == 'APPLY_STAGE6_ISOLATED_HOST'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: stage6-infrastructure-provisioning
+    steps:
+      - name: Check out exact protected main SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Prove protected main authority
+        run: |
+          test "$GITHUB_REF" = refs/heads/main
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+      - name: Require protected inputs without printing values
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+          TF_STATE_ENDPOINT: ${{ vars.TF_STATE_ENDPOINT }}
+          TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+        run: |
+          test -n "$HCLOUD_TOKEN"
+          test -n "$AWS_ACCESS_KEY_ID"
+          test -n "$AWS_SECRET_ACCESS_KEY"
+          test -n "$TF_STATE_BUCKET"
+          test -n "$TF_STATE_ENDPOINT"
+          test -n "$TF_STATE_REGION"
+      - name: Set up pinned OpenTofu
+        uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+        with:
+          tofu_version: 1.10.6
+      - name: Download the exact reviewed plan
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: stage6-remote-plan-${{ github.sha }}
+          path: /tmp/stage6-reviewed-plan
+      - name: Verify artifact and initialize protected remote state
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+          TF_STATE_ENDPOINT: ${{ vars.TF_STATE_ENDPOINT }}
+          TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+        run: |
+          cd /tmp/stage6-reviewed-plan
+          sha256sum -c stage6-plan.SHA256SUMS
+          test "$(jq '[.resource_changes[] | select(.type == "hcloud_server" and (.change.actions | index("create")))] | length' stage6-plan.json)" -le 1
+          test "$(jq '[.resource_changes[] | select(.change.actions | index("delete"))] | length' stage6-plan.json)" -eq 0
+          tofu -chdir="$GITHUB_WORKSPACE/$IAC_DIR" init -input=false \
+            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -backend-config="endpoints={s3=\"$TF_STATE_ENDPOINT\"}" \
+            -backend-config="region=$TF_STATE_REGION"
+      - name: Apply only the exact saved plan
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
+        run: |
+          tofu -chdir="$IAC_DIR" apply -input=false /tmp/stage6-reviewed-plan/stage6.tfplan
           tofu -chdir="$IAC_DIR" output -json | jq 'with_entries(.value.value = (if (.key | test("ipv4|private_ip")) then "REDACTED_IN_LOG" else .value.value end))'
-          rm -f /tmp/stage6.auto.tfvars.json /tmp/stage6.tfplan /tmp/stage6-plan.json

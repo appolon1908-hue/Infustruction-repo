@@ -42,8 +42,10 @@ values. No push applies infrastructure.
 
 After merge and protected-input review, manually dispatch `Stage 6 isolated
 staging host` from the exact protected `main` SHA with confirmation
-`APPLY_STAGE6_ISOLATED_HOST`. The apply job uses remote state and the protected
-environment. It creates at most one server.
+`APPLY_STAGE6_ISOLATED_HOST`. A protected job first generates a checksummed
+plan against remote state and publishes it for review. A separate protected
+apply job consumes only that saved plan; stale state fails closed. It creates
+at most one server and refuses delete actions.
 
 ## Baseline and seccomp acceptance
 
