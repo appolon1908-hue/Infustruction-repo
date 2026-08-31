@@ -3,6 +3,10 @@ hostname: codestra-stage6-egress-01
 manage_etc_hosts: true
 ssh_pwauth: false
 disable_root: true
+bootcmd:
+%{ for cidr in production_deny_cidrs ~}
+  - [iptables, -I, OUTPUT, -d, "${cidr}", -j, DROP]
+%{ endfor ~}
 package_update: true
 packages: [squid, unbound, chrony, nftables, ca-certificates]
 write_files:

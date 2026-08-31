@@ -82,6 +82,7 @@ require("tcp://" not in cloud_init, "network_docker_socket")
 require("http_access deny all" in egress_init, "proxy_default_deny")
 require("approved_domains" in egress_init, "proxy_fqdn_allowlist")
 require("deny reviewed production authority" in egress_init, "gateway_production_deny")
+require("[iptables, -I, OUTPUT" in egress_init, "pre_package_production_deny")
 require("access_log" in egress_init, "proxy_decision_logging")
 require("Proxy-Authorization deny all" in egress_init, "proxy_auth_header_not_logged")
 
