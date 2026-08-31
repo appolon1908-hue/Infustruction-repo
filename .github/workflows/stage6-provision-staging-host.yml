@@ -161,6 +161,8 @@ jobs:
       - name: Generate exact remote-state plan for review
         env:
           HCLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}
           STAGE6_TFVARS_JSON: ${{ vars.STAGE6_TFVARS_JSON }}
         run: |
           umask 077
