@@ -53,6 +53,8 @@ for marker in (
 
 require(re.search(r'port\s*=\s*"22"', main) is not None, "ssh_rule")
 require("approved_ssh_source_cidrs" in main, "ssh_source_allowlist")
+require("forbidden_production_cidrs" in main, "production_deny_inventory")
+require("cidrcontains" in main, "cidr_overlap_rejection")
 for port, label in (("5432", "postgresql"), ("6379", "redis"), ("2375", "docker"), ("2376", "docker_tls")):
     require(re.search(rf'port\s*=\s*"{port}"', main) is None, f"public_{label}_forbidden")
 require('source_ips = ["0.0.0.0/0"]' not in main, "global_ingress_cidr")

@@ -23,6 +23,12 @@ Variables:
 - `TF_STATE_BUCKET`, `TF_STATE_ENDPOINT`, `TF_STATE_REGION`.
 - `STAGE6_TFVARS_JSON` — reviewed non-secret values matching `variables.tf`.
 
+`STAGE6_TFVARS_JSON` must include a nonempty
+`forbidden_production_cidrs` inventory covering Klyrow, Postal and every known
+production provider route. OpenTofu rejects an apply if any allowed egress CIDR
+overlaps that inventory. This explicit deny inventory complements the firewall's
+default-deny behavior; it is not an allow rule.
+
 The private network must contain staging services only. It must not route to
 Klyrow, Postal, production SMTP/SMS/PSTN, advertising-write, social-publishing,
 or production model-provider networks. CIDR values are explicit allowlists;

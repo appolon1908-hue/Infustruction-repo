@@ -112,3 +112,14 @@ variable "ntp_server_cidrs" {
     error_message = "NTP must use explicit approved server CIDRs."
   }
 }
+
+variable "forbidden_production_cidrs" {
+  description = "Reviewed Klyrow, Postal, SMTP/SMS/PSTN, social, advertising and model-provider production CIDRs."
+  type        = set(string)
+  validation {
+    condition = length(var.forbidden_production_cidrs) > 0 && alltrue([
+      for cidr in var.forbidden_production_cidrs : can(cidrhost(cidr, 0))
+    ])
+    error_message = "A nonempty reviewed production-provider CIDR deny inventory is required."
+  }
+}

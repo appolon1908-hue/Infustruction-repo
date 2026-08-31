@@ -8,6 +8,12 @@ locals {
     postal      = "false"
     managed-by  = "opentofu"
   }
+  all_allowed_egress_cidrs = setunion(
+    var.approved_private_cidrs,
+    var.approved_bootstrap_egress_cidrs,
+    var.dns_resolver_cidrs,
+    var.ntp_server_cidrs,
+  )
 }
 
 resource "hcloud_firewall" "stage6" {
@@ -106,6 +112,16 @@ resource "hcloud_server" "stage6" {
     precondition {
       condition     = !contains(var.approved_bootstrap_egress_cidrs, "0.0.0.0/0")
       error_message = "Global bootstrap egress is forbidden."
+    }
+    precondition {
+      condition = alltrue(flatten([
+        for allowed in local.all_allowed_egress_cidrs : [
+          for forbidden in var.forbidden_production_cidrs :
+          !cidrcontains(allowed, cidrhost(forbidden, 0)) &&
+          !cidrcontains(forbidden, cidrhost(allowed, 0))
+        ]
+      ]))
+      error_message = "An approved egress CIDR overlaps the production-provider deny inventory."
     }
   }
 }
