@@ -134,6 +134,7 @@ require_state_credentials(
     workflow_step("Verify artifact and initialize protected remote state"), "apply_init"
 )
 apply_step = workflow_step("Apply only the exact saved plan")
+require_state_credentials(apply_step, "saved_plan_apply")
 require(
     "apply -input=false /tmp/stage6-reviewed-plan/stage6.tfplan" in apply_step,
     "apply_saved_plan_only",
