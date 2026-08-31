@@ -8,12 +8,14 @@ on:
       - "deploy/staging/runtime-reconciliation/**"
       - "releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json"
       - "reports/runtime-reconciliation/**"
+      - "releases/STAGE6-STAGING-DEPLOYMENT-PLAN-2026-08-30.yaml"
       - "scripts/build_stage6_reconciliation_matrix.py"
       - "scripts/generate_stage6_evidence_checksums.py"
       - "scripts/prepare_stage6_locked_checkouts.py"
       - "scripts/resolve_stage6_source_lock.py"
       - "scripts/validate_stage6_resolved_source_lock.py"
       - "scripts/validate_stage6_source_lock.py"
+      - "scripts/validate_stage6_staging_plan.py"
       - ".github/workflows/validate-stage6-source-lock.yml"
   push:
     branches: [main]
@@ -23,12 +25,14 @@ on:
       - "deploy/staging/runtime-reconciliation/**"
       - "releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json"
       - "reports/runtime-reconciliation/**"
+      - "releases/STAGE6-STAGING-DEPLOYMENT-PLAN-2026-08-30.yaml"
       - "scripts/build_stage6_reconciliation_matrix.py"
       - "scripts/generate_stage6_evidence_checksums.py"
       - "scripts/prepare_stage6_locked_checkouts.py"
       - "scripts/resolve_stage6_source_lock.py"
       - "scripts/validate_stage6_resolved_source_lock.py"
       - "scripts/validate_stage6_source_lock.py"
+      - "scripts/validate_stage6_staging_plan.py"
       - ".github/workflows/validate-stage6-source-lock.yml"
 
 permissions:

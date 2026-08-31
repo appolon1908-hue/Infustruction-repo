@@ -47,6 +47,7 @@ IMAGE_REFERENCES = {
 }
 CORE_COMPONENTS = {"middleware", "odoo", "n8n"}
 MIDDLEWARE_RUN_ID = 33393846576
+INSPECTION_HOST = "37.27.128.39"
 
 
 def run(*args: str, cwd: Path | None = None) -> str:
@@ -134,6 +135,29 @@ def docker_runtime() -> list[dict]:
             }
         )
     return rows
+
+
+def verify_inspection_host() -> dict:
+    try:
+        interfaces = json.loads(run("ip", "-json", "address", "show"))
+        addresses = sorted(
+            address["local"]
+            for interface in interfaces
+            for address in interface.get("addr_info", [])
+            if address.get("family") in {"inet", "inet6"}
+            and isinstance(address.get("local"), str)
+        )
+    except (OSError, subprocess.CalledProcessError, json.JSONDecodeError, KeyError) as exc:
+        raise RuntimeError("cannot verify the Docker inspection host identity") from exc
+    if INSPECTION_HOST not in addresses:
+        raise RuntimeError(
+            f"refusing Docker evidence: expected host address {INSPECTION_HOST} is absent"
+        )
+    return {
+        "expected_address": INSPECTION_HOST,
+        "address_present": True,
+        "hostname": socket.gethostname(),
+    }
 
 
 def source_evidence(component: str, definition: dict) -> dict:
@@ -254,7 +278,7 @@ def runtime_evidence(component: str, definition: dict, runtime: list[dict], lock
         )
         return {
             "status": "DRIFT_CODESTRA_CONFIG_BINDING_UNPROVEN",
-            "host": "37.27.128.39",
+            "host": INSPECTION_HOST,
             "containers": [row],
             "digest_match": digest_match,
             "upstream_image_revision": row["image_revision"],
@@ -293,7 +317,7 @@ def runtime_evidence(component: str, definition: dict, runtime: list[dict], lock
         }
     return {
         "status": "NOT_OBSERVED_ON_INSPECTED_HOST",
-        "host": "37.27.128.39",
+        "host": INSPECTION_HOST,
         "containers": [],
         "digest_match": False,
     }
@@ -308,20 +332,34 @@ def isolation_evidence(runtime: list[dict]) -> dict:
     )
     klyrow = [row for row in runtime if row["name"].startswith("klyrow-")]
     middleware = compose["services"]["middleware"]
-    no_host_ports = "ports" not in middleware and middleware.get("expose") == ["8080"]
+    host_ports = middleware.get("ports") or []
+    no_host_ports = host_ports == [] and middleware.get("expose") == ["8080"]
     private_internal = compose["networks"]["private"].get("internal") is True
     lock_text = json.dumps(runtime_lock).lower()
     no_klyrow_endpoint = all(
         token not in lock_text for token in ("37.27.128.39", "postal", "smtp://", "klyrow")
     )
+    isolation_pass = all(
+        (
+            private_internal,
+            no_host_ports,
+            no_klyrow_endpoint,
+            runtime_lock["external_effects_enabled"] is False,
+            runtime_lock["activation"]["production_authorized"] is False,
+        )
+    )
     return {
-        "status": "PASS_SOURCE_ISOLATION_RUNTIME_NOT_ACTIVATED",
+        "status": (
+            "PASS_SOURCE_ISOLATION_RUNTIME_NOT_ACTIVATED"
+            if isolation_pass
+            else "FAIL_SOURCE_ISOLATION"
+        ),
         "stage6_host": "65.109.65.169",
-        "klyrow_postal_host": "37.27.128.39",
+        "klyrow_postal_host": INSPECTION_HOST,
         "distinct_hosts": True,
         "stage6_compose_project": "codestra-intake-observability-staging",
         "stage6_private_network_internal": private_internal,
-        "stage6_middleware_host_ports": [],
+        "stage6_middleware_host_ports": host_ports,
         "stage6_no_host_ports": no_host_ports,
         "stage6_external_effects_enabled": runtime_lock["external_effects_enabled"],
         "stage6_production_authorized": runtime_lock["activation"]["production_authorized"],
@@ -344,6 +382,7 @@ def main() -> None:
     original_bytes = LOCK.read_bytes()
     original = yaml.safe_load(original_bytes)
     resolved = json.loads(json.dumps(original))
+    inspection_host = verify_inspection_host()
     runtime = docker_runtime()
 
     components = {}
@@ -406,7 +445,7 @@ def main() -> None:
             },
             "klyrow_postal": {
                 "classification": "out_of_batch",
-                "host": "37.27.128.39",
+                "host": INSPECTION_HOST,
                 "disposition": "DO_NOT_TOUCH",
             },
         },
@@ -446,8 +485,8 @@ def main() -> None:
             "resume_authorized": False,
         },
         "bounded_inventory": {
-            "host": "37.27.128.39",
-            "hostname": socket.gethostname(),
+            "host": INSPECTION_HOST,
+            "host_identity": inspection_host,
             "running_containers_inspected": len(runtime),
             "fresh_verified_digest_matches": runtime_matches,
             "minimum_required": 1,

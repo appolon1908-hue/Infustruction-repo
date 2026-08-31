@@ -97,11 +97,18 @@ def main() -> None:
     assert isolation["distinct_hosts"] is True
     assert isolation["stage6_private_network_internal"] is True
     assert isolation["stage6_middleware_host_ports"] == []
+    assert isolation["stage6_no_host_ports"] is True
     assert isolation["stage6_external_effects_enabled"] is False
     assert isolation["stage6_production_authorized"] is False
     assert isolation["stage6_outbound_klyrow_postal_endpoint_declared"] is False
     assert isolation["klyrow_postal_classification"] == "out_of_batch"
     assert isolation["klyrow_postal_mutation_performed"] is False
+    assert resolution["bounded_inventory"]["host_identity"]["address_present"] is True
+    assert (
+        resolution["bounded_inventory"]["host_identity"]["expected_address"]
+        == resolution["bounded_inventory"]["host"]
+        == "37.27.128.39"
+    )
 
     extensions = resolution["component_catalog_extensions"]
     assert extensions["legacy_stage6_core_runtime"]["classification"] == "frozen_observed_digest"
