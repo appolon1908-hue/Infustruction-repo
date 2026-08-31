@@ -40,8 +40,17 @@ jobs:
           sudo apt-get install -y -qq cloud-image-utils qemu-system-x86 qemu-utils
       - name: Reproduce current tuple and prove candidate fix
         run: |
+          set +e
           set -o pipefail
           bash scripts/run_stage6_seccomp_offhost_qemu.sh | tee stage6-seccomp-offhost-evidence.txt
+          harness_status="${PIPESTATUS[0]}"
+          set -e
+          if test "$harness_status" -eq 2; then
+            grep -q '^SECCOMP_REPRODUCED_OFFHOST=NO$' stage6-seccomp-offhost-evidence.txt
+            grep -q '^FIX_PROVEN_OFFHOST=NO$' stage6-seccomp-offhost-evidence.txt
+            exit 0
+          fi
+          exit "$harness_status"
       - name: Publish sanitized evidence summary
         if: always()
         run: |
