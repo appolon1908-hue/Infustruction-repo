@@ -73,18 +73,21 @@ for name in frozen:
 for batch in batches:
     if not batch["mutation"]:
         continue
+    require(isinstance(batch.get("changes_image"), bool), f"changes_image_{batch['name']}")
     for name in batch["workloads"]:
         require("rollback_digest" in LOCK["runtime_workloads"][name], f"rollback_{name}")
+    if batch["changes_image"]:
+        require("expected_digest" in batch, f"expected_digest_{batch['name']}")
+        require("rollback_digest" in batch, f"rollback_digest_{batch['name']}")
+        require(
+            batch["expected_digest"] != batch["rollback_digest"],
+            f"image_rollback_must_precede_replacement_{batch['name']}",
+        )
 
 middleware = next(batch for batch in batches if batch["name"] == "middleware")
 middleware_lock = LOCK["runtime_workloads"][middleware["workloads"][0]]
 for field in ("expected_sha", "expected_digest", "rollback_digest"):
     require(middleware[field] == middleware_lock[field], f"middleware_{field}")
-require(
-    middleware["expected_digest"] != middleware["rollback_digest"],
-    "middleware_rollback_must_precede_replacement_image",
-)
-
 require(PLAN["unknown_workload"]["disposition"] == "UNVERIFIED_DO_NOT_TOUCH", "unknown_gateway")
 print("STAGE6_STAGING_PLAN=PASS")
 print("PLANNED_RELEASE_WORKLOADS=22")
