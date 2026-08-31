@@ -56,7 +56,7 @@ jobs:
           python3 scripts/validate_stage6_staging_iac.py
       - name: Initialize without remote state and validate
         env:
-          HCLOUD_TOKEN: 0000000000000000000000000000000000000000000000000000000000000000
+          HCLOUD_TOKEN: "0000000000000000000000000000000000000000000000000000000000000000"
         run: |
           mv "$IAC_DIR/backend.tf" /tmp/stage6-backend.tf
           trap 'mv /tmp/stage6-backend.tf "$IAC_DIR/backend.tf" 2>/dev/null || true' EXIT
@@ -86,7 +86,7 @@ jobs:
           tofu_version: 1.10.6
       - name: Validate exact merge result
         env:
-          HCLOUD_TOKEN: 0000000000000000000000000000000000000000000000000000000000000000
+          HCLOUD_TOKEN: "0000000000000000000000000000000000000000000000000000000000000000"
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           tofu -chdir="$IAC_DIR" fmt -check -recursive
