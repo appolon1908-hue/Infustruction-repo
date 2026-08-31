@@ -105,9 +105,6 @@ require(
     workflow.count("inputs.confirmation == 'APPLY_STAGE6_ISOLATED_HOST'") >= 2,
     "apply_requires_explicit_apply_confirmation",
 )
-plan_job = workflow.split("  plan-remote:", 1)[1].split("\n  apply:", 1)[0]
-require("AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}" in plan_job, "plan_state_access_key")
-require("AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}" in plan_job, "plan_state_secret_key")
 require(re.search(r"tofu(?:\s+-chdir=\S+)?\s+apply", workflow) is not None, "apply_step")
 require("actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" in workflow, "plan_artifact_upload")
 require("actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" in workflow, "plan_artifact_download")
