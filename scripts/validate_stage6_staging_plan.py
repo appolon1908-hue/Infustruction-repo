@@ -17,16 +17,25 @@ def require(condition: bool, message: str) -> None:
 
 
 require(PLAN["environment"] == "STAGING", "environment")
-require(PLAN["status"] == "HELD_PREFLIGHT_FAILED_NOT_EXECUTED", "status")
+require(PLAN["status"] == "HELD_SCOPED_PREFLIGHT_PENDING_NOT_EXECUTED", "status")
 require(PLAN["production_authorized"] is False, "production_authorized")
 require(PLAN["external_writes_enabled"] is False, "external_writes_enabled")
 require(PLAN["runtime_preflight"]["source_lock"] == "PASS", "source_lock_gate")
-require(PLAN["runtime_preflight"]["stage6_preflight"] == "FAIL", "preflight_gate")
 require(
-    PLAN["runtime_preflight"]["production_business_writes"] == "NOT_PROVEN_DISABLED",
+    PLAN["runtime_preflight"]["stage6_preflight"] == "PENDING_SCOPED_RUNTIME_READBACK",
+    "preflight_gate",
+)
+require(
+    PLAN["runtime_preflight"]["stage6_path_business_writes"] == "NOT_PROVEN_DISABLED",
     "production_write_gate",
 )
-require(PLAN["runtime_preflight"]["blocking_signal"] == "LIVE_EMAIL_DELIVERY=true", "blocking_signal")
+require(PLAN["runtime_preflight"]["in_scope_host"] == "65.109.65.169", "in_scope_host")
+require(PLAN["runtime_preflight"]["in_scope_workloads"] == 22, "in_scope_workloads")
+require(
+    PLAN["runtime_preflight"]["out_of_scope_active_production"]
+    == "OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH",
+    "out_of_scope_production",
+)
 require(PLAN["backup"]["checksums"] == "PASS", "backup_checksums")
 require(PLAN["backup"]["postgres_17_archives_readable"] == 24, "database_archive_count")
 
