@@ -6,6 +6,7 @@ on:
       - "infra/hetzner/stage6-staging/**"
       - "scripts/validate_stage6_staging_iac.py"
       - ".github/workflows/stage6-provision-staging-host.yml"
+      - ".github/workflows/stage6-readonly-inventory.yml"
       - "STAGE6-STAGING-HOST-SIZING.md"
       - "STAGE6-STAGING-HOST-PROVISIONING.md"
       - "STAGE6-STAGING-HOST-BASELINE.md"
