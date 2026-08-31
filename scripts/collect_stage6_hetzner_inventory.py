@@ -17,15 +17,16 @@ API_ROOT = "https://api.hetzner.cloud/v1"
 COLLECTIONS = ("locations", "servers", "networks", "ssh_keys", "firewalls")
 FIELDS = (
     "location",
-    "private_network_id",
+    "network_cidr",
+    "staging_subnet_cidr",
     "private_ip",
+    "egress_gateway_private_ip",
     "approved_ssh_key_ids",
     "approved_ssh_source_cidrs",
-    "approved_private_cidrs",
-    "approved_bootstrap_egress_cidrs",
-    "dns_resolver_cidrs",
-    "ntp_server_cidrs",
-    "forbidden_production_cidrs",
+    "approved_egress_fqdns",
+    "approved_egress_ports",
+    "approved_ntp_fqdns",
+    "known_internal_production_deny_cidrs",
 )
 
 
@@ -152,20 +153,10 @@ def main() -> None:
         for x in raw["firewalls"]
     ]
 
-    staging_networks = [x for x in raw["networks"] if labels_mark(x, "staging")]
     production_servers = [x for x in servers if labels_mark(x, "production")]
     approved_keys = [x["id"] for x in raw["ssh_keys"] if labels_mark(x, "stage6", "approved")]
     fields: dict[str, Any] = {name: None for name in FIELDS}
-    if len(staging_networks) == 1:
-        selected = next(x for x in networks if x["id"] == staging_networks[0]["id"])
-        fields["private_network_id"] = selected["id"]
-        if len(selected["unused_candidate_private_ips"]) == 1:
-            fields["private_ip"] = selected["unused_candidate_private_ips"][0]
-        if selected.get("ip_range"):
-            fields["approved_private_cidrs"] = [selected["ip_range"]]
-        attached_locations = sorted({x["location"] for x in servers if x["location"] and any(a["network_id"] == selected["id"] for a in x["private_network_attachments"])})
-        if len(attached_locations) == 1:
-            fields["location"] = attached_locations[0]
+    staging_networks = [x for x in raw["networks"] if labels_mark(x, "staging")]
     if approved_keys:
         fields["approved_ssh_key_ids"] = sorted(approved_keys)
 

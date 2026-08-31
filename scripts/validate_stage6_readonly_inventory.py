@@ -39,6 +39,12 @@ for node in ast.walk(tree):
         request_methods.append(method.value)
 require(request_methods == ["GET"], "request_count")
 require('COLLECTIONS = ("locations", "servers", "networks", "ssh_keys", "firewalls")' in collector, "endpoint_allowlist")
+for field in (
+    "network_cidr", "staging_subnet_cidr", "egress_gateway_private_ip",
+    "approved_egress_fqdns", "approved_egress_ports", "approved_ntp_fqdns",
+    "known_internal_production_deny_cidrs",
+):
+    require(f'"{field}"' in collector, f"current_schema_{field}")
 require("HETZNER_CLOUD_TOKEN" not in collector.split("print(")[-1], "token_print")
 require("STAGE6_TFVARS_JSON" not in workflow, "incomplete_tfvars_write")
 
@@ -46,4 +52,3 @@ print("STAGE6_READONLY_INVENTORY_STATIC=PASS")
 print("API_METHODS=GET_ONLY")
 print("CLOUD_MUTATION=NO")
 print("PRODUCTION_CHANGED=NO")
-
