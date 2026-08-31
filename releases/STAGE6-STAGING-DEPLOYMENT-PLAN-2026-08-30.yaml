@@ -1,19 +1,16 @@
 schema_version: '2.0'
 environment: STAGING
-status: HELD_PREFLIGHT_FAILED_NOT_EXECUTED
+status: HELD_SCOPED_PREFLIGHT_PENDING_NOT_EXECUTED
 production_authorized: false
 external_writes_enabled: false
 runtime_preflight:
   source_lock: PASS
-  stage6_preflight: FAIL
-  production_business_writes: NOT_PROVEN_DISABLED
-  blocking_signal: LIVE_EMAIL_DELIVERY=true
-  affected_containers:
-    - klyrow-gateway-1
-    - klyrow-smtp-relay-1
-    - klyrow-worker-1
-  public_smtp_listener: 37.27.128.39:25
-  core_runtime_readback: BLOCKED_NO_GENERAL_SSH
+  stage6_preflight: PENDING_SCOPED_RUNTIME_READBACK
+  stage6_path_business_writes: NOT_PROVEN_DISABLED
+  in_scope_host: 65.109.65.169
+  in_scope_workloads: 22
+  out_of_scope_active_production: OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH
+  scoped_runtime_readback: REQUIRED_BEFORE_APPLY
 source_lock:
   path: STAGE6-SOURCE-LOCK.yaml
   merge_sha: 65018df89571042c1e7550adf3180d47bb495187
@@ -38,7 +35,8 @@ global_safety:
   unknown_and_legacy_workloads: DO_NOT_TOUCH
 execution_rules:
   - This plan PR does not authorize execution.
-  - Do not execute any mutation batch while runtime_preflight.stage6_preflight is FAIL.
+  - Do not execute any mutation batch until runtime_preflight.stage6_preflight is PASS.
+  - Do not touch Klyrow/Postal or treat its out-of-scope activity as Stage 6 evidence.
   - Require independent approval against the exact plan head before staging mutation.
   - Re-read source lock, backup checksums, runtime digest, safety state, and rollback digest immediately before each batch.
   - Stop on drift, failed health/read-back, missing rollback target, or any enabled external-write control.

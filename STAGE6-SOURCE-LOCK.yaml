@@ -3,7 +3,7 @@ locked_at: '2026-08-31T01:38:54+02:00'
 environment: staging
 production_write_activation: false
 runtime_mutation_authorized: false
-status: SOURCE_LOCKED_RUNTIME_HELD_FOR_SAFETY
+status: SOURCE_LOCKED_SCOPED_RUNTIME_READBACK_PENDING
 runtime_revalidated_at: '2026-08-31T01:38:54+02:00'
 supersedes:
   - releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json
@@ -14,9 +14,9 @@ conflict_resolution:
   kong_ancestry: required merge is an ancestor of locked SHA by one commit
   social_runtime_required_merge: 4f7817f6c6d1bb38fa7d85bb1656eb41865283d5
   social_runtime_locked_sha: 4f7817f6c6d1bb38fa7d85bb1656eb41865283d5
-  keycloak_previous_locked_sha: ef1212d53ec8a136421dd20873183aef7845a46f
-  keycloak_locked_sha: 80fc33c7159440e357219903f62ea7fb84914d59
-  keycloak_ancestry: previous lock is an ancestor of reviewed protected-main merge 48
+  keycloak_previous_locked_sha: 80fc33c7159440e357219903f62ea7fb84914d59
+  keycloak_locked_sha: 303e2edef2219c5eb3ac167c309a9717a766d079
+  keycloak_ancestry: previous lock is an ancestor of reviewed protected-main merge 56
 
 source_refresh:
   checked_at: '2026-08-31T01:38:54+02:00'
@@ -36,17 +36,41 @@ safety:
   LIVE_PSTN_DIALING: false
   PRODUCTION_DIALING: DISABLED
 
+safety_scope:
+  decision: APPROVED
+  authority_issue: https://github.com/appolon1908-hue/Infustruction-repo/issues/16
+  authority_comment: https://github.com/appolon1908-hue/Infustruction-repo/issues/16#issuecomment-5472362736
+  in_scope_host: 65.109.65.169
+  in_scope_workloads: 22
+  definition: writes originating from or enabled by the locked Stage 6 workloads and execution path
+  out_of_scope_active_production:
+    product: Klyrow/Postal
+    host: 37.27.128.39
+    disposition: OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH
+    public_smtp_listener: '37.27.128.39:25'
+    observed_containers:
+      - klyrow-gateway-1
+      - klyrow-smtp-relay-1
+      - klyrow-worker-1
+  invariants:
+    - out-of-scope activity does not prove or authorize Stage 6 external writes
+    - no Stage 6 route credential queue webhook or request may reach Klyrow/Postal
+    - production deployment and mutation remain unauthorized
+
 current_runtime_safety:
-  status: FAIL
-  production_business_writes: NOT_PROVEN_DISABLED
-  inspected_host: 37.27.128.39
-  LIVE_EMAIL_DELIVERY: true
-  affected_containers:
-    - klyrow-gateway-1
-    - klyrow-smtp-relay-1
-    - klyrow-worker-1
-  public_smtp_listener: '37.27.128.39:25'
-  core_runtime_readback: BLOCKED_NO_GENERAL_SSH
+  status: PENDING_SCOPED_RUNTIME_READBACK
+  stage6_path_business_writes: NOT_PROVEN_DISABLED
+  inspected_host: 65.109.65.169
+  required_workloads: 22
+  out_of_scope_active_production: OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH
+  prior_global_blocking_signal:
+    LIVE_EMAIL_DELIVERY: true
+    affected_containers:
+      - klyrow-gateway-1
+      - klyrow-smtp-relay-1
+      - klyrow-worker-1
+    public_smtp_listener: '37.27.128.39:25'
+  scoped_runtime_readback: REQUIRED_BEFORE_APPLY
 
 repositories:
   marketing: {repository: appolon1908-hue/Codestra-Marketing-, revision: 460ff98f64ef9f0724fe4d2afc51a1a6c5b053dd, artifact: source_only}
@@ -58,7 +82,7 @@ repositories:
   odoo: {repository: appolon1908-hue/Odoo, revision: 3eeb17f8b7efcd9bd90487e5e8e9888717f51138, runtime_image_digest: 'sha256:f54272f31d5f77e4146b887efb3761c98480317daf687e4b4b5e76ed8bcc08c5'}
   n8n: {repository: appolon1908-hue/N8N, revision: 4d35472772f60c5af616ffac1f902d626643d02d, runtime_image_digest: 'sha256:cfe2704ff858395503d42548206c2c99ea351a205e941063a9d9b77b0f404478'}
   kong: {repository: appolon1908-hue/Kong, revision: 3594fe25b8fe36633c1de95a8e485c72f32a60f8, required_merge: 186630b40c19d72aa9bdf9ef1f64e8a17bd0e33e}
-  keycloak: {repository: appolon1908-hue/Keycloak, revision: 80fc33c7159440e357219903f62ea7fb84914d59}
+  keycloak: {repository: appolon1908-hue/Keycloak, revision: 303e2edef2219c5eb3ac167c309a9717a766d079}
   sdk: {repository: appolon1908-hue/SDK-repository, revision: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb}
   prometheus: {repository: appolon1908-hue/Codestra-Prometheus, revision: eec6ea7d7a63d7debef16de92ef5b6d34395d013}
   grafana: {repository: appolon1908-hue/Codestra-Grafana-, revision: 30b736f98e7bbf16f54280251c6d51a877ff2d8a}
@@ -240,7 +264,8 @@ gates:
   source_safety_model_remediated: true
   rollback_digests_recorded_for_all_workloads: true
   source_lock: PASS
-  stage6_preflight: FAIL
+  stage6_preflight: PENDING_SCOPED_RUNTIME_READBACK
   backup_preparation_allowed: false
   runtime_reconciliation_allowed: false
-  production_business_writes: NOT_PROVEN_DISABLED
+  stage6_path_business_writes: NOT_PROVEN_DISABLED
+  out_of_scope_production_writes: ACTIVE_DO_NOT_TOUCH

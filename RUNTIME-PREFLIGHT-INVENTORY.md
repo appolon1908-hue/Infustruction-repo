@@ -104,3 +104,17 @@ The following mission stop conditions are active:
 Consequently, backups, OpenBao, Keycloak, migrations, application/Kong/n8n
 deployment, observability hookup, E2E, failure injection, rollback proof, and
 the production read-only canary were not attempted.
+
+## Scoped safety decision refresh
+
+The stop conditions above record the earlier global evaluation. The owner
+subsequently approved a Stage 6 scope limited to the 22 locked staging
+workloads on `65.109.65.169`. Klyrow/Postal on `37.27.128.39` is now recorded
+as `OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH`; its activity neither proves
+nor authorizes an external write from the Stage 6 path.
+
+This decision does not itself pass preflight. A fresh read-only safety and
+provenance read-back of all 22 in-scope workloads is still required before any
+staging apply. Keycloak source authority has advanced through reviewed merge 56
+to `303e2edef2219c5eb3ac167c309a9717a766d079`. Runtime mutation and production
+mutation remain unauthorized.
