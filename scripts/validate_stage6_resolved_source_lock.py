@@ -15,6 +15,7 @@ DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 CLASSES = {
     "source_only",
     "custom_signed_image",
+    "custom_attested_image",
     "official_upstream_image_plus_codestra_config",
     "frozen_observed_digest",
     "out_of_batch",

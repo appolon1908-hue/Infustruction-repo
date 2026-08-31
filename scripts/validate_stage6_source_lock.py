@@ -15,6 +15,7 @@ DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 ARTIFACT_CLASSES = {
     "source_only",
     "custom_signed_image",
+    "custom_attested_image",
     "official_upstream_image_plus_codestra_config",
     "frozen_observed_digest",
     "out_of_batch",
@@ -54,12 +55,14 @@ def main() -> None:
 
     assert classes["middleware"] == "custom_signed_image"
     assert classes["openbao"] == "official_upstream_image_plus_codestra_config"
-    assert classes["keycloak"] == "unresolved_blocking_artifact"
+    assert classes["social_runtime"] == "custom_attested_image"
+    assert classes["keycloak"] == "official_upstream_image_plus_codestra_config"
     assert lock["repositories"]["middleware"]["revision"] == "9152a04ed8df52269b30d7a9c6b18ef00a0caf75"
     assert lock["repositories"]["middleware"]["image_digest"] == "sha256:91b91b6ba1c828919c86102806eb2cfe6da1295cd7b4fe34df3121dd0bbff1b2"
     assert lock["repositories"]["n8n"]["revision"] == "b620860c04bf0fe6998c5fc25857262aa5c89d74"
     assert lock["repositories"]["kong"]["revision"] == "961edbf56e29ce78f305273c3efeec386a2bba62"
-    assert lock["repositories"]["keycloak"]["revision"] == "6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f"
+    assert lock["repositories"]["keycloak"]["revision"] == "7aef62a020c87ffcbf0fbb2f8c4890a8e9d13098"
+    assert lock["repositories"]["social_runtime"]["image_digest"] == "sha256:8576f49ae136c87efbd87827958a6b3b70e4fc597a3eedbacdaddbd7d3474e87"
     assert lock["repositories"]["openbao"]["image_digest"] == "sha256:5b2486ab0fb90bbc788cc345b0a08616dfb375873ee8be5df3a2fd4d378a67e0"
     assert lock["repositories"]["openbao"]["rollback_target"] == "ABSENT_RUNTIME_WITH_NGINX_BACKUP"
 

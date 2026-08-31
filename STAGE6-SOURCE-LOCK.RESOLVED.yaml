@@ -4,6 +4,105 @@ environment: staging
 production_write_activation: false
 runtime_mutation_authorized: false
 status: SOURCE_LOCK_FAIL_RUNTIME_UNVERIFIED
+final_gate_reconciliation:
+  captured_at: '2026-08-31T22:10:00Z'
+  mission_scope: SOURCE_LOCK_ONLY_NO_RUNTIME_MUTATION
+  downstream_gates:
+    BACKUPS: NOT_RUN_ENTRY_GATE_BLOCKED
+    STAGING_DEPLOYMENT: NOT_RUN_ENTRY_GATE_BLOCKED
+    OPENBAO_BINDING: NOT_RUN_ENTRY_GATE_BLOCKED
+    KEYCLOAK_CERTIFICATION: NOT_RUN_ENTRY_GATE_BLOCKED
+    MIGRATIONS: NOT_RUN_ENTRY_GATE_BLOCKED
+    APPLICATION_HEALTH: NOT_RUN_ENTRY_GATE_BLOCKED
+    KONG_CERTIFICATION: NOT_RUN_ENTRY_GATE_BLOCKED
+    N8N_BINDINGS: NOT_RUN_ENTRY_GATE_BLOCKED
+    OBSERVABILITY: NOT_RUN_ENTRY_GATE_BLOCKED
+    E2E_STAGING: NOT_RUN_ENTRY_GATE_BLOCKED
+    FAILURE_TESTS: NOT_RUN_ENTRY_GATE_BLOCKED
+    ROLLBACK: NOT_RUN_ENTRY_GATE_BLOCKED
+  gates:
+    SOCIAL_RUNTIME_PROVENANCE: FAIL_ROLLBACK_DIGEST_AND_RUNTIME_ABSENT
+    KONG_PROVENANCE: FAIL_RUNTIME_CONFIG_BINDING_UNPROVEN
+    KEYCLOAK_PROVENANCE: FAIL_AUTHORITY_DRIFT_AND_RUNTIME_CONFIG_BINDING_UNPROVEN
+    CORE_RUNTIME_READBACK: FAIL_REQUIRED_COMPONENTS_ABSENT_OR_UNBOUND
+    SAFETY_STATE: FAIL_NOT_PROVEN_DISABLED
+    RUNNER_DOCKER_AUTHORIZATION: FAIL
+    SOURCE_LOCK_CI: FAIL
+    FINAL_SOURCE_LOCK: FAIL
+    PRODUCTION_BUSINESS_WRITES: NOT_PROVEN_DISABLED
+    NEXT_ALLOWED_STAGE: STOP
+  immutable_runtime_models:
+    social_runtime:
+      repository: appolon1908-hue/social.codestra.co
+      authority_sha: 4f7817f6c6d1bb38fa7d85bb1656eb41865283d5
+      artifact:
+        type: source-built-image
+        image: ghcr.io/appolon1908-hue/social.codestra.co
+        image_digest: sha256:8576f49ae136c87efbd87827958a6b3b70e4fc597a3eedbacdaddbd7d3474e87
+        build_workflow_run: 33444745623
+        build_job: 99661206524
+        sbom_status: PASS_SPDX_2_3
+        provenance_status: PASS_BUILDKIT_SLSA_SOURCE_AND_SHA_BOUND
+        signature_status: NOT_SUPPORTED_WITH_EXPLICIT_EVIDENCE
+        manifest_checksum: sha256:4a2555f29c332bf14a651feba0797fe2831949283b8aed09bd48c10cc2946b7b
+      runtime:
+        host: 65.109.65.169
+        container: NOT_PRESENT
+        container_id: NOT_PRESENT
+        running_image_digest: NOT_PRESENT
+      rollback:
+        rollback_digest: NOT_AVAILABLE_NO_PRIOR_IMMUTABLE_RELEASE
+        result: FAIL
+      provenance:
+        authority_to_artifact: PASS
+        artifact_to_runtime: FAIL_RUNTIME_ABSENT
+        result: FAIL
+      safety:
+        candidate_config: PASS_FAIL_CLOSED
+        runtime: NOT_OBSERVED
+        result: FAIL
+    middleware:
+      artifact_type: source-built-image
+      current_safe_runtime:
+        source_sha: f6748a58f8d2590520a4f28776770957061cdea1
+        image: ghcr.io/appolon1908-hue/codestra-middleware
+        image_digest: sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820
+        runtime_health: unhealthy
+      current_git_authority:
+        authority_sha: 9152a04ed8df52269b30d7a9c6b18ef00a0caf75
+        candidate_digest: sha256:91b91b6ba1c828919c86102806eb2cfe6da1295cd7b4fe34df3121dd0bbff1b2
+      result: FAIL_CURRENT_RUNTIME_DIFFERS_FROM_CURRENT_AUTHORITY_CANDIDATE
+    kong:
+      repository: appolon1908-hue/Kong
+      authority_sha: 961edbf56e29ce78f305273c3efeec386a2bba62
+      artifact:
+        type: vendor-image-with-git-config
+        image: kong/kong-gateway
+        configured_image: kong/kong-gateway:3.14.0.1-ubuntu
+        running_image_digest: sha256:9cb0429e4641d29189118b20ef0a195569b9d65ef0536bc57907797874071689
+      configuration:
+        authority_path: config/,deploy/kong/
+        checksum: sha256:a25c619b252922b6c6f8ca99fd0f2874e03c987da45a2adc1f70bc57b7c33eb8
+        runtime_binding: UNPROVEN_DATABASE_BACKED_RUNTIME
+      provenance:
+        result: FAIL
+    keycloak:
+      repository: appolon1908-hue/Keycloak
+      authority_sha: 7aef62a020c87ffcbf0fbb2f8c4890a8e9d13098
+      artifact:
+        type: vendor-image-with-git-config
+        image: quay.io/keycloak/keycloak
+        running_image_digest: sha256:2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0
+      configuration:
+        realm_authority_path: config/realms/codestra.json
+        realm_checksum: sha256:ffa948f9d77bf45c5a85bd856294a142d708b6138e060a3c1d3a4173f7eac593
+        deployment_authority_path: Dockerfile,compose.yaml,deploy/
+        deployment_checksum: sha256:ee1c96287e58e46e87af2aef55b932b886f006b62e976c4005c4daf1b35517ce
+        runtime_realm_checksum: sha256:801296d239ec8d6b3ee4352081abe9c7dd2ce1ec648c35dbf8a03c97933c9ddd
+        runtime_deployment_checksum: sha256:6920f305b39dc5b9297edab849ffa866752956ab733dbb1137ec90f0fe662d75
+        runtime_binding: FAIL_CHECKSUM_MISMATCH
+      provenance:
+        result: FAIL
 runtime_revalidated_at: '2026-08-31T01:38:54+02:00'
 supersedes:
 - releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json
@@ -15,9 +114,9 @@ conflict_resolution:
   kong_ancestry: required merge remains an ancestor of current protected main
   social_runtime_required_merge: 4f7817f6c6d1bb38fa7d85bb1656eb41865283d5
   social_runtime_locked_sha: 4f7817f6c6d1bb38fa7d85bb1656eb41865283d5
-  keycloak_previous_locked_sha: 303e2edef2219c5eb3ac167c309a9717a766d079
-  keycloak_locked_sha: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
-  keycloak_ancestry: previous lock is an ancestor of reviewed protected-main merge 57
+  keycloak_previous_locked_sha: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
+  keycloak_locked_sha: 7aef62a020c87ffcbf0fbb2f8c4890a8e9d13098
+  keycloak_ancestry: previous lock is an ancestor of current protected main
 source_refresh:
   checked_at: '2026-08-31T20:54:22+02:00'
   branch_authority: main
@@ -28,7 +127,7 @@ source_refresh:
     middleware: 9152a04ed8df52269b30d7a9c6b18ef00a0caf75
     n8n: b620860c04bf0fe6998c5fc25857262aa5c89d74
     kong: 961edbf56e29ce78f305273c3efeec386a2bba62
-    keycloak: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
+    keycloak: 7aef62a020c87ffcbf0fbb2f8c4890a8e9d13098
     sdk: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0
     prometheus: 12b79875cf01033d1a5bd29462fc70bed0e4bbfb
     grafana: ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6
@@ -169,9 +268,9 @@ repositories:
     repository: appolon1908-hue/social.codestra.co
     revision: 4f7817f6c6d1bb38fa7d85bb1656eb41865283d5
     rollback_git_sha: 3c62c136d2e14238ee124726d681a164f6f24fd6
-    image_digest: UNRESOLVED_NO_REVIEWED_PUBLISHED_IMAGE
-    rollback_digest: UNRESOLVED_NO_REVIEWED_PUBLISHED_IMAGE
-    artifact_class: unresolved_blocking_artifact
+    image_digest: sha256:8576f49ae136c87efbd87827958a6b3b70e4fc597a3eedbacdaddbd7d3474e87
+    rollback_digest: UNRESOLVED_NO_PRIOR_IMMUTABLE_RELEASE
+    artifact_class: custom_attested_image
   middleware:
     repository: appolon1908-hue/Middleware-
     revision: 9152a04ed8df52269b30d7a9c6b18ef00a0caf75
@@ -197,17 +296,17 @@ repositories:
     repository: appolon1908-hue/Kong
     revision: 961edbf56e29ce78f305273c3efeec386a2bba62
     rollback_git_sha: 3594fe25b8fe36633c1de95a8e485c72f32a60f8
-    image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
-    rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
+    image_digest: sha256:9cb0429e4641d29189118b20ef0a195569b9d65ef0536bc57907797874071689
+    rollback_digest: sha256:9cb0429e4641d29189118b20ef0a195569b9d65ef0536bc57907797874071689
     required_merge: 186630b40c19d72aa9bdf9ef1f64e8a17bd0e33e
-    artifact_class: unresolved_blocking_artifact
+    artifact_class: official_upstream_image_plus_codestra_config
   keycloak:
     repository: appolon1908-hue/Keycloak
-    revision: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
-    rollback_git_sha: 303e2edef2219c5eb3ac167c309a9717a766d079
-    image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
-    rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
-    artifact_class: unresolved_blocking_artifact
+    revision: 7aef62a020c87ffcbf0fbb2f8c4890a8e9d13098
+    rollback_git_sha: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
+    image_digest: sha256:2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0
+    rollback_digest: sha256:2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0
+    artifact_class: official_upstream_image_plus_codestra_config
   sdk:
     repository: appolon1908-hue/SDK-repository
     revision: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0
@@ -592,7 +691,7 @@ runtime_resolution:
   schema: codestra.stage6.source-lock-resolution.v2
   resolved_at: '2026-08-31T18:56:22.521243+00:00'
   authoritative_lock_path: /root/codestra-infrastructure-stage6-reconcile/STAGE6-SOURCE-LOCK.yaml
-  authoritative_lock_sha256: sha256:3c58042966a13a8e8ba24be2775a2b39551075342f958aa0bb6a65b3b195ad93
+  authoritative_lock_sha256: sha256:849f8ea1c161337ba52422dcc4e3bd093483860b3a068d6810d23ae8eb6e69c9
   infrastructure_evidence_base_sha: 244a743a771d1f93c1445392bb45f8325908ca72
   runtime_mutation_performed: false
   source_lock: FAIL
@@ -837,7 +936,7 @@ runtime_resolution:
         digest_match: false
       activation_eligible: false
     social_runtime:
-      classification: unresolved_blocking_artifact
+      classification: custom_attested_image
       repository_integrity:
         repository: appolon1908-hue/social.codestra.co
         locked_revision: 4f7817f6c6d1bb38fa7d85bb1656eb41865283d5
@@ -849,12 +948,12 @@ runtime_resolution:
         clean_worktree: true
         status: PASS
       artifact_provenance:
-        classification: unresolved_blocking_artifact
-        locked_digest: UNRESOLVED_NO_REVIEWED_PUBLISHED_IMAGE
-        status: FAIL_UNRESOLVED_BLOCKING_ARTIFACT
+        classification: custom_attested_image
+        locked_digest: sha256:8576f49ae136c87efbd87827958a6b3b70e4fc597a3eedbacdaddbd7d3474e87
+        status: PASS_SOURCE_TO_IMAGE_ATTESTED_RUNTIME_AND_ROLLBACK_MISSING
       runtime_readback:
         status: NOT_OBSERVED_ON_INSPECTED_HOST
-        host: 37.27.128.39
+        host: 65.109.65.169
         containers: []
         digest_match: false
       activation_eligible: false
@@ -1108,7 +1207,7 @@ runtime_resolution:
         read_only_probe: DENIED_UNSUPPORTED_FORCED_COMMAND
       activation_eligible: false
     kong:
-      classification: unresolved_blocking_artifact
+      classification: official_upstream_image_plus_codestra_config
       repository_integrity:
         repository: appolon1908-hue/Kong
         locked_revision: 961edbf56e29ce78f305273c3efeec386a2bba62
@@ -1120,36 +1219,52 @@ runtime_resolution:
         clean_worktree: true
         status: PASS
       artifact_provenance:
-        classification: unresolved_blocking_artifact
-        locked_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
-        status: FAIL_UNRESOLVED_BLOCKING_ARTIFACT
+        classification: official_upstream_image_plus_codestra_config
+        locked_digest: sha256:9cb0429e4641d29189118b20ef0a195569b9d65ef0536bc57907797874071689
+        status: PASS_VENDOR_IMAGE_RUNTIME_CONFIG_BINDING_FAILS
       runtime_readback:
-        status: NOT_OBSERVED_ON_INSPECTED_HOST
-        host: 37.27.128.39
-        containers: []
-        digest_match: false
+        status: FAIL_CODESTRA_CONFIG_BINDING_UNPROVEN
+        host: 65.109.65.169
+        containers:
+        - name: codestra-kong-kong-gateway-1
+          container_id: ffd7ac71a2d46d4ba891c5ccabc6e525c09efcc56ee19d7132647e48c620810d
+          configured_image: kong/kong-gateway:3.14.0.1-ubuntu
+          running_image_digest: sha256:9cb0429e4641d29189118b20ef0a195569b9d65ef0536bc57907797874071689
+          health: unhealthy
+          authority_config_checksum: sha256:a25c619b252922b6c6f8ca99fd0f2874e03c987da45a2adc1f70bc57b7c33eb8
+          runtime_config_checksum: UNAVAILABLE_DATABASE_BACKED_RUNTIME
+        digest_match: true
+        codestra_config_runtime_binding: false
       activation_eligible: false
     keycloak:
-      classification: unresolved_blocking_artifact
+      classification: official_upstream_image_plus_codestra_config
       repository_integrity:
         repository: appolon1908-hue/Keycloak
-        locked_revision: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
-        authoritative_main_head: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
-        checkout_head: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
-        checkout_tree: 01079337dc0696fb8e752ced3a04f58e17439093
+        locked_revision: 7aef62a020c87ffcbf0fbb2f8c4890a8e9d13098
+        authoritative_main_head: 7aef62a020c87ffcbf0fbb2f8c4890a8e9d13098
+        checkout_head: 7aef62a020c87ffcbf0fbb2f8c4890a8e9d13098
+        checkout_tree: 284af53c97902d8f03509082672eb854243c0c12
         exact_head_match: true
         authoritative_head_match: true
         clean_worktree: true
         status: PASS
       artifact_provenance:
-        classification: unresolved_blocking_artifact
-        locked_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
-        status: FAIL_UNRESOLVED_BLOCKING_ARTIFACT
+        classification: official_upstream_image_plus_codestra_config
+        locked_digest: sha256:2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0
+        status: PASS_VENDOR_IMAGE_RUNTIME_CONFIG_BINDING_FAILS
       runtime_readback:
-        status: NOT_OBSERVED_ON_INSPECTED_HOST
-        host: 37.27.128.39
-        containers: []
-        digest_match: false
+        status: FAIL_CODESTRA_CONFIG_BINDING_UNPROVEN
+        host: 65.109.65.169
+        containers:
+        - name: codestra-identity-staging-keycloak-staging-1
+          container_id: f055385c86cbaf6459686499c641a0ee67b4ce490f797d858c0969322a8fa0a8
+          configured_image: quay.io/keycloak/keycloak@sha256:2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0
+          running_image_digest: sha256:2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0
+          health: unhealthy
+          realm_checksum: sha256:801296d239ec8d6b3ee4352081abe9c7dd2ce1ec648c35dbf8a03c97933c9ddd
+          compose_checksum: sha256:6920f305b39dc5b9297edab849ffa866752956ab733dbb1137ec90f0fe662d75
+        digest_match: true
+        codestra_config_runtime_binding: false
       activation_eligible: false
     sdk:
       classification: source_only

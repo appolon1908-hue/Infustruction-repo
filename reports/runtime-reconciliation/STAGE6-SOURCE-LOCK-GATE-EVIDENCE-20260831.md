@@ -140,3 +140,52 @@ Klyrow/Postal route. All observed Klyrow/Postal containers were left untouched.
 
 The machine-generated package checksums are in
 `reports/runtime-reconciliation/STAGE6-EVIDENCE-SHA256SUMS`.
+
+## Final source-lock reconciliation update
+
+Captured: `2026-08-31T22:10:00Z`
+
+The former core-host access blocker is resolved: the authorized SSH identity
+can now run read-only Docker inspection on `65.109.65.169`. Fresh read-back did
+not clear the gate. It established the following concrete failures:
+
+1. No identifiable Stage 6 runtime container exists for Marketing, AI,
+   Communication, Social Control, or Social Runtime. Social Runtime release
+   run `33444745623` subsequently produced immutable digest
+   `sha256:8576f49a...` with SPDX and BuildKit SLSA attestations, but no prior
+   immutable rollback digest exists and nothing is running.
+2. The reviewed Middleware image for source `f6748a58...` and digest
+   `sha256:695fa3ce...` is present but unhealthy. Protected `main` is now
+   `9152a04e...`; its independently signed candidate is not running.
+3. Kong runs an immutable local RepoDigest but is configured by a mutable tag.
+   Its database-backed configuration cannot be tied to the current Git
+   authority checksum by this read-back.
+4. Keycloak runs an immutable vendor digest, but its mounted realm and compose
+   checksums differ from the current Git authority. The apply run that reached
+   reconciliation failed; later successful runs were check-only.
+5. The Stage 6 n8n processes and staging Keycloak/Kong containers are unhealthy.
+6. The self-hosted runner user is not a member of the Docker group and cannot
+   perform a read-only `docker ps` against the `root:docker` mode `0660` socket.
+7. Complete fail-closed safety cannot be established for absent/unbound
+   workloads. Missing runtime controls remain unknown, never false.
+8. Two credential values entered transient command output because an initial
+   sanitizer matched secret-bearing variable names. They are not included in
+   Git evidence and require approved rotation before certification.
+
+Downstream gates were not executed and are classified as
+`NOT_RUN_ENTRY_GATE_BLOCKED`: BACKUPS, STAGING_DEPLOYMENT, OPENBAO_BINDING,
+KEYCLOAK_CERTIFICATION, MIGRATIONS, APPLICATION_HEALTH, KONG_CERTIFICATION,
+N8N_BINDINGS, OBSERVABILITY, E2E_STAGING, FAILURE_TESTS, and ROLLBACK.
+
+```text
+SOCIAL_RUNTIME_PROVENANCE=FAIL
+KONG_PROVENANCE=FAIL
+KEYCLOAK_PROVENANCE=FAIL
+CORE_RUNTIME_READBACK=FAIL
+SAFETY_STATE=FAIL
+RUNNER_DOCKER_AUTHORIZATION=FAIL
+SOURCE_LOCK_CI=FAIL
+FINAL_SOURCE_LOCK=FAIL
+PRODUCTION_BUSINESS_WRITES=NOT_PROVEN_DISABLED
+NEXT_ALLOWED_STAGE=STOP
+```
