@@ -10,6 +10,10 @@ on:
       - "STAGE6-STAGING-HOST-PROVISIONING.md"
       - "STAGE6-STAGING-HOST-BASELINE.md"
       - "STAGE6-STAGING-NETWORK-ISOLATION.md"
+      - ".github/workflows/stage6-readonly-inventory.yml"
+      - "scripts/collect_stage6_hetzner_inventory.py"
+      - "scripts/validate_stage6_readonly_inventory.py"
+      - ".github/CODEOWNERS"
   workflow_dispatch:
     inputs:
       confirmation:
@@ -54,6 +58,7 @@ jobs:
         run: |
           tofu -chdir="$IAC_DIR" fmt -check -recursive
           python3 scripts/validate_stage6_staging_iac.py
+          python3 scripts/validate_stage6_readonly_inventory.py
       - name: Initialize without remote state and validate
         env:
           HCLOUD_TOKEN: "0000000000000000000000000000000000000000000000000000000000000000"
@@ -91,6 +96,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           tofu -chdir="$IAC_DIR" fmt -check -recursive
           python3 scripts/validate_stage6_staging_iac.py
+          python3 scripts/validate_stage6_readonly_inventory.py
           tofu -chdir="$IAC_DIR" init -backend=false -input=false
           tofu -chdir="$IAC_DIR" validate
 
