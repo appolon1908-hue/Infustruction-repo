@@ -1,5 +1,5 @@
 schema: codestra.stage6.source-lock.v2
-locked_at: '2026-08-31T15:18:00+02:00'
+locked_at: '2026-08-31T16:32:51+02:00'
 environment: staging
 production_write_activation: false
 runtime_mutation_authorized: false
@@ -20,16 +20,19 @@ conflict_resolution:
   keycloak_ancestry: previous lock is an ancestor of reviewed protected-main merge 57
 
 source_refresh:
-  checked_at: '2026-08-31T15:18:00+02:00'
+  checked_at: '2026-08-31T16:32:51+02:00'
   branch_authority: main
   result: PASS_EXACT_PROTECTED_HEAD_REFRESH
   n8n_checked_separately: true
   infrastructure_evidence_base_sha: 244a743a771d1f93c1445392bb45f8325908ca72
   changed_protected_heads:
-    middleware: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
+    middleware: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
     n8n: b620860c04bf0fe6998c5fc25857262aa5c89d74
     kong: 961edbf56e29ce78f305273c3efeec386a2bba62
     keycloak: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
+    sdk: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0
+    prometheus: 12b79875cf01033d1a5bd29462fc70bed0e4bbfb
+    grafana: ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6
 
 safety:
   authority: DESIRED_DECLARATIONS_NOT_RUNTIME_ENFORCEMENT_EVIDENCE
@@ -117,14 +120,14 @@ repositories:
   communication: {repository: appolon1908-hue/Codestra-Communication-CC, revision: 0ee0dcbd3d4a9405ffc7d14019bf4a1105f91113, rollback_git_sha: af1d390200a225f45cbd4bd7c999cffee93e0a86, image_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, rollback_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, artifact_class: source_only}
   social_control: {repository: appolon1908-hue/Codesrea-Social-, revision: 7bc0dd9ee8a13abbd1463ca106629ad63d957145, rollback_git_sha: fa99598cc6eb881b3b2264a4ba82129ef4b22204, image_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, rollback_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, artifact_class: source_only}
   social_runtime: {repository: appolon1908-hue/social.codestra.co, revision: 4f7817f6c6d1bb38fa7d85bb1656eb41865283d5, rollback_git_sha: 3c62c136d2e14238ee124726d681a164f6f24fd6, image_digest: UNRESOLVED_NO_REVIEWED_PUBLISHED_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_PUBLISHED_IMAGE, artifact_class: unresolved_blocking_artifact}
-  middleware: {repository: appolon1908-hue/Middleware-, revision: 81c50c7447a87f7c83544cdc4ff9d27c5059a524, rollback_git_sha: c720e529ea89f1f0d5d035d4ac12a1d5aa30ab62, image_digest: 'sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506', rollback_digest: 'sha256:92954f809e811487f8ac15bde3ba636f3bdb1c37547838e9579bb1fd9567f8da', artifact_class: custom_signed_image}
+  middleware: {repository: appolon1908-hue/Middleware-, revision: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94, rollback_git_sha: 81c50c7447a87f7c83544cdc4ff9d27c5059a524, image_digest: 'sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0', rollback_digest: 'sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506', artifact_class: custom_signed_image}
   odoo: {repository: appolon1908-hue/Odoo, revision: 3eeb17f8b7efcd9bd90487e5e8e9888717f51138, rollback_git_sha: 16356fa57fbda080fe78831507eccd63d9a00fc4, image_digest: 'sha256:f54272f31d5f77e4146b887efb3761c98480317daf687e4b4b5e76ed8bcc08c5', rollback_digest: 'sha256:f54272f31d5f77e4146b887efb3761c98480317daf687e4b4b5e76ed8bcc08c5', artifact_class: official_upstream_image_plus_codestra_config}
   n8n: {repository: appolon1908-hue/N8N, revision: b620860c04bf0fe6998c5fc25857262aa5c89d74, rollback_git_sha: 4d35472772f60c5af616ffac1f902d626643d02d, image_digest: 'sha256:cfe2704ff858395503d42548206c2c99ea351a205e941063a9d9b77b0f404478', rollback_digest: 'sha256:cfe2704ff858395503d42548206c2c99ea351a205e941063a9d9b77b0f404478', artifact_class: official_upstream_image_plus_codestra_config}
   kong: {repository: appolon1908-hue/Kong, revision: 961edbf56e29ce78f305273c3efeec386a2bba62, rollback_git_sha: 3594fe25b8fe36633c1de95a8e485c72f32a60f8, image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, required_merge: 186630b40c19d72aa9bdf9ef1f64e8a17bd0e33e, artifact_class: unresolved_blocking_artifact}
   keycloak: {repository: appolon1908-hue/Keycloak, revision: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f, rollback_git_sha: 303e2edef2219c5eb3ac167c309a9717a766d079, image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, artifact_class: unresolved_blocking_artifact}
-  sdk: {repository: appolon1908-hue/SDK-repository, revision: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb, rollback_git_sha: 1c82989d64bfd458d915d684c6a4f2c8bcaf38b3, image_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, rollback_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, artifact_class: source_only}
-  prometheus: {repository: appolon1908-hue/Codestra-Prometheus, revision: eec6ea7d7a63d7debef16de92ef5b6d34395d013, rollback_git_sha: 7b7a4b8880bb2d3c6bbb2d33bd23b23bd5c63284, image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, artifact_class: official_upstream_image_plus_codestra_config}
-  grafana: {repository: appolon1908-hue/Codestra-Grafana-, revision: 30b736f98e7bbf16f54280251c6d51a877ff2d8a, rollback_git_sha: 9a2fbac0d7d5359537bea5a6ed758c6518108325, image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, artifact_class: official_upstream_image_plus_codestra_config}
+  sdk: {repository: appolon1908-hue/SDK-repository, revision: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0, rollback_git_sha: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb, image_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, rollback_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, artifact_class: source_only}
+  prometheus: {repository: appolon1908-hue/Codestra-Prometheus, revision: 12b79875cf01033d1a5bd29462fc70bed0e4bbfb, rollback_git_sha: eec6ea7d7a63d7debef16de92ef5b6d34395d013, image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, artifact_class: official_upstream_image_plus_codestra_config}
+  grafana: {repository: appolon1908-hue/Codestra-Grafana-, revision: ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6, rollback_git_sha: 30b736f98e7bbf16f54280251c6d51a877ff2d8a, image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, artifact_class: official_upstream_image_plus_codestra_config}
   loki: {repository: appolon1908-hue/Codestra-Loki, revision: 75a5deb555547b557466c418af18c99f3cef5556, rollback_git_sha: c17b93282086a433439c695ed77a1ebdb0a944c0, image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, artifact_class: official_upstream_image_plus_codestra_config}
   tempo: {repository: appolon1908-hue/Codestra-Tempo, revision: 4d91ab83d702c5892a8521804abfe32a57a6825f, rollback_git_sha: c34a86e325cf5dc34533f721b03a8d0422e2086e, image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE, artifact_class: official_upstream_image_plus_codestra_config}
   telemetry: {repository: appolon1908-hue/Codestra-Telemetry, revision: d42d866072ce86175ca03209bd866b3452d606fe, rollback_git_sha: cb1e628913378886859b463844ba82c5222a833a, image_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, rollback_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED, artifact_class: source_only}
@@ -162,8 +165,8 @@ runtime_workloads:
     git_sha: b29db772ed82c0d2f1adfdb8e6da58d4baa77524
     image_digest: 'sha256:b81c125296effc17a33258212d9a71a3c427a972fa9783ec2c060109d167408f'
     expected_repository: appolon1908-hue/Middleware-
-    expected_sha: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
-    expected_digest: 'sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506'
+    expected_sha: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+    expected_digest: 'sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0'
     environment: STAGING
     service_authority: /opt/codestra/middleware-staging/compose.yaml#middleware-staging
     secret_authority: /etc/codestra/secrets/middleware-staging

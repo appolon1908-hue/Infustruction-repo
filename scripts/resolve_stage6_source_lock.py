@@ -8,6 +8,7 @@ import json
 import re
 import socket
 import subprocess
+import sys
 import tempfile
 from collections import Counter
 from datetime import datetime, timezone
@@ -20,9 +21,11 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / "STAGE6-SOURCE-LOCK.yaml"
 OUTPUT = ROOT / "STAGE6-SOURCE-LOCK.RESOLVED.yaml"
 CHECKOUT_ROOT = Path("/root/stage6-source-lock-checkouts")
-MIDDLEWARE_RELEASE_MANIFEST = Path(
-    "/root/stage6-middleware-release-33393846576/release-manifest.v1.json"
+MIDDLEWARE_RELEASE_MANIFEST = (
+    ROOT
+    / "reports/runtime-reconciliation/middleware-release-eaf396/release-manifest.v1.json"
 )
+MIDDLEWARE_VERIFIER = ROOT / "scripts/verify_stage6_middleware_artifact.py"
 SHA = re.compile(r"^[0-9a-f]{40}$")
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 SAFE_VALUES = {"false", "disabled", "0", "off", "no"}
@@ -46,7 +49,7 @@ IMAGE_REFERENCES = {
     "openbao": "ghcr.io/openbao/openbao",
 }
 CORE_COMPONENTS = {"middleware", "odoo", "n8n"}
-MIDDLEWARE_RUN_ID = 33393846576
+MIDDLEWARE_RUN_ID = 33401833572
 INSPECTION_HOST = "37.27.128.39"
 
 
@@ -58,6 +61,17 @@ def run(*args: str, cwd: Path | None = None) -> str:
 
 def file_sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def middleware_artifact_verification() -> dict:
+    try:
+        return json.loads(run(sys.executable, str(MIDDLEWARE_VERIFIER), "--json"))
+    except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
+        return {
+            "status": "FAIL",
+            "error": (getattr(exc, "output", None) or str(exc))[-2000:],
+            "checks": {},
+        }
 
 
 def registry_resolution(reference: str, digest: str) -> dict:
@@ -217,6 +231,7 @@ def artifact_evidence(component: str, definition: dict, source: dict) -> dict:
     result.update(registry)
     if component == "middleware":
         labels = local_image_labels(registry["reference"])
+        verification = middleware_artifact_verification()
         manifest = (
             json.loads(MIDDLEWARE_RELEASE_MANIFEST.read_text())
             if MIDDLEWARE_RELEASE_MANIFEST.exists()
@@ -226,6 +241,7 @@ def artifact_evidence(component: str, definition: dict, source: dict) -> dict:
             {
                 "oci_revision": labels.get("org.opencontainers.image.revision"),
                 "oci_source": labels.get("org.opencontainers.image.source"),
+                "verified_source_revision": verification.get("source_sha"),
                 "release_workflow_run": f"https://github.com/appolon1908-hue/Middleware-/actions/runs/{MIDDLEWARE_RUN_ID}",
                 "release_manifest_sha256": (
                     file_sha256(MIDDLEWARE_RELEASE_MANIFEST)
@@ -234,17 +250,18 @@ def artifact_evidence(component: str, definition: dict, source: dict) -> dict:
                 ),
                 "release_manifest_source_sha": (manifest.get("source") or {}).get("git_sha"),
                 "release_manifest_image_digest": (manifest.get("image") or {}).get("digest"),
-                "signature_verification": "PASS_BY_EXACT_HEAD_RELEASE_WORKFLOW",
+                "cryptographic_verification": verification,
             }
         )
         exact = (
             registry["registry_resolution"] == "PASS"
-            and result["oci_revision"] == definition["revision"]
+            and verification.get("status") == "PASS"
+            and result["verified_source_revision"] == definition["revision"]
             and result["release_manifest_source_sha"] == definition["revision"]
             and result["release_manifest_image_digest"] == digest
             and result["release_manifest_sha256"] is not None
         )
-        result["status"] = "PASS" if exact else "FAIL_SIGNED_PROVENANCE"
+        result["status"] = "PASS" if exact else "FAIL_CRYPTOGRAPHIC_PROVENANCE"
         return result
 
     result["codestra_config_revision"] = definition["revision"]

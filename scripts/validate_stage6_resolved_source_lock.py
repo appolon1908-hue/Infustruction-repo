@@ -71,10 +71,16 @@ def main() -> None:
 
     middleware = components["middleware"]["artifact_provenance"]
     assert middleware["status"] == "PASS"
-    assert middleware["oci_revision"] == source["repositories"]["middleware"]["revision"]
-    assert middleware["release_manifest_source_sha"] == middleware["oci_revision"]
+    assert middleware["verified_source_revision"] == source["repositories"]["middleware"]["revision"]
+    assert middleware["release_manifest_source_sha"] == middleware["verified_source_revision"]
     assert middleware["release_manifest_image_digest"] == middleware["locked_digest"]
     assert DIGEST.fullmatch(middleware["release_manifest_sha256"])
+    crypto = middleware["cryptographic_verification"]
+    assert crypto["status"] == "PASS"
+    assert crypto["digest"] == middleware["locked_digest"]
+    assert crypto["source_sha"] == middleware["verified_source_revision"]
+    assert crypto["checks"]
+    assert all(value is True for value in crypto["checks"].values())
 
     openbao = components["openbao"]
     assert openbao["artifact_provenance"]["status"] == "PASS_OFFICIAL_DIGEST_WITH_SEPARATE_CONFIG"

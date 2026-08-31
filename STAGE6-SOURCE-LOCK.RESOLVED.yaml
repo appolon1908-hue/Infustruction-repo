@@ -1,5 +1,5 @@
 schema: codestra.stage6.source-lock.v2
-locked_at: '2026-08-31T15:18:00+02:00'
+locked_at: '2026-08-31T16:32:51+02:00'
 environment: staging
 production_write_activation: false
 runtime_mutation_authorized: false
@@ -19,16 +19,19 @@ conflict_resolution:
   keycloak_locked_sha: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
   keycloak_ancestry: previous lock is an ancestor of reviewed protected-main merge 57
 source_refresh:
-  checked_at: '2026-08-31T15:18:00+02:00'
+  checked_at: '2026-08-31T16:32:51+02:00'
   branch_authority: main
   result: PASS_EXACT_PROTECTED_HEAD_REFRESH
   n8n_checked_separately: true
   infrastructure_evidence_base_sha: 244a743a771d1f93c1445392bb45f8325908ca72
   changed_protected_heads:
-    middleware: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
+    middleware: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
     n8n: b620860c04bf0fe6998c5fc25857262aa5c89d74
     kong: 961edbf56e29ce78f305273c3efeec386a2bba62
     keycloak: 6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f
+    sdk: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0
+    prometheus: 12b79875cf01033d1a5bd29462fc70bed0e4bbfb
+    grafana: ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6
 safety:
   authority: DESIRED_DECLARATIONS_NOT_RUNTIME_ENFORCEMENT_EVIDENCE
   LIVE_ADVERTISING_ENABLED: false
@@ -171,10 +174,10 @@ repositories:
     artifact_class: unresolved_blocking_artifact
   middleware:
     repository: appolon1908-hue/Middleware-
-    revision: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
-    rollback_git_sha: c720e529ea89f1f0d5d035d4ac12a1d5aa30ab62
-    image_digest: sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506
-    rollback_digest: sha256:92954f809e811487f8ac15bde3ba636f3bdb1c37547838e9579bb1fd9567f8da
+    revision: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+    rollback_git_sha: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
+    image_digest: sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
+    rollback_digest: sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506
     artifact_class: custom_signed_image
   odoo:
     repository: appolon1908-hue/Odoo
@@ -207,22 +210,22 @@ repositories:
     artifact_class: unresolved_blocking_artifact
   sdk:
     repository: appolon1908-hue/SDK-repository
-    revision: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb
-    rollback_git_sha: 1c82989d64bfd458d915d684c6a4f2c8bcaf38b3
+    revision: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0
+    rollback_git_sha: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb
     image_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED
     rollback_digest: UNRESOLVED_NO_RUNTIME_IMAGE_REQUIRED
     artifact_class: source_only
   prometheus:
     repository: appolon1908-hue/Codestra-Prometheus
-    revision: eec6ea7d7a63d7debef16de92ef5b6d34395d013
-    rollback_git_sha: 7b7a4b8880bb2d3c6bbb2d33bd23b23bd5c63284
+    revision: 12b79875cf01033d1a5bd29462fc70bed0e4bbfb
+    rollback_git_sha: eec6ea7d7a63d7debef16de92ef5b6d34395d013
     image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
     rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
     artifact_class: official_upstream_image_plus_codestra_config
   grafana:
     repository: appolon1908-hue/Codestra-Grafana-
-    revision: 30b736f98e7bbf16f54280251c6d51a877ff2d8a
-    rollback_git_sha: 9a2fbac0d7d5359537bea5a6ed758c6518108325
+    revision: ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6
+    rollback_git_sha: 30b736f98e7bbf16f54280251c6d51a877ff2d8a
     image_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
     rollback_digest: UNRESOLVED_NO_REVIEWED_RUNTIME_IMAGE
     artifact_class: official_upstream_image_plus_codestra_config
@@ -321,8 +324,8 @@ runtime_workloads:
     git_sha: b29db772ed82c0d2f1adfdb8e6da58d4baa77524
     image_digest: sha256:b81c125296effc17a33258212d9a71a3c427a972fa9783ec2c060109d167408f
     expected_repository: appolon1908-hue/Middleware-
-    expected_sha: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
-    expected_digest: sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506
+    expected_sha: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+    expected_digest: sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
     environment: STAGING
     service_authority: /opt/codestra/middleware-staging/compose.yaml#middleware-staging
     secret_authority: /etc/codestra/secrets/middleware-staging
@@ -587,9 +590,9 @@ gates:
   out_of_scope_production_writes: ACTIVE_DO_NOT_TOUCH
 runtime_resolution:
   schema: codestra.stage6.source-lock-resolution.v2
-  resolved_at: '2026-08-31T14:18:21.834302+00:00'
+  resolved_at: '2026-08-31T16:44:32.477525+00:00'
   authoritative_lock_path: /root/codestra-infrastructure-stage6-reconcile/STAGE6-SOURCE-LOCK.yaml
-  authoritative_lock_sha256: sha256:74879965d5cc65790d355020f86802ce35fbdaa275331a22ac3ce331bf5b022f
+  authoritative_lock_sha256: sha256:496413c5f23cbce2b0aaccd285a62d7c1453de2bdfc36c9c5a2d0dcb1179ba6a
   infrastructure_evidence_base_sha: 244a743a771d1f93c1445392bb45f8325908ca72
   runtime_mutation_performed: false
   source_lock: FAIL
@@ -641,7 +644,7 @@ runtime_resolution:
       production: DISABLED_NOT_AUTHORIZED
   private_middleware_staging:
     status: HELD
-    locked_source_digest: sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506
+    locked_source_digest: sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
     deployment_lock_digest: sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820
     artifact_gate: FAIL_STALE_DEPLOYMENT_LOCK
     scoped_safety_gate: FAIL_RUNTIME_READBACK_UNAVAILABLE
@@ -856,28 +859,60 @@ runtime_resolution:
       classification: custom_signed_image
       repository_integrity:
         repository: appolon1908-hue/Middleware-
-        locked_revision: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
-        authoritative_main_head: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
-        checkout_head: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
-        checkout_tree: 0a3b629c0e1b0921a15cd7ef0a7b021d27c28db8
+        locked_revision: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+        authoritative_main_head: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+        checkout_head: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+        checkout_tree: 0ac2f0a4084df287741bcf25b49c0061cd6fb0d4
         exact_head_match: true
         authoritative_head_match: true
         clean_worktree: true
         status: PASS
       artifact_provenance:
         classification: custom_signed_image
-        locked_digest: sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506
+        locked_digest: sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
         status: PASS
-        reference: ghcr.io/appolon1908-hue/codestra-middleware@sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506
-        resolved_digest: sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506
+        reference: ghcr.io/appolon1908-hue/codestra-middleware@sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
+        resolved_digest: sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
         registry_resolution: PASS
-        oci_revision: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
-        oci_source: https://github.com/appolon1908-hue/Middleware-
-        release_workflow_run: https://github.com/appolon1908-hue/Middleware-/actions/runs/33393846576
-        release_manifest_sha256: sha256:c97b9fbf7969a776ce800ea7eb625143236534b79a341282821fba3a64b16e91
-        release_manifest_source_sha: 81c50c7447a87f7c83544cdc4ff9d27c5059a524
-        release_manifest_image_digest: sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506
-        signature_verification: PASS_BY_EXACT_HEAD_RELEASE_WORKFLOW
+        oci_revision: null
+        oci_source: null
+        verified_source_revision: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+        release_workflow_run: https://github.com/appolon1908-hue/Middleware-/actions/runs/33401833572
+        release_manifest_sha256: sha256:22805a0f4867bc185c6464abff494e1e86d237d34c90e53af41d969c336fd565
+        release_manifest_source_sha: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+        release_manifest_image_digest: sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
+        cryptographic_verification:
+          certificate_identity: https://github.com/appolon1908-hue/Middleware-/.github/workflows/release.yml@refs/heads/main
+          checks:
+            certificate_identity_match: true
+            cosign_version_match: true
+            image_digest_match: true
+            image_reference_match: true
+            image_signature_verified: true
+            oidc_issuer_match: true
+            release_manifest_bundle_verified: true
+            repository_match: true
+            source_ref_match: true
+            source_sha_match: true
+            spdx_attestation_verified: true
+            workflow_identity_match: true
+          cosign_version:
+            buildDate: '2026-04-06T21:39:58Z'
+            compiler: gc
+            gitCommit: f1ad3ee952313be5d74a49d67ba0aa8d0d5e351f
+            gitTreeState: clean
+            gitVersion: v3.0.6
+            goVersion: go1.25.7
+            platform: linux/amd64
+          digest: sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
+          oidc_issuer: https://token.actions.githubusercontent.com
+          reference: ghcr.io/appolon1908-hue/codestra-middleware@sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0
+          release_manifest_bundle_sha256: sha256:9a802c9d4c71db234bd1f5177817e6337ac35000d79a4f631ac94a8054b45500
+          release_manifest_sha256: sha256:22805a0f4867bc185c6464abff494e1e86d237d34c90e53af41d969c336fd565
+          source_sha: eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94
+          status: PASS
+          verified_image_signatures: 2
+          verified_spdx_attestations: 1
       runtime_readback:
         status: FAIL_FRESH_CORE_READBACK_BLOCKED
         host: 65.109.65.169
@@ -1117,10 +1152,10 @@ runtime_resolution:
       classification: source_only
       repository_integrity:
         repository: appolon1908-hue/SDK-repository
-        locked_revision: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb
-        authoritative_main_head: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb
-        checkout_head: ee8cec5d19cc5c3e03a12f5714031b86b58b4efb
-        checkout_tree: 0691b087daaca2bc181a0f91ed81fa7059111559
+        locked_revision: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0
+        authoritative_main_head: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0
+        checkout_head: 833b79207b59a8451ea6e7dbfafe8fb64cdb33c0
+        checkout_tree: 02c55a0fd6083950a84a8a12fc042ba8447f81a5
         exact_head_match: true
         authoritative_head_match: true
         clean_worktree: true
@@ -1140,10 +1175,10 @@ runtime_resolution:
       classification: official_upstream_image_plus_codestra_config
       repository_integrity:
         repository: appolon1908-hue/Codestra-Prometheus
-        locked_revision: eec6ea7d7a63d7debef16de92ef5b6d34395d013
-        authoritative_main_head: eec6ea7d7a63d7debef16de92ef5b6d34395d013
-        checkout_head: eec6ea7d7a63d7debef16de92ef5b6d34395d013
-        checkout_tree: f71dbc077e52b83a36bc0c9a2ce9de779db39108
+        locked_revision: 12b79875cf01033d1a5bd29462fc70bed0e4bbfb
+        authoritative_main_head: 12b79875cf01033d1a5bd29462fc70bed0e4bbfb
+        checkout_head: 12b79875cf01033d1a5bd29462fc70bed0e4bbfb
+        checkout_tree: 872b41cc7fb9e4b151bf973cb1cecbedc2af5206
         exact_head_match: true
         authoritative_head_match: true
         clean_worktree: true
@@ -1162,10 +1197,10 @@ runtime_resolution:
       classification: official_upstream_image_plus_codestra_config
       repository_integrity:
         repository: appolon1908-hue/Codestra-Grafana-
-        locked_revision: 30b736f98e7bbf16f54280251c6d51a877ff2d8a
-        authoritative_main_head: 30b736f98e7bbf16f54280251c6d51a877ff2d8a
-        checkout_head: 30b736f98e7bbf16f54280251c6d51a877ff2d8a
-        checkout_tree: 9a91fe8f4dd65fbc4612accc8518be956255e4f7
+        locked_revision: ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6
+        authoritative_main_head: ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6
+        checkout_head: ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6
+        checkout_tree: 74797040be133e7cafbc622ab09c3f73dbba27ed
         exact_head_match: true
         authoritative_head_match: true
         clean_worktree: true

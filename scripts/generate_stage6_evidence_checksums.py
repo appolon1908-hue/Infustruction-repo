@@ -11,16 +11,22 @@ FILES = (
     ".github/workflows/validate-stage6-source-lock.yml",
     "STAGE6-SOURCE-LOCK.yaml",
     "STAGE6-SOURCE-LOCK.RESOLVED.yaml",
+    "deploy/staging/intake-observability/compose.yaml",
+    "deploy/staging/intake-observability/runtime-lock.v1.json",
     "releases/STAGE6-STAGING-DEPLOYMENT-PLAN-2026-08-30.yaml",
+    "reports/runtime-reconciliation/middleware-release-eaf396/release-manifest.v1.json",
+    "reports/runtime-reconciliation/middleware-release-eaf396/release-manifest.v1.sigstore.json",
     "reports/runtime-reconciliation/STAGE6-RECONCILIATION-MATRIX.csv",
     "reports/runtime-reconciliation/STAGE6-SOURCE-LOCK-GATE-EVIDENCE-20260831.md",
     "scripts/build_stage6_reconciliation_matrix.py",
     "scripts/generate_stage6_evidence_checksums.py",
     "scripts/prepare_stage6_locked_checkouts.py",
     "scripts/resolve_stage6_source_lock.py",
+    "scripts/validate_stage6_authority_heads.py",
     "scripts/validate_stage6_resolved_source_lock.py",
     "scripts/validate_stage6_source_lock.py",
     "scripts/validate_stage6_staging_plan.py",
+    "scripts/verify_stage6_middleware_artifact.py",
 )
 
 

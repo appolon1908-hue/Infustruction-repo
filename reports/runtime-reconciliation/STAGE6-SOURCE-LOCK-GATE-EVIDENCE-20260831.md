@@ -1,6 +1,6 @@
 # Stage 6 Source Lock Gate Evidence
 
-Captured: `2026-08-31T13:56:43Z`
+Captured: `2026-08-31T14:36:23Z`
 
 This is source and read-only evidence. It performed no deployment, restart,
 migration, secret change, monitoring activation, production activation, or
@@ -31,14 +31,17 @@ All 23 component repositories were fetched into dedicated detached checkouts.
 Every checkout is clean, its `HEAD` equals the lock, and the lock equals the
 freshly fetched authoritative `main` head.
 
-Four heads advanced relative to the prior lock:
+Seven heads advanced relative to the Infrastructure evidence base lock:
 
 | Component | Current authoritative `main` | Rollback Git SHA |
 |---|---|---|
-| Middleware | `81c50c7447a87f7c83544cdc4ff9d27c5059a524` | `c720e529ea89f1f0d5d035d4ac12a1d5aa30ab62` |
+| Middleware | `eaf3967ee050a5beb3400ae50fe2ba5fe0ab2a94` | `81c50c7447a87f7c83544cdc4ff9d27c5059a524` |
 | n8n | `b620860c04bf0fe6998c5fc25857262aa5c89d74` | `4d35472772f60c5af616ffac1f902d626643d02d` |
 | Kong | `961edbf56e29ce78f305273c3efeec386a2bba62` | `3594fe25b8fe36633c1de95a8e485c72f32a60f8` |
 | Keycloak | `6ce1806c5d3ba63fd89c3b0168181f944c0d7c4f` | `303e2edef2219c5eb3ac167c309a9717a766d079` |
+| SDK | `833b79207b59a8451ea6e7dbfafe8fb64cdb33c0` | `ee8cec5d19cc5c3e03a12f5714031b86b58b4efb` |
+| Prometheus | `12b79875cf01033d1a5bd29462fc70bed0e4bbfb` | `eec6ea7d7a63d7debef16de92ef5b6d34395d013` |
+| Grafana | `ab06c5c42352a2d14f6b54fe6bf13b6cebdfaca6` | `30b736f98e7bbf16f54280251c6d51a877ff2d8a` |
 
 No newer development or floating head replaced an authoritative `main` SHA.
 
@@ -58,9 +61,11 @@ source lock while the other three gates remain incomplete.
 
 - Source-only: Marketing, AI, Communication, Social Control, SDK, Telemetry,
   and this Infrastructure evidence base.
-- Custom signed image: Middleware. Exact-head release run `33393846576`
-  produced and verified
-  `sha256:9ee53c15bf58f4d808306adcc492b3a1a721175cd024b78d44ed71c6835c6506`.
+- Custom signed image: Middleware. Exact-head release run `33401833572`
+  produced `sha256:cacf169b00cfd95928d192935592a39bcc759f0da7424531a8ba29e7e36c09f0`.
+  Independent Cosign verification confirms the image signature, digest-bound
+  SPDX attestation, and signed release-manifest bundle against the pinned
+  GitHub Actions certificate identity and OIDC issuer.
 - Official upstream image plus Codestra config: Odoo, n8n, Prometheus, Grafana,
   Loki, Tempo, Alloy, Node Exporter, cAdvisor, Redis Exporter, Blackbox
   Exporter, Superset, and OpenBao. A class does not pass provenance when its
