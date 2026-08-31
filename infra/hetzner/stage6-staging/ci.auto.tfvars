@@ -1,0 +1,10 @@
+location                        = "fsn1"
+private_network_id              = 100001
+private_ip                      = "10.250.6.10"
+approved_ssh_key_ids            = [100001]
+approved_ssh_source_cidrs       = ["192.0.2.10/32"]
+approved_private_cidrs          = ["10.250.0.0/16"]
+approved_bootstrap_egress_cidrs = ["192.0.2.20/32"]
+dns_resolver_cidrs              = ["192.0.2.53/32"]
+ntp_server_cidrs                = ["192.0.2.123/32"]
+forbidden_production_cidrs      = ["198.51.100.0/24"]
