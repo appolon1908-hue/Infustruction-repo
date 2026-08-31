@@ -81,7 +81,7 @@ def main() -> None:
     assert gates["unverified_workloads_frozen_from_automatic_replacement"] is True
     assert gates["rollback_digests_recorded_for_all_workloads"] is True
     assert gates["source_lock"] == "PASS"
-    assert gates["stage6_preflight"] == "PENDING_SCOPED_RUNTIME_READBACK"
+    assert gates["stage6_preflight"] == "FAIL_SCOPED_RUNTIME_READBACK"
     assert gates["backup_preparation_allowed"] is False
     assert gates["runtime_reconciliation_allowed"] is False
     assert gates["stage6_path_business_writes"] == "NOT_PROVEN_DISABLED"
@@ -92,12 +92,16 @@ def main() -> None:
     assert scope["in_scope_workloads"] == 22
     assert scope["out_of_scope_active_production"]["disposition"] == "OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH"
     runtime_safety = lock["current_runtime_safety"]
-    assert runtime_safety["status"] == "PENDING_SCOPED_RUNTIME_READBACK"
+    assert runtime_safety["status"] == "FAIL_SCOPED_RUNTIME_READBACK"
     assert runtime_safety["stage6_path_business_writes"] == "NOT_PROVEN_DISABLED"
-    assert runtime_safety["scoped_runtime_readback"] == "REQUIRED_BEFORE_APPLY"
+    assert runtime_safety["scoped_runtime_readback"] == "FAIL"
+    assert runtime_safety["workloads_present"] == 22
+    assert runtime_safety["workload_digests_matching"] == 22
+    assert runtime_safety["safety_complete_workloads"] == 0
+    assert runtime_safety["unsafe_true_values_observed"] == 0
     assert runtime_safety["out_of_scope_active_production"] == "OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH"
     print("SOURCE_LOCK=PASS")
-    print("STAGE6_PREFLIGHT=PENDING_SCOPED_RUNTIME_READBACK")
+    print("STAGE6_PREFLIGHT=FAIL_SCOPED_RUNTIME_READBACK")
     print("STAGE6_PATH_BUSINESS_WRITES=NOT_PROVEN_DISABLED")
     print("OUT_OF_SCOPE_PRODUCTION=ACTIVE_DO_NOT_TOUCH")
     print("STAGE6_SOURCE_LOCK_VALIDATION=PASS")

@@ -1,16 +1,20 @@
 schema_version: '2.0'
 environment: STAGING
-status: HELD_SCOPED_PREFLIGHT_PENDING_NOT_EXECUTED
+status: HELD_SCOPED_PREFLIGHT_FAILED_NOT_EXECUTED
 production_authorized: false
 external_writes_enabled: false
 runtime_preflight:
   source_lock: PASS
-  stage6_preflight: PENDING_SCOPED_RUNTIME_READBACK
+  stage6_preflight: FAIL_SCOPED_RUNTIME_READBACK
   stage6_path_business_writes: NOT_PROVEN_DISABLED
   in_scope_host: 65.109.65.169
   in_scope_workloads: 22
   out_of_scope_active_production: OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH
-  scoped_runtime_readback: REQUIRED_BEFORE_APPLY
+  scoped_runtime_readback: FAIL
+  workloads_present: 22
+  workload_digests_matching: 22
+  safety_complete_workloads: 0
+  unhealthy_workloads: 6
 source_lock:
   path: STAGE6-SOURCE-LOCK.yaml
   merge_sha: 65018df89571042c1e7550adf3180d47bb495187

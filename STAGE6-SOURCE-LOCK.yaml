@@ -3,7 +3,7 @@ locked_at: '2026-08-31T01:38:54+02:00'
 environment: staging
 production_write_activation: false
 runtime_mutation_authorized: false
-status: SOURCE_LOCKED_SCOPED_RUNTIME_READBACK_PENDING
+status: SOURCE_LOCKED_SCOPED_RUNTIME_READBACK_FAILED
 runtime_revalidated_at: '2026-08-31T01:38:54+02:00'
 supersedes:
   - releases/STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json
@@ -58,10 +58,26 @@ safety_scope:
     - production deployment and mutation remain unauthorized
 
 current_runtime_safety:
-  status: PENDING_SCOPED_RUNTIME_READBACK
+  status: FAIL_SCOPED_RUNTIME_READBACK
   stage6_path_business_writes: NOT_PROVEN_DISABLED
   inspected_host: 65.109.65.169
   required_workloads: 22
+  workloads_present: 22
+  workloads_running: 22
+  workload_digests_matching: 22
+  safety_applicable_workloads: 17
+  safety_complete_workloads: 0
+  unsafe_true_values_observed: 0
+  unhealthy_workloads: 6
+  missing_safety_key_counts:
+    LIVE_ADVERTISING_ENABLED: 17
+    EXTERNAL_DELIVERY_ENABLED: 12
+    SOCIAL_PUBLISHING_ENABLED: 17
+    EXTERNAL_MODEL_CALLS_ENABLED: 17
+    LIVE_SMS_DELIVERY: 17
+    LIVE_EMAIL_DELIVERY: 17
+    LIVE_PSTN_DIALING: 17
+    PRODUCTION_DIALING: 17
   out_of_scope_active_production: OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH
   prior_global_blocking_signal:
     LIVE_EMAIL_DELIVERY: true
@@ -70,7 +86,7 @@ current_runtime_safety:
       - klyrow-smtp-relay-1
       - klyrow-worker-1
     public_smtp_listener: '37.27.128.39:25'
-  scoped_runtime_readback: REQUIRED_BEFORE_APPLY
+  scoped_runtime_readback: FAIL
 
 repositories:
   marketing: {repository: appolon1908-hue/Codestra-Marketing-, revision: 460ff98f64ef9f0724fe4d2afc51a1a6c5b053dd, artifact: source_only}
@@ -264,7 +280,7 @@ gates:
   source_safety_model_remediated: true
   rollback_digests_recorded_for_all_workloads: true
   source_lock: PASS
-  stage6_preflight: PENDING_SCOPED_RUNTIME_READBACK
+  stage6_preflight: FAIL_SCOPED_RUNTIME_READBACK
   backup_preparation_allowed: false
   runtime_reconciliation_allowed: false
   stage6_path_business_writes: NOT_PROVEN_DISABLED
