@@ -28,3 +28,7 @@ PRODUCTION_BUSINESS_WRITES=UNKNOWN
 No Docker authorization, Stage 6 workflow, email send, PSTN call, advertising
 action, social publication, or external-model call was performed by this
 investigation.
+
+Remediation PR `appolon1908-hue/klyrow.com#57` is pending protected CI and
+CODEOWNER approval. Runtime remains unchanged until it is merged and the
+restricted `klyrow-stack` deployment path has a verified rollback target.

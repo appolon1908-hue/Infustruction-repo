@@ -2,6 +2,8 @@
 
 Captured: 2026-08-31T12:24:43Z
 
+Remediation checkpoint: 2026-08-31
+
 ## Access and authority
 
 - Target: `37.27.128.39`
@@ -18,6 +20,21 @@ TCP connection was transient. Current TCP and authenticated access succeed.
 Available evidence does not establish whether the earlier refusal was caused
 by sshd, firewall/rate protection, or provider-edge behavior, so the cause
 remains UNKNOWN.
+
+The controlling repository is `appolon1908-hue/klyrow.com`. Protected `main`
+was `57678867166043c2351d56f58ad47785e9456c18` when remediation began; the
+production gateway remains on `9684fd55bdbc64a971a17a291ff293a178a2ebac`.
+The effective override originates from the root-owned production runtime `.env`
+loaded through the Compose `env_file` contract: the gateway did not pin
+`KLYROW_SAFE_MODE`, and the worker allowed `${KLYROW_SAFE_MODE:-true}`.
+
+Fail-closed correction PR:
+`appolon1908-hue/klyrow.com#57`, exact head
+`9aa9cde6c28e9c19ce4b3673916d93095d3b7bbe`. It forces safe mode and gate
+approval off in base production Compose and makes `LIVE_EMAIL_DELIVERY` an
+independent code-level opt-in. Focused regression tests passed (17 tests); the
+protected test, frontend, and secret checks passed. Merge and deployment remain
+blocked pending the image check and required CODEOWNER/last-push approval.
 
 ## Current live safety read-back
 
