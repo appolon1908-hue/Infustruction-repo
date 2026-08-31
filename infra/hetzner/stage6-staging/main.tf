@@ -12,6 +12,11 @@ locals {
   gateway_labels = merge(local.common_labels, { role = "stage6-egress-gateway" })
 }
 
+moved {
+  from = hcloud_firewall.stage6
+  to   = hcloud_firewall.runtime
+}
+
 resource "hcloud_network" "stage6" {
   name     = "codestra-stage6-staging-net"
   ip_range = var.network_cidr
@@ -201,6 +206,7 @@ resource "hcloud_server" "stage6" {
     egress_gateway_private_ip = var.egress_gateway_private_ip
   })
   firewall_ids = [hcloud_firewall.runtime.id]
+  depends_on   = [hcloud_server_network.egress]
   public_net {
     ipv4_enabled = true
     ipv6_enabled = false

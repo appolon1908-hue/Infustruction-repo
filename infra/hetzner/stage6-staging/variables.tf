@@ -103,7 +103,9 @@ variable "approved_egress_fqdns" {
   description = "Reviewed FQDN suffix allowlist enforced by the staging proxy."
   type        = set(string)
   validation {
-    condition = length(var.approved_egress_fqdns) > 0 && alltrue([
+    condition = alltrue([
+      for required in ["archive.ubuntu.com", "security.ubuntu.com"] : contains(var.approved_egress_fqdns, required)
+      ]) && alltrue([
       for name in var.approved_egress_fqdns : contains([
         "api.github.com",
         "archive.ubuntu.com",
@@ -116,7 +118,7 @@ variable "approved_egress_fqdns" {
         "security.ubuntu.com",
       ], name)
     ])
-    error_message = "Egress destinations must come from the Git-reviewed bootstrap catalog."
+    error_message = "Egress destinations must come from the Git-reviewed catalog and include both required Ubuntu mirrors."
   }
 }
 
