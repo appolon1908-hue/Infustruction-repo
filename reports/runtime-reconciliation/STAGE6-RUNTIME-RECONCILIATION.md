@@ -1,17 +1,17 @@
 # Stage 6 Runtime Reconciliation Inventory
 
-Captured: 2026-08-30 (America/Santo_Domingo)
+Captured: 2026-09-01T17:52:58.860665+00:00
 
-Running containers: **101**
+Running containers: **102**
 
 ## Classification totals
 
 - Codestra release workload: 22
 - observability/security workload: 24
 - provider workload: 7
-- legacy workload: 47
+- legacy workload: 44
 - unrelated workload: 0
-- unknown: 1
+- unknown: 5
 
 ## Drift plan (staging release workloads)
 
@@ -40,4 +40,4 @@ Running containers: **101**
 | codestra-odoo19-staging-odoo19-staging-1 | Git SHA unestablished; runtime SHA differs from lock; Odoo module operation in startup; explicit fail-closed safety set incomplete | SHA `3eeb17f8b7efcd9bd90487e5e8e9888717f51138`; digest-pinned; application-only startup | HOLD — establish authority first | Wrong artifact or unintended stateful mutation | `odoo@sha256:f54272f31d5f77e4146b887efb3761c98480317daf687e4b4b5e76ed8bcc08c5` | `odoo@sha256:f54272f31d5f77e4146b887efb3761c98480317daf687e4b4b5e76ed8bcc08c5` | `UNESTABLISHED` | `sha256:f54272f31d5f77e4146b887efb3761c98480317daf687e4b4b5e76ed8bcc08c5` |
 | codestra-odoo19-staging-postgres-1 | Git SHA unestablished; runtime SHA differs from lock | SHA `3eeb17f8b7efcd9bd90487e5e8e9888717f51138`; digest-pinned; application-only startup | HOLD — establish authority first | Wrong artifact or unintended stateful mutation | `postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94` | `postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94` | `UNESTABLISHED` | `sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94` |
 
-The CSV is the authoritative 101-row inventory. No secret values are included; secret authority records only mounted source paths.
+The CSV is the authoritative 102-row inventory. No secret values are included; secret authority records only mounted source paths.

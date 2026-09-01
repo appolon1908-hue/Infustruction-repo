@@ -2,6 +2,7 @@
 """Capture a sanitized, deterministic Stage 6 Docker runtime inventory."""
 
 import csv
+import datetime
 import json
 import subprocess
 from collections import Counter
@@ -19,6 +20,16 @@ SAFETY_KEYS = (
     "LIVE_SMS_DELIVERY", "LIVE_EMAIL_DELIVERY", "LIVE_PSTN_DIALING",
     "PRODUCTION_DIALING",
 )
+SENSITIVE_LABEL_TOKENS = ("secret", "password", "token", "credential", "private", "key")
+
+
+def sanitized_labels(labels: dict[str, str]) -> dict[str, str]:
+    return {
+        key: "REDACTED"
+        if any(token in key.lower() for token in SENSITIVE_LABEL_TOKENS)
+        else value
+        for key, value in sorted(labels.items())
+    }
 
 
 def classify(name: str) -> str:
@@ -74,6 +85,7 @@ def main() -> None:
     repo_digests = {image["Id"]: image.get("RepoDigests") or [] for image in images}
     locked = yaml.safe_load(LOCK.read_text())["repositories"]
     rows = []
+    yaml_rows = []
     for c in sorted(containers, key=lambda item: item["Name"]):
         name = c["Name"].lstrip("/")
         labels = c["Config"].get("Labels") or {}
@@ -129,6 +141,29 @@ def main() -> None:
             "safety_state": ";".join(f"{key}={value}" for key, value in safety.items()),
             "startup_command": command,
         })
+        yaml_rows.append({
+            "name": name,
+            "service": labels.get("com.docker.compose.service") or "UNESTABLISHED",
+            "classification": classify(name),
+            "image": image_ref,
+            "image_digest": image_digest,
+            "local_image_id": c["Image"],
+            "labels": sanitized_labels(labels),
+            "source_repository": labels.get("org.opencontainers.image.source") or expected.get("repository") or "UNESTABLISHED",
+            "source_sha": sha,
+            "networks": sorted((c.get("NetworkSettings", {}).get("Networks") or {}).keys()),
+            "volumes": sorted({
+                mount.get("Name") or mount.get("Source") or "UNESTABLISHED"
+                for mount in c.get("Mounts", [])
+            }),
+            "ports": sorted((c.get("NetworkSettings", {}).get("Ports") or {}).keys()),
+            "health_status": (c.get("State", {}).get("Health") or {}).get("Status", "NO_HEALTHCHECK"),
+            "runtime_status": c.get("State", {}).get("Status", "UNESTABLISHED"),
+            "restart_policy": (c.get("HostConfig", {}).get("RestartPolicy") or {}).get("Name", "UNESTABLISHED"),
+            "environment_variable_names": sorted(env),
+            "deployment_authority": labels.get("com.docker.compose.project.config_files") or "UNESTABLISHED",
+            "config_authority": labels.get("com.docker.compose.project.config_files") or "UNESTABLISHED",
+        })
 
     OUT.mkdir(parents=True, exist_ok=True)
     csv_path = OUT / "STAGE6-RUNTIME-INVENTORY.csv"
@@ -136,6 +171,17 @@ def main() -> None:
         writer = csv.DictWriter(handle, fieldnames=rows[0].keys(), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
+
+    inventory = {
+        "schema_version": 1,
+        "captured_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "secret_values_included": False,
+        "total_running_containers": len(yaml_rows),
+        "containers": yaml_rows,
+    }
+    (ROOT / "PRODUCTION-CORE-RUNTIME-INVENTORY.yaml").write_text(
+        yaml.safe_dump(inventory, sort_keys=False, width=120)
+    )
 
     counts = Counter(row["classification"] for row in rows)
     release_rows = [row for row in rows if row["classification"] == "Codestra release workload"]
@@ -157,7 +203,7 @@ def main() -> None:
     md = [
         "# Stage 6 Runtime Reconciliation Inventory",
         "",
-        "Captured: 2026-08-30 (America/Santo_Domingo)",
+        f"Captured: {inventory['captured_at']}",
         "",
         f"Running containers: **{len(rows)}**",
         "",
@@ -184,7 +230,7 @@ def main() -> None:
         )
     md += [
         "",
-        "The CSV is the authoritative 101-row inventory. No secret values are included; secret authority records only mounted source paths.",
+        f"The CSV is the authoritative {len(rows)}-row inventory. No secret values are included; secret authority records only mounted source paths.",
     ]
     (OUT / "STAGE6-RUNTIME-RECONCILIATION.md").write_text("\n".join(md) + "\n")
 
