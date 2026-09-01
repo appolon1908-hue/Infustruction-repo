@@ -18,4 +18,3 @@ for name, item in services.items():
 assert unknown == 40, unknown
 print("CAPABILITY_MATRIX_COVERAGE=64/64")
 print("CAPABILITY_UNKNOWN_FIELDS=40")
-

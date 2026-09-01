@@ -711,4 +711,3 @@ services:
       email_delivery: false
       pstn_dialing: false
       n8n_provider_write: false
-
