@@ -171,7 +171,10 @@ jobs:
           tofu -chdir="$IAC_DIR" fmt -check -recursive
           python3 scripts/validate_stage6_staging_iac.py
           tofu -chdir="$IAC_DIR" validate
-          tofu -chdir="$IAC_DIR" plan -input=false -var-file=/tmp/stage6.auto.tfvars.json -out=/tmp/stage6.tfplan
+          tofu -chdir="$IAC_DIR" plan -input=false \
+            -var-file=/tmp/stage6.auto.tfvars.json \
+            -var-file=access-authority.tfvars.json \
+            -out=/tmp/stage6.tfplan
           tofu -chdir="$IAC_DIR" show -json /tmp/stage6.tfplan > /tmp/stage6-plan.json
           test "$(jq '[.resource_changes[] | select(.type == "hcloud_server" and (.change.actions | index("create")))] | length' /tmp/stage6-plan.json)" -le 2
           test "$(jq '[.resource_changes[] | select(.type == "hcloud_network" and (.change.actions | index("create")))] | length' /tmp/stage6-plan.json)" -le 1
