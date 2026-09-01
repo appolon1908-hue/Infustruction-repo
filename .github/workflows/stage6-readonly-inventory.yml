@@ -72,5 +72,4 @@ jobs:
           name: stage6-readonly-inventory-${{ github.sha }}
           path: stage6-readonly-inventory/
           if-no-files-found: error
-          retention-days: 14
-
+          retention-days: 1
