@@ -7,6 +7,7 @@ import yaml
 PATH = Path("PRODUCTION-IMMUTABLE-CANDIDATE-MATRIX.yaml")
 DIGEST = re.compile(r"sha256:[0-9a-f]{64}")
 SHA = re.compile(r"[0-9a-f]{40}")
+IMAGE_REF = re.compile(r"[^@\\s]+@sha256:[0-9a-f]{64}")
 CAPABILITIES = {
     "advertising_write", "external_delivery", "social_publish",
     "external_model_call", "sms_delivery", "email_delivery",
@@ -28,6 +29,8 @@ for workload, candidate in candidates.items():
     assert SHA.fullmatch(candidate["source_sha"]), workload
     for field in ("current_runtime_image_id", "candidate_image_digest", "rollback_digest"):
         assert DIGEST.fullmatch(candidate[field]), (workload, field)
+    assert IMAGE_REF.fullmatch(candidate["candidate_image_ref"]), workload
+    assert candidate["candidate_image_ref"].endswith("@" + candidate["candidate_image_digest"])
     assert candidate["migration_required"] is False
     assert candidate["restart_required"] is True
     assert set(candidate["capabilities"]) == CAPABILITIES
@@ -40,6 +43,7 @@ for workload, candidate in candidates.items():
         assert evidence == {
             "vendor_digest_pin": "PASS",
             "codestra_config_authority": "PASS",
+            "runtime_repo_digest_verified": "PASS",
         }
 
 assert custom_builds == 14  # 12 artifacts cover 14 workload instances.
