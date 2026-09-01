@@ -39,7 +39,7 @@ concurrency:
 env:
   TF_IN_AUTOMATION: "true"
   TF_INPUT: "false"
-  IAC_DIR: infra/hetzner/stage6-staging
+  IAC_DIR: plan-source/infra/hetzner/stage6-staging
   REVIEWED_PLAN_RUN_ID: "33439673272"
   REVIEWED_PLAN_SHA: "2774473fe221895185ca74228266478d2da2b13f"
   REVIEWED_ARTIFACT_NAME: stage6-remote-plan-2774473fe221895185ca74228266478d2da2b13f
@@ -47,15 +47,22 @@ env:
 
 jobs:
   verify-reviewed-plan:
-    if: inputs.mode == 'APPLY_REVIEWED_STAGE6_PLAN' && inputs.confirmation == 'APPLY_EXACT_REVIEWED_STAGE6_PLAN'
+    if: github.ref == 'refs/heads/main' && github.ref_protected == true && inputs.mode == 'APPLY_REVIEWED_STAGE6_PLAN' && inputs.confirmation == 'APPLY_EXACT_REVIEWED_STAGE6_PLAN'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: stage6-infrastructure-provisioning
     steps:
-      - name: Check out exact plan source SHA
+      - name: Check out protected validator source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out exact plan source SHA separately
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.plan_sha }}
+          path: plan-source
           fetch-depth: 0
           persist-credentials: false
       - name: Verify exact plan and protected-main authority
@@ -69,9 +76,13 @@ jobs:
           test "$PLAN_SHA" = "$REVIEWED_PLAN_SHA"
           test "$PLAN_ARTIFACT_NAME" = "$REVIEWED_ARTIFACT_NAME"
           test "$PLAN_ARTIFACT_DIGEST" = "$REVIEWED_ARTIFACT_DIGEST"
-          test "$(git rev-parse HEAD)" = "$REVIEWED_PLAN_SHA"
+          test "$GITHUB_REF" = refs/heads/main
+          test "$GITHUB_REF_PROTECTED" = true
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C plan-source rev-parse HEAD)" = "$REVIEWED_PLAN_SHA"
           git merge-base --is-ancestor "$REVIEWED_PLAN_SHA" "$GITHUB_SHA"
-          test -z "$(git status --porcelain)"
+          test -z "$(git status --porcelain --untracked-files=no)"
+          test -z "$(git -C plan-source status --porcelain)"
       - name: Verify GitHub artifact authority
         env:
           GH_TOKEN: ${{ github.token }}
@@ -137,15 +148,22 @@ jobs:
 
   apply-exact-reviewed-plan:
     needs: verify-reviewed-plan
-    if: inputs.mode == 'APPLY_REVIEWED_STAGE6_PLAN' && inputs.confirmation == 'APPLY_EXACT_REVIEWED_STAGE6_PLAN'
+    if: github.ref == 'refs/heads/main' && github.ref_protected == true && inputs.mode == 'APPLY_REVIEWED_STAGE6_PLAN' && inputs.confirmation == 'APPLY_EXACT_REVIEWED_STAGE6_PLAN'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: stage6-infrastructure-provisioning
     steps:
-      - name: Check out exact plan source SHA
+      - name: Check out protected validator source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check out exact plan source SHA separately
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.plan_sha }}
+          path: plan-source
           fetch-depth: 0
           persist-credentials: false
       - name: Reverify exact plan authority
@@ -160,7 +178,10 @@ jobs:
           test "$PLAN_SHA" = "$REVIEWED_PLAN_SHA"
           test "$PLAN_ARTIFACT_NAME" = "$REVIEWED_ARTIFACT_NAME"
           test "$PLAN_ARTIFACT_DIGEST" = "$REVIEWED_ARTIFACT_DIGEST"
-          test "$(git rev-parse HEAD)" = "$REVIEWED_PLAN_SHA"
+          test "$GITHUB_REF" = refs/heads/main
+          test "$GITHUB_REF_PROTECTED" = true
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C plan-source rev-parse HEAD)" = "$REVIEWED_PLAN_SHA"
           git merge-base --is-ancestor "$REVIEWED_PLAN_SHA" "$GITHUB_SHA"
           python3 scripts/validate_stage6_artifact_authority.py
       - name: Download exact cross-run artifact

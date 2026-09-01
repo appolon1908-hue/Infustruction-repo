@@ -31,9 +31,23 @@ require("APPLY_EXACT_REVIEWED_STAGE6_PLAN" in workflow, "confirmation")
 require("contents: read" in workflow and "actions: read" in workflow, "read_permissions")
 require(not re.search(r"(?m)^\s+[a-z-]+:\s+write\s*$", workflow), "write_permission")
 require(workflow.count("environment: stage6-infrastructure-provisioning") == 2, "two_protected_stages")
+require(
+    workflow.count("github.ref == 'refs/heads/main' && github.ref_protected == true") == 2,
+    "protected_main_only",
+)
 require("run-id: ${{ inputs.plan_run_id }}" in workflow, "cross_run_download")
 require("github-token: ${{ github.token }}" in workflow, "artifact_read_token")
-require("ref: ${{ inputs.plan_sha }}" in workflow, "exact_source_checkout")
+require(workflow.count("ref: ${{ github.sha }}") == 2, "protected_validator_checkout")
+require(workflow.count("ref: ${{ inputs.plan_sha }}") == 2, "exact_plan_source_checkout")
+require(workflow.count("path: plan-source") == 2, "separate_plan_source_checkout")
+require("IAC_DIR: plan-source/infra/hetzner/stage6-staging" in workflow, "plan_source_iac")
+require(workflow.count('test "$GITHUB_REF" = refs/heads/main') == 2, "runtime_main_assertion")
+require(workflow.count('test "$GITHUB_REF_PROTECTED" = true') == 2, "runtime_protection_assertion")
+require(workflow.count('test "$(git rev-parse HEAD)" = "$GITHUB_SHA"') == 2, "validator_sha")
+require(
+    workflow.count('test "$(git -C plan-source rev-parse HEAD)" = "$REVIEWED_PLAN_SHA"') == 2,
+    "plan_source_sha",
+)
 require("git merge-base --is-ancestor" in workflow, "protected_main_ancestry")
 require("sha256sum -c stage6-plan.SHA256SUMS" in workflow, "internal_checksums")
 require("validate_stage6_artifact_authority.py" in workflow, "outer_digest")
@@ -48,4 +62,6 @@ require("cancel-in-progress: false" in workflow, "no_cancellation")
 print("STAGE6_APPLY_REVIEWED_PLAN_STATIC=PASS")
 print("PLAN_REGENERATION=NO")
 print("APPLY_SAVED_PLAN_ONLY=YES")
+print("PROTECTED_MAIN_DISPATCH_ONLY=YES")
+print("TRUSTED_VALIDATOR_SOURCE_SEPARATE=YES")
 print("PRODUCTION_CHANGED=NO")
