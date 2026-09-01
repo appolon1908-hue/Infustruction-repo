@@ -7,7 +7,7 @@ import yaml
 PATH = Path("PRODUCTION-IMMUTABLE-CANDIDATE-MATRIX.yaml")
 DIGEST = re.compile(r"sha256:[0-9a-f]{64}")
 SHA = re.compile(r"[0-9a-f]{40}")
-IMAGE_REF = re.compile(r"[^@\\s]+@sha256:[0-9a-f]{64}")
+IMAGE_REF = re.compile(r"[^@\s]+@sha256:[0-9a-f]{64}")
 CAPABILITIES = {
     "advertising_write", "external_delivery", "social_publish",
     "external_model_call", "sms_delivery", "email_delivery",
