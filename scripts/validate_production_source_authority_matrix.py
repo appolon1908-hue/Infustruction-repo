@@ -24,4 +24,3 @@ for name, item in workloads.items():
 assert actual == expected, (actual, expected)
 assert data["acceptance_rule"] == "runtime_to_compose_to_build_context_to_dockerfile_to_protected_git_exact_sha"
 print("SOURCE_AUTHORITY_MATRIX=PASS")
-
