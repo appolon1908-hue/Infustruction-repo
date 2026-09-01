@@ -9,7 +9,7 @@ workloads = data["workloads"]
 assert len(workloads) == 23
 statuses = {"PROVEN", "AMBIGUOUS", "SOURCE_AUTHORITY_ABSENT", "VENDOR_ONLY", "DIVERGENT", "INVALID_REVISION_METADATA"}
 remediations = set("ABCDEF")
-expected = {"PROVEN": 2, "AMBIGUOUS": 5, "SOURCE_AUTHORITY_ABSENT": 5, "VENDOR_ONLY": 7, "DIVERGENT": 2, "INVALID_REVISION_METADATA": 2}
+expected = {"PROVEN": 2, "AMBIGUOUS": 5, "SOURCE_AUTHORITY_ABSENT": 8, "VENDOR_ONLY": 4, "DIVERGENT": 2, "INVALID_REVISION_METADATA": 2}
 actual = {status: 0 for status in statuses}
 for name, item in workloads.items():
     assert item["status"] in statuses, name

@@ -195,11 +195,11 @@ workloads:
     compose_file: /opt/codestra/middleware/deploy/internal-n8n-private/compose.internal-n8n.yaml
     repository: Codestra-SRL/codestra-middleware
     protected_branch: main
-    source_sha: b29db772ed82c0d2f1adfdb8e6da58d4baa77524
-    evidence: Runtime Compose matches protected main exactly, but custom Caddy image has no protected Dockerfile/build context or revision.
+    source_sha: UNKNOWN
+    evidence: Runtime Compose configuration matches protected main, but the custom codestra/caddy image has no protected Dockerfile, build context, or revision; configuration identity is not image provenance.
     confidence: medium
-    status: VENDOR_ONLY
-    remediation_type: D
+    status: SOURCE_AUTHORITY_ABSENT
+    remediation_type: B
 
   codestra-odoo-internal-proxy:
     <<: *caddy_proxy
