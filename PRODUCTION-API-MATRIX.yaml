@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T23:11:44.868655+00:00'
+generated_at: '2026-09-02T23:53:39.830258+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -17834,7 +17834,7 @@ endpoints:
   response_model: N/A
   external_effect: ROUTE_DEPENDENT
   implementation_status: N/A
-  runtime_verification: INTENTIONAL_403_HOST_DNS_ABSENT
+  runtime_verification: INTENTIONAL_HTTPS_403
   stage: LEGACY
 - service: NGINX
   method: ANY

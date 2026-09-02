@@ -485,7 +485,15 @@ def main() -> None:
                 "after_state": "OAUTH2_API_ENABLED_PRIVATE_EDGE_DENIED",
                 "rollback_procedure": "Restore api_enabled=false, clear and warm the production cache without restarting services, and verify public API requests fail closed while application health remains green.",
                 "rollback_status": "PASS",
-            }
+            },
+            {
+                "service": "TELNEXA_ADMIN_DENY_EDGE",
+                "before_state": "HTTP_403_VHOST_WITH_DNS_ABSENT",
+                "after_state": "DNS_AND_DEDICATED_TLS_PRESENT_HTTPS_403",
+                "rollback_procedure": "Restore the recorded Nginx and TLS-monitor units, verify the exact A/admin value, then delete only that GoDaddy record. Retain the issued certificate on disk.",
+                "rollback_status": "PASS",
+                "evidence": "SERVER-37-TELNEXA-ADMIN-DENY-EVIDENCE.md",
+            },
         ],
         "candidate_promotions": [
             {

@@ -86,10 +86,11 @@ def main() -> None:
 
     assert rollback["production_changed"] is True
     assert rollback["rollback_gate"] == "FAIL"
-    configuration_changes = rollback["production_configuration_changes"]
-    assert len(configuration_changes) == 1
-    configuration_change = configuration_changes[0]
-    assert configuration_change["service"] == "MAUTIC_API"
+    configuration_changes = {
+        row["service"]: row for row in rollback["production_configuration_changes"]
+    }
+    assert set(configuration_changes) == {"MAUTIC_API", "TELNEXA_ADMIN_DENY_EDGE"}
+    configuration_change = configuration_changes["MAUTIC_API"]
     assert configuration_change["before_state"] == "GLOBAL_API_DISABLED"
     assert (
         configuration_change["temporary_state"]
@@ -98,6 +99,11 @@ def main() -> None:
     assert configuration_change["after_state"] == "OAUTH2_API_ENABLED_PRIVATE_EDGE_DENIED"
     assert configuration_change["rollback_procedure"]
     assert configuration_change["rollback_status"] == "PASS"
+    admin_deny = configuration_changes["TELNEXA_ADMIN_DENY_EDGE"]
+    assert admin_deny["before_state"] == "HTTP_403_VHOST_WITH_DNS_ABSENT"
+    assert admin_deny["after_state"] == "DNS_AND_DEDICATED_TLS_PRESENT_HTTPS_403"
+    assert admin_deny["rollback_procedure"]
+    assert admin_deny["rollback_status"] == "PASS"
     assert rollback["candidate_promotions"]
     deployed = {"KLYROW_GATEWAY_AND_WORKER", "KLYROW_WEB", "POSTAL_PROVISIONER"}
     for row in rollback["candidate_promotions"]:

@@ -474,15 +474,18 @@ def provider_endpoints() -> list[dict[str, Any]]:
         "status.telnexa.co", "admin.telnexa.co",
     ):
         status_code: int | None = None
-        if host != "admin.telnexa.co":
-            try:
-                with opener.open(f"https://{host}/", timeout=10) as response:
-                    status_code = response.status
-            except urllib.error.HTTPError as error:
-                status_code = error.code
-            except (urllib.error.URLError, TimeoutError):
-                pass
-        expected = status_code is not None and 200 <= status_code < 500
+        try:
+            with opener.open(f"https://{host}/", timeout=10) as response:
+                status_code = response.status
+        except urllib.error.HTTPError as error:
+            status_code = error.code
+        except (urllib.error.URLError, TimeoutError):
+            pass
+        expected = (
+            status_code == 403
+            if host == "admin.telnexa.co"
+            else status_code is not None and 200 <= status_code < 500
+        )
         result.append(
             {
                 "service": "NGINX", "method": "ANY", "path": f"https://{host}/*",
@@ -492,7 +495,7 @@ def provider_endpoints() -> list[dict[str, Any]]:
                 "response_model": "N/A", "external_effect": "ROUTE_DEPENDENT",
                 "implementation_status": "N/A" if host == "admin.telnexa.co" else ("IMPLEMENTED" if expected else "PARTIAL"),
                 "runtime_verification": (
-                    "INTENTIONAL_403_HOST_DNS_ABSENT"
+                    "INTENTIONAL_HTTPS_403"
                     if host == "admin.telnexa.co"
                     else (f"LIVE_HTTPS_{status_code}" if status_code is not None else "LIVE_HTTPS_UNREACHABLE")
                 ),
