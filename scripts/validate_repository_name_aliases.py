@@ -10,6 +10,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "config" / "repository-name-aliases.v1.json"
+RUNBOOK = ROOT / "REPOSITORY_NAME_MIGRATION.md"
 EXPECTED = {
     1221155447: (
         "appolon1908-hue/Frontend-Resturant-",
@@ -129,6 +130,8 @@ def validate() -> None:
         fail("infrastructure target repository is incorrect")
     if infrastructure.get("status") != "PREPARED_NOT_RENAMED":
         fail("infrastructure rename state changed without reviewed cutover")
+    if infrastructure.get("runtime_state") != "REQUIRES_PRE_CUTOVER_DISCOVERY":
+        fail("infrastructure runtime state must be rediscovered before cutover")
 
     postgres = data.get("postgres_exporter_authority", {})
     if postgres.get("repository_id") != 1350839865:
@@ -201,13 +204,39 @@ def validate() -> None:
         "historical_evidence_immutable",
         "one_repository_per_cutover",
         "same_repository_id_required_after_rename",
-        "runtime_digest_must_remain_unchanged",
+        "all_inventoried_integrations_require_post_rename_readback",
+        "runtime_digest_must_remain_unchanged_when_deployed",
+        "absent_runtime_digest_must_be_recorded_as_not_applicable",
+        "success_path_must_restore_freeze_state",
+        "rollback_path_must_restore_freeze_state",
     }
     for key in required_true:
         if policy.get(key) is not True:
             fail(f"required fail-closed policy is not true: {key}")
     if policy.get("rename_authorizes_deployment") is not False:
         fail("repository rename must not authorize deployment")
+
+    runbook = RUNBOOK.read_text(encoding="utf-8")
+    for required in (
+        "POST_RENAME_INTEGRATION_READBACK=PASS",
+        "CURRENT_RUNTIME_STATE=DEPLOYED|NOT_DEPLOYED",
+        "DEPLOYED_IMAGE_DIGEST=<immutable-digest>|N/A",
+        "RUNTIME_DIGEST_UNCHANGED=PASS|N/A",
+        "MERGES_UNFROZEN=PASS",
+        "WORKFLOW_DISPATCH_UNFROZEN=PASS|N/A",
+        "ROLLBACK_UNFREEZE=PASS|N/A",
+        "Do not leave the infrastructure authority frozen.",
+        "do not fabricate runtime evidence.",
+        "WORKLOADS_RESTARTED=0",
+        "IMAGES_REBUILT=0",
+        "CONFIG_APPLIES=0",
+        "DATABASE_MIGRATIONS=0",
+        "SECRETS_ROTATED=0",
+        "DNS_CHANGES=0",
+        "PRODUCTION_TRAFFIC_CHANGED=NO",
+    ):
+        if required not in runbook:
+            fail(f"infrastructure rename runbook is missing required evidence: {required}")
 
     validate_planned_targets_absent(
         operational_sources(),
