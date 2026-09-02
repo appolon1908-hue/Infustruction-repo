@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T11:31:54.854600+00:00'
+generated_at: '2026-09-02T11:39:36.884074+00:00'
 phase: SERVER_37_PRODUCTION_REMEDIATION_AND_CERTIFICATION
 server: 37.27.128.39
 scope: THIS_SERVER_ONLY
@@ -32,11 +32,11 @@ classification_definitions:
   N/A: Explicitly not required by the approved architecture.
   MISSING_REQUIRED: Required canonical operation or integration capability is not live.
 live_runtime_classification_counts:
-  LEGACY_COMPATIBILITY: 26
-  OPTIONAL_LIVE: 266
-  REQUIRED_LIVE: 33
-  UPSTREAM_PRODUCT_API: 1163
   INTERNAL_ONLY: 777
+  REQUIRED_LIVE: 33
+  OPTIONAL_LIVE: 266
+  UPSTREAM_PRODUCT_API: 1163
+  LEGACY_COMPATIBILITY: 26
 live_runtime_groups:
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX
@@ -1223,7 +1223,7 @@ candidate_source_authority:
     review: PR_65_REVIEW_REQUIRED
   TELNEXA:
     repository: https://github.com/appolon1908-hue/telnexa
-    source_sha: 2c20af8cbd6103b7d25fcb841a94b3c4d8f32450
+    source_sha: e0474ecb9c6b52b9340aece4a446d63f2dd1b6ac
     review: PR_25_REVIEW_REQUIRED
   KYQRA:
     repository: https://github.com/appolon1908-hue/kyqra-crawler
