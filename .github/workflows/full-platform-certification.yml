@@ -16,6 +16,7 @@ on:
       - "scripts/validate_full_platform_certification.py"
       - "scripts/validate_server37_api_matrix.py"
       - ".gitleaksignore"
+      - ".gitleaks.toml"
       - ".github/workflows/full-platform-certification.yml"
 
 permissions:

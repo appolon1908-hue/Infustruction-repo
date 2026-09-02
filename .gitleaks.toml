@@ -2,7 +2,9 @@
 useDefault = true
 
 [[allowlists]]
-description = "Reviewed Stage 6 Keycloak Git SHA field; not credential material"
-condition = "AND"
-paths = ['''^STAGE6-SOURCE-LOCK\.yaml$''']
-regexes = ['''keycloak_locked_sha:\s*[0-9a-f]{40}''']
+description = "Generated secret-free Docker DNS URLs whose api-1 container names trigger the generic API-key rule"
+targetRules = ["generic-api-key"]
+regexTarget = "line"
+regexes = [
+  '''^\s*private_url: http://(?:kyqra-crawler-api-1:3000|telnexa-saas-billing-api-1:8000)/[A-Za-z0-9_./{}-]+$''',
+]

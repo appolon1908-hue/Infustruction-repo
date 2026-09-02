@@ -1,11 +1,2 @@
 # Non-secret immutable Git SHA in the pre-existing source lock.
 STAGE6-SOURCE-LOCK.yaml:generic-api-key:18
-
-# Non-secret internal container ports in the generated API inventory.
-PRODUCTION-API-MATRIX.yaml:generic-api-key:5155
-PRODUCTION-API-MATRIX.yaml:generic-api-key:5290
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21310
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21340
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21385
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21400
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21625
