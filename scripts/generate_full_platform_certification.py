@@ -7,6 +7,8 @@ import datetime as dt
 import json
 import re
 import subprocess
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -14,13 +16,47 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+GATE_EVIDENCE_PATH = ROOT / "SERVER-37-PRODUCTION-GATE-EVIDENCE.yaml"
 GENERATED_AT = dt.datetime.now(dt.timezone.utc).isoformat()
 HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options", "trace"}
+DURABLE_IDEMPOTENCY_REQUIRED = {
+    ("KLYROW", "POST", "/v1/messages"),
+    ("KLYROW", "POST", "/v1/messages/{}/cancel"),
+    ("KLYROW", "POST", "/v1/campaigns/{}/schedule"),
+    ("KLYROW", "POST", "/v1/campaigns/{}/cancel"),
+    ("KLYROW", "POST", "/v1/operations/{}/cancel"),
+    ("KLYROW", "POST", "/v1/operations/{}/reconcile"),
+    ("KLYROW", "POST", "/v1/integrations/mautic/commands"),
+    ("KLYROW", "POST", "/v1/integrations/mautic/operations/{}/reconcile"),
+    ("TELNEXA", "POST", "/v1/sms/messages"),
+    ("TELNEXA", "POST", "/v1/sms/messages/{}/cancel"),
+    ("TELNEXA", "POST", "/v1/smpp/accounts"),
+    ("TELNEXA", "PATCH", "/v1/smpp/accounts/{}"),
+    ("TELNEXA", "POST", "/v1/webhooks/sms/delivery"),
+    ("TELNEXA", "POST", "/v1/webhooks/provider/{}"),
+    ("TELNEXA", "POST", "/v1/operations/{}/cancel"),
+    ("TELNEXA", "POST", "/v1/operations/{}/reconcile"),
+    ("KYQRA", "POST", "/v1/jobs"),
+    ("KYQRA", "POST", "/v1/jobs/{}/cancel"),
+    ("KYQRA", "POST", "/v1/jobs/{}/retry"),
+    ("KYQRA", "POST", "/v1/callbacks"),
+    ("KYQRA", "POST", "/v1/operations/{}/cancel"),
+    ("KYQRA", "POST", "/v1/operations/{}/reconcile"),
+    ("PRIVATE_GATEWAY", "POST", "/v1/integrations/sms/commands"),
+    ("PRIVATE_GATEWAY", "POST", "/v1/operations/{}/cancel"),
+    ("PRIVATE_GATEWAY", "POST", "/v1/operations/{}/reconcile"),
+}
 CUSTOM_REPOSITORIES = {
     "KLYROW": "https://github.com/appolon1908-hue/klyrow.com",
     "TELNEXA": "https://github.com/appolon1908-hue/telnexa",
     "KYQRA": "https://github.com/appolon1908-hue/kyqra-crawler",
     "PRIVATE_GATEWAY": "https://github.com/appolon1908-hue/codestra-production-platform",
+}
+SOURCE_DIRECTORIES = {
+    "KLYROW": Path("/root/server37-klyrow-remediation"),
+    "TELNEXA": Path("/root/full-platform-telnexa-20260902"),
+    "KYQRA": Path("/root/kyqra-production-hardening-20260902"),
+    "PRIVATE_GATEWAY": Path("/root/full-platform-private-gateway-20260902"),
 }
 
 
@@ -31,24 +67,39 @@ def command(*arguments: str, check: bool = True) -> str:
     return result.stdout
 
 
+def repository_head(path: str | Path) -> str:
+    directory = str(path)
+    dirty = command("git", "-C", directory, "status", "--porcelain=v1")
+    if dirty:
+        raise RuntimeError(f"source worktree is dirty: {directory}")
+    revision = command("git", "-C", directory, "rev-parse", "HEAD").strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise RuntimeError(f"source revision is not an exact Git SHA: {directory}")
+    return revision
+
+
 def source_openapi() -> dict[str, dict[str, Any]]:
+    revisions_before = {
+        service: repository_head(directory)
+        for service, directory in SOURCE_DIRECTORIES.items()
+    }
     scripts = {
         "KLYROW": (
-            Path("/root/full-platform-klyrow-20260902"),
+            SOURCE_DIRECTORIES["KLYROW"],
             "/root/.venv-full-platform-klyrow-20260902/bin/python",
             "from apps.gateway.app.main import app; import json; print(json.dumps(app.openapi()))",
         ),
         "TELNEXA": (
-            Path("/root/full-platform-telnexa-20260902"),
+            SOURCE_DIRECTORIES["TELNEXA"],
             "/root/.venv-full-platform-telnexa-20260902/bin/python",
             "import datetime; datetime.UTC=getattr(datetime,'UTC',datetime.timezone.utc); "
             "from billing.app import app; import json; print(json.dumps(app.openapi()))",
         ),
         "PRIVATE_GATEWAY": (
-            Path("/root/full-platform-private-gateway-20260902"),
+            SOURCE_DIRECTORIES["PRIVATE_GATEWAY"],
             "/root/.venv-middleware-umbrella-20260902/bin/python",
             "import runpy,json; value=runpy.run_path('services/private-integration-gateway/gateway.py'); "
-            "print(json.dumps(value['openapi_document']('shared')))",
+            "print(json.dumps({mode:value['openapi_document'](mode) for mode in ('middleware','shared')}))",
         ),
     }
     documents: dict[str, dict[str, Any]] = {}
@@ -56,8 +107,21 @@ def source_openapi() -> dict[str, dict[str, Any]]:
         result = subprocess.run(
             [python, "-c", script], cwd=working_directory, text=True, capture_output=True, check=True
         )
-        documents[service] = json.loads(result.stdout)
-    kyqra_directory = Path("/root/full-platform-kyqra-20260902")
+        document = json.loads(result.stdout)
+        if service == "PRIVATE_GATEWAY":
+            middleware = document["middleware"]
+            shared = document["shared"]
+            combined = dict(shared)
+            combined["paths"] = dict(shared["paths"])
+            for path, path_item in middleware["paths"].items():
+                existing = combined["paths"].get(path)
+                if existing is not None and existing != path_item:
+                    raise RuntimeError(f"private gateway mode contract conflict: {path}")
+                combined["paths"][path] = path_item
+            combined["x-gateway-modes"] = ["middleware", "shared"]
+            document = combined
+        documents[service] = document
+    kyqra_directory = SOURCE_DIRECTORIES["KYQRA"]
     command("docker", "run", "--rm", "-v", f"{kyqra_directory}:/work", "-w", "/work", "node:22-alpine", "npm", "run", "build")
     result = subprocess.run(
         [
@@ -79,19 +143,58 @@ def source_openapi() -> dict[str, dict[str, Any]]:
         check=True,
     )
     documents["KYQRA"] = json.loads(result.stdout)
+    revisions_after = {
+        service: repository_head(directory)
+        for service, directory in SOURCE_DIRECTORIES.items()
+    }
+    if revisions_after != revisions_before:
+        raise RuntimeError("source revision changed during OpenAPI extraction")
     return documents
 
 
 def live_openapi(container: str, port: int, path: str) -> dict[str, Any]:
-    script = (
+    url = f"http://127.0.0.1:{port}{path}"
+    python_script = (
         "import json,urllib.request;"
-        f"print(json.dumps(json.load(urllib.request.urlopen('http://127.0.0.1:{port}{path}',timeout=5))))"
+        f"print(json.dumps(json.load(urllib.request.urlopen({url!r},timeout=5))))"
     )
-    output = command("docker", "exec", container, "python", "-c", script, check=False)
-    try:
-        return json.loads(output)
-    except json.JSONDecodeError:
-        return {"paths": {}}
+    node_script = (
+        f"fetch({url!r}).then(r=>{{if(!r.ok)throw Error(String(r.status));return r.json()}})"
+        ".then(v=>process.stdout.write(JSON.stringify(v))).catch(()=>process.exit(1))"
+    )
+    attempts = (
+        ("docker", "exec", container, "python", "-c", python_script),
+        ("docker", "exec", container, "python3", "-c", python_script),
+        ("docker", "exec", container, "node", "-e", node_script),
+    )
+    for arguments in attempts:
+        output = command(*arguments, check=False)
+        try:
+            document = json.loads(output)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(document, dict) and isinstance(document.get("paths"), dict):
+            return document
+    return {"paths": {}}
+
+
+def probe_container_http(container: str, port: int, path: str) -> int | None:
+    inspected = json.loads(command("docker", "inspect", container))[0]
+    addresses = [
+        value.get("IPAddress")
+        for value in inspected["NetworkSettings"]["Networks"].values()
+        if value.get("IPAddress")
+    ]
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    for address in addresses:
+        try:
+            with opener.open(f"http://{address}:{port}{path}", timeout=5) as response:
+                return response.status
+        except urllib.error.HTTPError as error:
+            return error.code
+        except (urllib.error.URLError, TimeoutError):
+            continue
+    return None
 
 
 def normalized(path: str) -> str:
@@ -100,7 +203,7 @@ def normalized(path: str) -> str:
 
 def contract_normalized(service: str, path: str) -> str:
     value = normalized(path)
-    if service == "TELNEXA" and value.startswith("/api/v1"):
+    if service in {"TELNEXA", "KYQRA"} and value.startswith("/api/v1"):
         return value.removeprefix("/api")
     return value
 
@@ -114,6 +217,47 @@ def operations(document: dict[str, Any]) -> set[tuple[str, str]]:
     }
 
 
+def dereference(document: dict[str, Any], value: Any, seen: frozenset[str] = frozenset()) -> Any:
+    if isinstance(value, list):
+        return [dereference(document, item, seen) for item in value]
+    if not isinstance(value, dict):
+        return value
+    reference = value.get("$ref")
+    if isinstance(reference, str) and reference.startswith("#/"):
+        if reference in seen:
+            return {"$ref": reference}
+        target: Any = document
+        try:
+            for part in reference[2:].split("/"):
+                target = target[part.replace("~1", "/").replace("~0", "~")]
+        except (KeyError, TypeError):
+            return {"$ref": reference}
+        merged = dereference(document, target, seen | {reference})
+        siblings = {key: item for key, item in value.items() if key != "$ref"}
+        if siblings and isinstance(merged, dict):
+            merged = {**merged, **dereference(document, siblings, seen)}
+        return merged
+    return {
+        key: dereference(document, item, seen)
+        for key, item in value.items()
+    }
+
+
+def operation_contracts(service: str, document: dict[str, Any]) -> dict[tuple[str, str], str]:
+    inherited_security = document.get("security", [])
+    result: dict[tuple[str, str], str] = {}
+    for path, item in document.get("paths", {}).items():
+        for method, operation in item.items():
+            if method not in HTTP_METHODS:
+                continue
+            effective = dict(operation)
+            effective["security"] = operation.get("security", inherited_security)
+            result[(method.upper(), contract_normalized(service, path))] = json.dumps(
+                dereference(document, effective), sort_keys=True, separators=(",", ":")
+            )
+    return result
+
+
 def model_name(value: Any) -> str:
     serialized = json.dumps(value, sort_keys=True)
     references = re.findall(r'"\$ref":\s*"#/components/schemas/([^"/]+)', serialized)
@@ -121,14 +265,30 @@ def model_name(value: Any) -> str:
 
 
 def has_durable_idempotency(path: str, operation: dict[str, Any]) -> bool:
-    if any(token in path for token in ("/messages", "/jobs", "/commands", "/webhooks", "/operations", "/callbacks")):
+    del path
+    if operation.get("x-durable-idempotency") is True:
         return True
-    return any(
+    parameter_contract = any(
         parameter.get("in") == "header"
         and str(parameter.get("name", "")).lower() == "idempotency-key"
         and parameter.get("required") is True
         for parameter in operation.get("parameters", [])
     )
+    security_requirements = operation.get("security", [])
+    security_contract = isinstance(security_requirements, list) and any(
+        "idempotencyHeader" in requirement
+        for requirement in security_requirements
+        if isinstance(requirement, dict)
+    )
+    return parameter_contract or security_contract
+
+
+def requires_durable_idempotency(service: str, method: str, path: str) -> bool:
+    return (
+        service,
+        method.upper(),
+        contract_normalized(service, path),
+    ) in DURABLE_IDEMPOTENCY_REQUIRED
 
 
 def endpoint_record(
@@ -141,6 +301,7 @@ def endpoint_record(
     status: str = "IMPLEMENTED",
     verification: str | None = None,
     stage: str = "PRODUCTION_CANDIDATE",
+    document_security: Any = None,
 ) -> dict[str, Any]:
     public_bases = {
         "KLYROW": "https://api.klyrow.com",
@@ -173,10 +334,13 @@ def endpoint_record(
     key = (method.upper(), normalized(path))
     if verification is None:
         verification = "LIVE_OPENAPI_MATCH" if key in runtime else "SOURCE_ONLY_REVIEW_REQUIRED"
-    secured = bool(operation.get("security", True))
+    secured = bool(
+        operation["security"] if "security" in operation else document_security
+    )
     mutating = method.upper() in {"POST", "PUT", "PATCH", "DELETE"}
     known_idempotent = has_durable_idempotency(path, operation)
-    if status == "IMPLEMENTED" and mutating and not known_idempotent:
+    idempotency_required = requires_durable_idempotency(service, method, path)
+    if status == "IMPLEMENTED" and idempotency_required and not known_idempotent:
         status = "PARTIAL"
     return {
         "service": service,
@@ -187,7 +351,12 @@ def endpoint_record(
         "authentication": "REQUIRED" if secured else "N/A",
         "authorization": "TENANT_AND_SCOPE" if service in {"KLYROW", "TELNEXA", "KYQRA", "PRIVATE_GATEWAY"} and secured else ("SERVICE_POLICY" if secured else "N/A"),
         "tenant_model": "TENANT_SCOPED" if service in {"KLYROW", "TELNEXA", "KYQRA", "PRIVATE_GATEWAY"} and secured else "N/A",
-        "idempotency": "DURABLE" if mutating and known_idempotent else ("NOT_IMPLEMENTED" if mutating else "N/A"),
+        "idempotency": (
+            "DURABLE" if mutating and known_idempotent
+            else "NOT_IMPLEMENTED" if idempotency_required
+            else "NOT_REQUIRED" if mutating
+            else "N/A"
+        ),
         "request_model": model_name(operation.get("requestBody", {})),
         "response_model": model_name(operation.get("responses", {})),
         "external_effect": "POSSIBLE" if mutating else "NONE",
@@ -212,13 +381,28 @@ def provider_endpoints() -> list[dict[str, Any]]:
         result.append(endpoint_record("KEYCLOAK", method, path, {"security": path != "/.well-known/openid-configuration"}, {(method, normalized(path))}, verification="LIVE_DISCOVERY_CONFIRMED", stage="PRODUCTION"))
     for path in ("/v1/sys/health", "/v1/sys/seal-status"):
         result.append(endpoint_record("OPENBAO", "GET", path, {"security": False}, set(), status="PARTIAL", verification="LIVE_501_UNINITIALIZED", stage="PRODUCTION"))
-    for service, paths in {
-        "PROMETHEUS_KLYROW": ("/-/healthy", "/-/ready", "/api/v1/targets", "/api/v1/alerts"),
-        "PROMETHEUS_TELNEXA": ("/-/healthy", "/-/ready", "/api/v1/targets", "/api/v1/alerts"),
-        "GRAFANA_KLYROW": ("/api/health", "/api/search", "/api/datasources"),
-    }.items():
+    for service, container, port, paths in (
+        ("PROMETHEUS_KLYROW", "klyrow-prometheus-1", 9090, ("/-/healthy", "/-/ready", "/api/v1/targets", "/api/v1/alerts")),
+        ("PROMETHEUS_TELNEXA", "telnexa-saas-prometheus-1", 9090, ("/-/healthy", "/-/ready", "/api/v1/targets", "/api/v1/alerts")),
+        ("GRAFANA_KLYROW", "klyrow-grafana-1", 3000, ("/api/health", "/api/search", "/api/datasources")),
+    ):
         for path in paths:
-            result.append(endpoint_record(service, "GET", path, {"security": path not in {"/-/healthy", "/-/ready", "/api/health"}}, {("GET", normalized(path))}, verification="LIVE_HTTP_CONFIRMED", stage="PRODUCTION"))
+            status_code = probe_container_http(container, port, path)
+            expected = status_code in {200, 401, 403}
+            result.append(endpoint_record(
+                service,
+                "GET",
+                path,
+                {"security": path not in {"/-/healthy", "/-/ready", "/api/health"}},
+                {("GET", normalized(path))} if expected else set(),
+                status="IMPLEMENTED" if expected else "PARTIAL",
+                verification=(
+                    f"LIVE_HTTP_{status_code}"
+                    if status_code is not None
+                    else "LIVE_HTTP_UNREACHABLE"
+                ),
+                stage="PRODUCTION",
+            ))
     mautic_output = command(
         "docker", "exec", "-w", "/var/www/html", "klyrow-mautic-1",
         "php", "bin/console", "debug:router", "--format=json",
@@ -242,12 +426,23 @@ def provider_endpoints() -> list[dict[str, Any]]:
         path = uri.group(1).strip().replace("(.:format)", "")
         for method in verb.group(1).strip().split("|"):
             result.append(endpoint_record("POSTAL", method, path, {"security": True}, {(method, normalized(path))}, verification="LIVE_RAILS_ROUTER_EXTRACTED", stage="PRODUCTION"))
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     for host in (
         "klyrow.com", "www.klyrow.com", "app.klyrow.com", "api.klyrow.com",
         "track.klyrow.com", "bounce.klyrow.com", "bao.codestra.media",
         "crawler.kyqra.com", "sms.telnexa.co", "api.telnexa.co",
         "status.telnexa.co", "admin.telnexa.co",
     ):
+        status_code: int | None = None
+        if host != "admin.telnexa.co":
+            try:
+                with opener.open(f"https://{host}/", timeout=10) as response:
+                    status_code = response.status
+            except urllib.error.HTTPError as error:
+                status_code = error.code
+            except (urllib.error.URLError, TimeoutError):
+                pass
+        expected = status_code is not None and 200 <= status_code < 500
         result.append(
             {
                 "service": "NGINX", "method": "ANY", "path": f"https://{host}/*",
@@ -255,9 +450,13 @@ def provider_endpoints() -> list[dict[str, Any]]:
                 "authentication": "ROUTE_DEPENDENT", "authorization": "ROUTE_DEPENDENT",
                 "tenant_model": "N/A", "idempotency": "N/A", "request_model": "N/A",
                 "response_model": "N/A", "external_effect": "ROUTE_DEPENDENT",
-                "implementation_status": "MISSING" if host == "admin.telnexa.co" else "IMPLEMENTED",
-                "runtime_verification": "DNS_ABSENT" if host == "admin.telnexa.co" else "LIVE_TLS_HTTP_CONFIRMED",
-                "stage": "PRODUCTION",
+                "implementation_status": "N/A" if host == "admin.telnexa.co" else ("IMPLEMENTED" if expected else "PARTIAL"),
+                "runtime_verification": (
+                    "INTENTIONAL_403_HOST_DNS_ABSENT"
+                    if host == "admin.telnexa.co"
+                    else (f"LIVE_HTTPS_{status_code}" if status_code is not None else "LIVE_HTTPS_UNREACHABLE")
+                ),
+                "stage": "PRODUCTION" if host != "admin.telnexa.co" else "LEGACY",
             }
         )
     return result
@@ -375,9 +574,6 @@ POST /v1/jobs/{id}/cancel
 POST /v1/jobs/{id}/retry
 GET /v1/jobs/{id}/results
 GET /v1/jobs/{id}/events
-GET /v1/callbacks
-POST /v1/callbacks
-GET /v1/callbacks/{id}
 GET /v1/operations
 GET /v1/operations/{id}
 GET /v1/operations/{id}/events
@@ -387,16 +583,25 @@ POST /v1/operations/{id}/reconcile
 GET /health/live
 GET /health/ready
 GET /metrics
-GET /v1/system/readiness
 """)
     private = entries("PRIVATE_GATEWAY", """
+GET /health
 GET /health/live
 GET /health/ready
 GET /metrics
 GET /v1/capabilities
-POST /v1/integrations/email/commands
 POST /v1/integrations/sms/commands
-POST /v1/integrations/crawler/commands
+GET /api/v1/kyqra/health
+GET /api/v1/telnexa/health
+POST /api/v1/kyqra/jobs
+POST /api/v1/kyqra/results
+POST /api/v1/kyqra/progress
+POST /api/v1/kyqra/failures
+POST /api/v1/telnexa/inbound
+POST /api/v1/telnexa/dlr
+POST /api/v1/telnexa/failure
+POST /api/v1/telnexa/provider-status
+GET /v1/operations
 GET /v1/operations/{id}
 GET /v1/operations/{id}/events
 GET /v1/operations/{id}/attempts
@@ -411,39 +616,53 @@ def api_matrix() -> dict[str, Any]:
     live = {
         "KLYROW": live_openapi("klyrow-gateway-1", 8000, "/openapi.json"),
         "TELNEXA": live_openapi("telnexa-saas-billing-api-1", 8000, "/api/v1/openapi.json"),
-        "KYQRA": {"paths": {}},
-        "PRIVATE_GATEWAY": {"paths": {}},
+        "KYQRA": live_openapi("kyqra-crawler-api-1", 3000, "/openapi.json"),
+        "PRIVATE_GATEWAY": live_openapi("private-app-integration-gateway-1", 8080, "/openapi.json"),
     }
     records: list[dict[str, Any]] = []
     for service, document in source.items():
-        runtime = operations(live[service])
+        source_contract = operation_contracts(service, document)
+        live_contract = operation_contracts(service, live[service])
+        runtime: set[tuple[str, str]] = set()
         for path, item in sorted(document.get("paths", {}).items()):
             for method, operation in item.items():
                 if method not in HTTP_METHODS:
                     continue
-                records.append(endpoint_record(service, method, path, operation, runtime))
+                contract_key = (method.upper(), contract_normalized(service, path))
+                if source_contract.get(contract_key) == live_contract.get(contract_key):
+                    runtime.add((method.upper(), normalized(path)))
+                records.append(endpoint_record(
+                    service,
+                    method,
+                    path,
+                    dereference(document, operation),
+                    runtime,
+                    document_security=document.get("security", []),
+                ))
     records.extend(provider_endpoints())
 
     contracts = required_contracts()
     required: list[dict[str, str]] = []
     for service, entries in contracts.items():
         source_ops = {
-            (method.upper(), contract_normalized(service, path)): operation
+            (method.upper(), contract_normalized(service, path)): dereference(source[service], operation)
             for path, item in source[service].get("paths", {}).items()
             for method, operation in item.items()
             if method in HTTP_METHODS
         }
+        source_contract = operation_contracts(service, source[service])
+        live_contract = operation_contracts(service, live[service])
         runtime_ops = {
-            (method, contract_normalized(service, path))
-            for method, path in operations(live[service])
+            key for key, contract in source_contract.items()
+            if live_contract.get(key) == contract
         }
         for _, method, path in entries:
             key = (method, contract_normalized(service, path))
-            mutating = method in {"POST", "PUT", "PATCH", "DELETE"}
+            idempotency_required = requires_durable_idempotency(service, method, path)
             known_idempotent = has_durable_idempotency(path, source_ops.get(key, {}))
             state = (
                 "MISSING" if key not in source_ops
-                else "PARTIAL" if mutating and not known_idempotent
+                else "PARTIAL" if idempotency_required and not known_idempotent
                 else "IMPLEMENTED"
             )
             required.append(
@@ -470,6 +689,13 @@ def api_matrix() -> dict[str, Any]:
         "generated_at": GENERATED_AT,
         "server_scope": "CURRENT_SERVER_ONLY",
         "source_repositories": CUSTOM_REPOSITORIES,
+        "source_authority": {
+            service: {
+                "repository": CUSTOM_REPOSITORIES[service],
+                "source_sha": repository_head(SOURCE_DIRECTORIES[service]),
+            }
+            for service in SOURCE_DIRECTORIES
+        },
         "required_contracts": required,
         "endpoints": records,
     }
@@ -481,13 +707,22 @@ def api_matrix() -> dict[str, Any]:
 
 
 def runtime_inventory() -> dict[str, Any]:
-    containers = json.loads(command("docker", "inspect", *command("docker", "ps", "-q").split()))
+    container_ids = command("docker", "ps", "-aq").split()
+    if not container_ids:
+        raise RuntimeError("Docker inventory is empty")
+    containers = json.loads(command("docker", "inspect", *container_ids))
     stages: dict[str, str] = {}
     for item in containers:
         name = item["Name"].lstrip("/")
+        image_reference = item["Config"]["Image"]
         stages[name] = (
-            "TOOLING" if name.startswith("buildx_")
+            "TOOLING" if (
+                name.startswith("buildx_")
+                or "lockgen" in name
+                or image_reference.startswith("aquasec/trivy:")
+            )
             else "STAGING" if name.startswith("scrapper-pr9-")
+            else "LEGACY" if "-rollback-" in name or "-pre-dynamic-dns-" in name
             else "PRODUCTION_CANDIDATE" if "candidate" in name
             else "PRODUCTION"
         )
@@ -508,6 +743,8 @@ def runtime_inventory() -> dict[str, Any]:
         elif name.startswith("kyqra-crawler-") and name not in {"kyqra-crawler-postgres-1", "kyqra-crawler-redis-1"}:
             repository, revision = CUSTOM_REPOSITORIES["KYQRA"], "MISSING_LIVE_PROVENANCE"
         health = (item["State"].get("Health") or {}).get("Status", item["State"]["Status"])
+        if item["State"]["Status"] == "exited" and item["State"].get("ExitCode") == 0:
+            health = "completed"
         if name == "codestra-openbao":
             health = "FAIL_UNINITIALIZED_SEALED"
         component_rules = (
@@ -733,17 +970,8 @@ def integration_matrix() -> dict[str, Any]:
     return value
 
 
-def repository_head(path: str) -> str:
-    return command("git", "-C", path, "rev-parse", "HEAD").strip()
-
-
 def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict[str, Any]:
     required = api["required_contracts"]
-    private_gateway_missing = sum(
-        row["service"] == "PRIVATE_GATEWAY"
-        and row["implementation_status"] == "MISSING"
-        for row in required
-    )
     endpoint_counts = {
         service: sum(
             row["service"] == service and row["implementation_status"] != "MISSING"
@@ -751,17 +979,156 @@ def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict
         )
         for service in ("KLYROW", "TELNEXA", "KYQRA", "PRIVATE_GATEWAY")
     }
+    source_revisions = {
+        service: repository_head(directory)
+        for service, directory in SOURCE_DIRECTORIES.items()
+    }
+    repository_revisions = {
+        CUSTOM_REPOSITORIES[service]: revision
+        for service, revision in source_revisions.items()
+    }
+    custom_software = {"KLYROW", "TELNEXA", "KYQRA", "PRIVATE_GATEWAY"}
+    custom_workloads = [
+        row for row in inventory["workloads"]
+        if row["stage"] == "PRODUCTION"
+        and row["health"] != "COMPLETED"
+        and (
+            row["software"] in custom_software
+            or row["source_repository"] in repository_revisions
+        )
+    ]
+    source_runtime_drift = sum(
+        row["source_repository"] not in repository_revisions
+        or row["source_sha"] != repository_revisions.get(row["source_repository"])
+        for row in custom_workloads
+    )
+    all_images_pinned = bool(custom_workloads) and all(
+        row["image_reference_digest_pinned"] == "YES"
+        for row in custom_workloads
+    )
+
+    def runtime_health(*software: str) -> str:
+        rows = [
+            row for row in inventory["workloads"] + inventory["host_services"]
+            if row["stage"] == "PRODUCTION" and row["software"] in software
+        ]
+        if not rows:
+            return "N/A"
+        return "PASS" if all(
+            row["health"] in {"HEALTHY", "RUNNING", "COMPLETED"} for row in rows
+        ) else "FAIL"
+
+    def api_gate(service: str, *, require_runtime: bool = True) -> str:
+        rows = [row for row in required if row["service"] == service]
+        if not rows or any(row["implementation_status"] != "IMPLEMENTED" for row in rows):
+            return "FAIL"
+        if require_runtime and any(
+            row["runtime_verification"] != "LIVE_OPENAPI_MATCH" for row in rows
+        ):
+            return "FAIL"
+        return "PASS"
+
+    def endpoint_family_gate(service: str) -> str:
+        rows = [row for row in api["endpoints"] if row["service"] == service]
+        return "PASS" if rows and all(
+            row["implementation_status"] in {"IMPLEMENTED", "N/A"} for row in rows
+        ) else "FAIL"
+
+    gate_document = yaml.safe_load(GATE_EVIDENCE_PATH.read_text())
+    if gate_document.get("server") != inventory["public_ipv4"]:
+        raise RuntimeError("production gate evidence is for a different server")
+
+    def external_gate(name: str) -> str:
+        record = gate_document.get("gates", {}).get(name)
+        if not isinstance(record, dict) or record.get("status") not in {"PASS", "FAIL"}:
+            raise RuntimeError(f"invalid or missing production gate evidence: {name}")
+        evidence = record.get("evidence")
+        if not isinstance(evidence, str) or not evidence:
+            raise RuntimeError(f"production gate evidence has no authority: {name}")
+        if evidence != "EXTERNAL_AUTHORITY_REQUIRED" and not (ROOT / evidence).is_file():
+            raise RuntimeError(f"production gate evidence reference is missing: {name}")
+        if record["status"] == "PASS" and evidence == "EXTERNAL_AUTHORITY_REQUIRED":
+            raise RuntimeError(f"a production gate cannot pass on missing external authority: {name}")
+        return record["status"]
+
+    rollback_document = yaml.safe_load((ROOT / "SERVER-37-PRODUCTION-ROLLBACK.yaml").read_text())
+    rollback = "PASS" if rollback_document.get("rollback_gate") == "PASS" else "FAIL"
+    active_edge = [
+        row for row in api["endpoints"]
+        if row["service"] == "NGINX" and row["implementation_status"] != "N/A"
+    ]
+    tls = "PASS" if active_edge and all(
+        row["runtime_verification"].startswith("LIVE_HTTPS_")
+        and row["runtime_verification"] != "LIVE_HTTPS_UNREACHABLE"
+        for row in active_edge
+    ) else "FAIL"
+    dns = tls
+    backups = external_gate("OFF_HOST_BACKUP")
+    restore = external_gate("ISOLATED_RESTORE")
+    mtls = external_gate("POSITIVE_AND_NEGATIVE_MTLS_E2E")
+    email_e2e = external_gate("CONTROLLED_EMAIL_E2E")
+    sms_e2e = external_gate("CONTROLLED_SMS_E2E")
+    kyqra_e2e = external_gate("CONTROLLED_KYQRA_E2E")
+    private_e2e = external_gate("CONTROLLED_PRIVATE_INTEGRATION_E2E")
+    api_gates = {
+        service: api_gate(service) for service in SOURCE_DIRECTORIES
+    }
+    api_contracts = "PASS" if all(value == "PASS" for value in api_gates.values()) else "FAIL"
+    idempotency = "PASS" if all(
+        row["implementation_status"] != "PARTIAL" for row in required
+    ) else "FAIL"
+    source_provenance = "PASS" if all_images_pinned and source_runtime_drift == 0 else "FAIL"
+    prometheus_runtime = runtime_health("PROMETHEUS")
+    grafana_runtime = runtime_health("GRAFANA")
+    prometheus = "PASS" if prometheus_runtime == "PASS" and all(
+        endpoint_family_gate(service) == "PASS"
+        for service in ("PROMETHEUS_KLYROW", "PROMETHEUS_TELNEXA")
+    ) else "FAIL"
+    grafana = "PASS" if grafana_runtime == "PASS" and endpoint_family_gate("GRAFANA_KLYROW") == "PASS" else "FAIL"
+    observability = "PASS" if (
+        prometheus == grafana == "PASS"
+        and external_gate("ALERT_AND_RETENTION_E2E") == "PASS"
+    ) else "FAIL"
+    security = "PASS" if all(
+        value == "PASS" for value in (
+            tls, mtls, source_provenance, api_contracts, idempotency
+        )
+    ) and runtime_health("OPENBAO") == "PASS" else "FAIL"
     classifications = {
-        "NGINX": "WARNING", "OPENBAO": "FAIL", "KLYROW_GATEWAY": "WARNING",
-        "KLYROW_WORKER": "WARNING", "KLYROW_BILLING": "FAIL", "KLYROW_SMTP": "WARNING",
-        "KLYROW_FRONTEND": "FAIL", "POSTAL": "WARNING", "MAUTIC": "WARNING",
-        "TELNEXA_SMS": "WARNING", "TELNEXA_BILLING": "WARNING", "KEYCLOAK": "FAIL",
-        "KYQRA": "WARNING", "PRIVATE_GATEWAY": "FAIL", "POSTGRES": "PASS",
-        "MARIADB": "FAIL", "REDIS": "FAIL", "RABBITMQ": "FAIL", "PROMETHEUS": "FAIL",
-        "GRAFANA": "FAIL", "MTLS": "FAIL", "DNS": "FAIL", "TLS": "FAIL",
-        "API_CONTRACTS": "FAIL", "IDEMPOTENCY": "FAIL", "AUTH": "FAIL", "RBAC": "FAIL",
-        "AUDIT": "FAIL", "BACKUPS": "FAIL", "RESTORE": "FAIL", "OBSERVABILITY": "FAIL",
-        "SECURITY": "FAIL", "SOURCE_PROVENANCE": "FAIL", "ROLLBACK": "FAIL",
+        "NGINX": "PASS" if runtime_health("NGINX") == tls == "PASS" else "FAIL",
+        "OPENBAO": runtime_health("OPENBAO"),
+        "KLYROW_GATEWAY": api_gates["KLYROW"],
+        "KLYROW_WORKER": runtime_health("KLYROW"),
+        "KLYROW_BILLING": "PASS" if runtime_health("KLYROW") == source_provenance == "PASS" else "FAIL",
+        "KLYROW_SMTP": runtime_health("KLYROW"),
+        "KLYROW_FRONTEND": "PASS" if runtime_health("KLYROW") == source_provenance == "PASS" else "FAIL",
+        "POSTAL": runtime_health("POSTAL"),
+        "MAUTIC": runtime_health("MAUTIC"),
+        "TELNEXA_SMS": runtime_health("TELNEXA"),
+        "TELNEXA_BILLING": api_gates["TELNEXA"],
+        "KEYCLOAK": runtime_health("KEYCLOAK"),
+        "KYQRA": api_gates["KYQRA"],
+        "PRIVATE_GATEWAY": api_gates["PRIVATE_GATEWAY"],
+        "POSTGRES": runtime_health("POSTGRESQL"),
+        "MARIADB": runtime_health("MARIADB"),
+        "REDIS": runtime_health("REDIS"),
+        "RABBITMQ": runtime_health("RABBITMQ"),
+        "PROMETHEUS": prometheus,
+        "GRAFANA": grafana,
+        "MTLS": mtls,
+        "DNS": dns,
+        "TLS": tls,
+        "API_CONTRACTS": api_contracts,
+        "IDEMPOTENCY": idempotency,
+        "AUTH": "FAIL" if api_contracts == "FAIL" else "WARNING",
+        "RBAC": "FAIL" if api_contracts == "FAIL" else "WARNING",
+        "AUDIT": "FAIL" if runtime_health("OPENBAO") != "PASS" else "WARNING",
+        "BACKUPS": backups,
+        "RESTORE": restore,
+        "OBSERVABILITY": observability,
+        "SECURITY": security,
+        "SOURCE_PROVENANCE": source_provenance,
+        "ROLLBACK": rollback,
     }
     blockers = [
         {
@@ -771,7 +1138,7 @@ def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict
             "validation_after_action": "Seal status initialized=true and sealed=false; audit, policy, AppRole, off-host backup, and recovery evidence all pass.",
         },
         {
-            "blocker": "Private gateway command and operation APIs are complete, but provider-specific downstream dispatch authorities and credentials are unavailable; accepted commands remain durably reconciliation-required without provider effects.",
+            "blocker": "The private gateway candidate preserves the event-ingress and durable operation contracts, but its checked-in shared production edge authorizes only the SMS command channel; provider-specific downstream dispatch authorities and credentials for other channels are unavailable.",
             "owner": "Klyrow, Telnexa, Kyqra, and platform repository owners", "repository": CUSTOM_REPOSITORIES["PRIVATE_GATEWAY"],
             "component": "PRIVATE_GATEWAY", "required_action": "Approve concrete provider adapter contracts, networks, service identities, scopes, and credentials; implement each bounded dispatcher behind the durable operation engine.",
             "validation_after_action": "Protected image deployment, runtime OpenAPI parity, positive mTLS authorization, bounded dispatch/reconciliation, and controlled integration E2E pass.",
@@ -796,26 +1163,67 @@ def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict
             sum(row["stage"] == "PRODUCTION" for row in inventory["workloads"])
             + sum(row["stage"] == "PRODUCTION" for row in inventory["host_services"])
         ),
-        "KLYROW_SOURCE_SHA": repository_head("/root/full-platform-klyrow-20260902"),
-        "TELNEXA_SOURCE_SHA": repository_head("/root/full-platform-telnexa-20260902"),
-        "KYQRA_SOURCE_SHA": repository_head("/root/full-platform-kyqra-20260902"),
-        "PRIVATE_GATEWAY_SOURCE_SHA": repository_head("/root/full-platform-private-gateway-20260902"),
-        "ALL_IMAGES_DIGEST_PINNED": "NO", "SOURCE_RUNTIME_DRIFT": 11,
+        "KLYROW_SOURCE_SHA": source_revisions["KLYROW"],
+        "TELNEXA_SOURCE_SHA": source_revisions["TELNEXA"],
+        "KYQRA_SOURCE_SHA": source_revisions["KYQRA"],
+        "PRIVATE_GATEWAY_SOURCE_SHA": source_revisions["PRIVATE_GATEWAY"],
+        "ALL_IMAGES_DIGEST_PINNED": "YES" if all_images_pinned else "NO",
+        "SOURCE_RUNTIME_DRIFT": source_runtime_drift,
         "KLYROW_API_ENDPOINTS": endpoint_counts["KLYROW"], "TELNEXA_API_ENDPOINTS": endpoint_counts["TELNEXA"],
         "KYQRA_API_ENDPOINTS": endpoint_counts["KYQRA"], "PRIVATE_GATEWAY_API_ENDPOINTS": endpoint_counts["PRIVATE_GATEWAY"],
         "TOTAL_REQUIRED_ENDPOINTS": len(required),
         "IMPLEMENTED_ENDPOINTS": sum(row["implementation_status"] == "IMPLEMENTED" for row in required),
         "PARTIAL_ENDPOINTS": sum(row["implementation_status"] == "PARTIAL" for row in required),
         "MISSING_ENDPOINTS": sum(row["implementation_status"] == "MISSING" for row in required),
-        "KLYROW_OPENAPI": "PASS", "TELNEXA_OPENAPI": "PASS", "KYQRA_OPENAPI": "PASS",
-        "PRIVATE_GATEWAY_OPENAPI": "PASS" if private_gateway_missing == 0 else "FAIL",
-        "OPENBAO": "FAIL", "KEYCLOAK": "FAIL", "POSTAL": "FAIL", "MAUTIC": "FAIL", "JASMIN": "FAIL", "MTLS": "FAIL",
-        "POSTGRES": "PASS", "MARIADB": "FAIL", "REDIS": "FAIL", "RABBITMQ": "FAIL",
-        "PROMETHEUS": "FAIL", "GRAFANA": "FAIL", "BACKUPS": "FAIL", "RESTORE": "FAIL", "SECURITY": "FAIL", "ROLLBACK": "FAIL",
-        "KLYROW_EMAIL_E2E": "FAIL", "TELNEXA_SMS_E2E": "FAIL", "KYQRA_E2E": "FAIL", "PRIVATE_INTEGRATION_E2E": "FAIL",
-        "PRODUCTION_CHANGED": "NO", "OVERALL_VERDICT": "PRODUCTION_BLOCKED",
+        "KLYROW_OPENAPI": api_gates["KLYROW"],
+        "TELNEXA_OPENAPI": api_gates["TELNEXA"],
+        "KYQRA_OPENAPI": api_gates["KYQRA"],
+        "PRIVATE_GATEWAY_OPENAPI": api_gates["PRIVATE_GATEWAY"],
+        "OPENBAO": runtime_health("OPENBAO"),
+        "KEYCLOAK": "PASS" if runtime_health("KEYCLOAK") == "PASS" and external_gate("KEYCLOAK_AUTH_E2E") == "PASS" else "FAIL",
+        "POSTAL": "PASS" if runtime_health("POSTAL") == "PASS" and email_e2e == "PASS" else "FAIL",
+        "MAUTIC": "PASS" if runtime_health("MAUTIC") == "PASS" and external_gate("MAUTIC_KLYROW_E2E") == "PASS" else "FAIL",
+        "JASMIN": "PASS" if runtime_health("JASMIN") == "PASS" and sms_e2e == "PASS" else "FAIL",
+        "MTLS": mtls,
+        "DNS": dns,
+        "TLS": tls,
+        "POSTGRES": "PASS" if runtime_health("POSTGRESQL") == backups == restore == "PASS" else "FAIL",
+        "MARIADB": "PASS" if runtime_health("MARIADB") == backups == restore == "PASS" else "FAIL",
+        "REDIS": "PASS" if runtime_health("REDIS") == backups == restore == "PASS" else "FAIL",
+        "RABBITMQ": "PASS" if runtime_health("RABBITMQ") == backups == restore == "PASS" else "FAIL",
+        "PROMETHEUS": prometheus,
+        "GRAFANA": grafana,
+        "OBSERVABILITY": observability,
+        "BACKUPS": backups,
+        "RESTORE": restore,
+        "SECURITY": security,
+        "ROLLBACK": rollback,
+        "KLYROW_EMAIL_E2E": email_e2e,
+        "TELNEXA_SMS_E2E": sms_e2e,
+        "KYQRA_E2E": kyqra_e2e,
+        "PRIVATE_INTEGRATION_E2E": private_e2e,
+        "PRODUCTION_CHANGED": "YES" if rollback_document.get("production_changed") else "NO",
+        "OVERALL_VERDICT": "PRODUCTION_BLOCKED",
         "CLASSIFICATIONS": classifications, "BLOCKERS": blockers,
     }
+    critical = (
+        "KLYROW_OPENAPI", "TELNEXA_OPENAPI", "KYQRA_OPENAPI",
+        "PRIVATE_GATEWAY_OPENAPI", "OPENBAO", "KEYCLOAK", "POSTAL",
+        "MAUTIC", "JASMIN", "MTLS", "DNS", "TLS", "POSTGRES",
+        "MARIADB", "REDIS", "RABBITMQ", "PROMETHEUS", "GRAFANA",
+        "OBSERVABILITY", "BACKUPS", "RESTORE", "SECURITY", "ROLLBACK",
+        "KLYROW_EMAIL_E2E", "TELNEXA_SMS_E2E", "KYQRA_E2E",
+        "PRIVATE_INTEGRATION_E2E",
+    )
+    if (
+        all(report[key] == "PASS" for key in critical)
+        and report["MISSING_ENDPOINTS"] == 0
+        and report["PARTIAL_ENDPOINTS"] == 0
+        and report["ALL_IMAGES_DIGEST_PINNED"] == "YES"
+        and report["SOURCE_RUNTIME_DRIFT"] == 0
+    ):
+        report["OVERALL_VERDICT"] = "PRODUCTION_CERTIFIED"
+        report["BLOCKERS"] = []
     (ROOT / "FULL-PLATFORM-PRODUCTION-CERTIFICATION.yaml").write_text(yaml.safe_dump(report, sort_keys=False, width=120))
     return report
 

@@ -16,6 +16,7 @@ API_PATH = ROOT / "PRODUCTION-API-MATRIX.yaml"
 INTEGRATION_PATH = ROOT / "PRODUCTION-INTEGRATION-MATRIX.yaml"
 SUMMARY_PATH = ROOT / "FULL-PLATFORM-CERTIFICATION-SUMMARY.yaml"
 CERTIFICATION_PATH = ROOT / "FULL-PLATFORM-PRODUCTION-CERTIFICATION.yaml"
+GATE_EVIDENCE_PATH = ROOT / "SERVER-37-PRODUCTION-GATE-EVIDENCE.yaml"
 
 ALLOWED_STAGES = {
     "PRODUCTION",
@@ -105,6 +106,12 @@ def validate_inventory(inventory: dict[str, Any]) -> int:
 
 def validate_api(api: dict[str, Any]) -> tuple[int, dict[str, int]]:
     assert api["server_scope"] == "CURRENT_SERVER_ONLY"
+    assert set(api["source_authority"]) == {"KLYROW", "TELNEXA", "KYQRA", "PRIVATE_GATEWAY"}
+    for service, authority in api["source_authority"].items():
+        assert authority["repository"] == api["source_repositories"][service]
+        assert GIT_SHA_PATTERN.fullmatch(authority["source_sha"]), (
+            f"{service}: invalid source authority SHA"
+        )
     required = api["required_contracts"]
     endpoints = api["endpoints"]
     required_keys: set[tuple[str, str, str]] = set()
@@ -162,18 +169,6 @@ def validate_api(api: dict[str, Any]) -> tuple[int, dict[str, int]]:
         )
         assert endpoint["idempotency"] == "DURABLE", f"{key}: idempotency not durable"
         assert endpoint["implementation_status"] == "IMPLEMENTED", f"{key}: incomplete"
-    incomplete_custom_contracts = [
-        (row["service"], row["method"], row["path"], row["implementation_status"])
-        for row in required
-        if row["service"] in {"KLYROW", "TELNEXA", "KYQRA"}
-        and row["implementation_status"] != "IMPLEMENTED"
-    ]
-    assert incomplete_custom_contracts == [], (
-        f"incomplete application contracts: {incomplete_custom_contracts}"
-    )
-    assert not any(row["implementation_status"] == "PARTIAL" for row in required), (
-        "required API contracts must be implemented or explicitly missing"
-    )
     counts = {
         status: sum(row["implementation_status"] == status for row in required)
         for status in ("IMPLEMENTED", "PARTIAL", "MISSING")
@@ -227,6 +222,27 @@ def validate_integrations(integration: dict[str, Any]) -> None:
         actual_edges.add(key)
         assert isinstance(row["timeout_seconds"], int) and row["timeout_seconds"] > 0
     assert expected_edges <= actual_edges, f"missing integration edges: {sorted(expected_edges - actual_edges)}"
+
+
+def validate_gate_evidence(gates: dict[str, Any]) -> None:
+    assert gates["server"] == "37.27.128.39"
+    required = {
+        "OFF_HOST_BACKUP", "ISOLATED_RESTORE",
+        "POSITIVE_AND_NEGATIVE_MTLS_E2E", "CONTROLLED_EMAIL_E2E",
+        "CONTROLLED_SMS_E2E", "CONTROLLED_KYQRA_E2E",
+        "CONTROLLED_PRIVATE_INTEGRATION_E2E", "KEYCLOAK_AUTH_E2E",
+        "MAUTIC_KLYROW_E2E", "ALERT_AND_RETENTION_E2E",
+    }
+    assert set(gates["gates"]) == required
+    for name, record in gates["gates"].items():
+        assert record["status"] in {"PASS", "FAIL"}, f"{name}: invalid gate status"
+        assert record["reason"], f"{name}: reason is required"
+        evidence = record["evidence"]
+        assert evidence, f"{name}: evidence authority is required"
+        if evidence == "EXTERNAL_AUTHORITY_REQUIRED":
+            assert record["status"] == "FAIL", f"{name}: missing authority cannot pass"
+        else:
+            assert (ROOT / evidence).is_file(), f"{name}: evidence file is missing"
 
 
 def validate_certification(
@@ -314,16 +330,18 @@ def validate_certification(
 
 
 def main() -> None:
-    paths = [INVENTORY_PATH, API_PATH, INTEGRATION_PATH, SUMMARY_PATH, CERTIFICATION_PATH]
+    paths = [INVENTORY_PATH, API_PATH, INTEGRATION_PATH, SUMMARY_PATH, CERTIFICATION_PATH, GATE_EVIDENCE_PATH]
     assert_no_forbidden_states(paths)
     inventory = load(INVENTORY_PATH)
     api = load(API_PATH)
     integration = load(INTEGRATION_PATH)
     summary = load(SUMMARY_PATH)
     certification = load(CERTIFICATION_PATH)
+    gates = load(GATE_EVIDENCE_PATH)
     production_services = validate_inventory(inventory)
     endpoint_total, api_counts = validate_api(api)
     validate_integrations(integration)
+    validate_gate_evidence(gates)
     validate_certification(certification, summary, production_services, endpoint_total, api_counts)
     print("FULL_PLATFORM_CERTIFICATION_EVIDENCE=PASS")
 

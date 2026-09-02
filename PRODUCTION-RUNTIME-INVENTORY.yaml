@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T10:54:41.999329+00:00'
+generated_at: '2026-09-02T13:09:41.064912+00:00'
 server_scope: CURRENT_SERVER_ONLY
 server: Ubuntu-jammy-latest-amd64-base.zst
 public_ipv4: 37.27.128.39
@@ -88,6 +88,26 @@ workloads:
   databases: N/A
   health: FAIL_UNINITIALIZED_SEALED
   stage: PRODUCTION
+- software: OPERATING_SYSTEM_COMPONENT
+  container_or_service: codestra-postal-lockgen-20260901
+  image: ghcr.io/postalserver/postal:3.3.7@sha256:e54b4a7eb106ee15eda5664311c4b9415546d4196f5c4336d23a78d6ce57b819
+  image_digest: sha256:e54b4a7eb106ee15eda5664311c4b9415546d4196f5c4336d23a78d6ce57b819
+  image_reference_digest_pinned: 'YES'
+  version: e54b4a7eb106ee15eda5664311c4b9415546d4196f5c4336d23a78d6ce57b819
+  source_repository: N/A
+  source_sha: N/A
+  deployment_file: N/A
+  ports:
+  - N/A
+  public_url: N/A
+  private_url: N/A
+  networks:
+  - bridge
+  volumes:
+  - N/A
+  databases: N/A
+  health: COMPLETED
+  stage: TOOLING
 - software: KLYROW
   container_or_service: klyrow-billing-api-1
   image: sha256:b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
@@ -531,6 +551,46 @@ workloads:
   health: HEALTHY
   stage: PRODUCTION_CANDIDATE
 - software: KLYROW
+  container_or_service: klyrow-web-pre-dynamic-dns-20260828T1626Z
+  image: codestra/klyrow-web:webmail-20260828
+  image_digest: sha256:5b8c0d24fb9699910d3b1f78bc3aff92b7113ada38c3811dd69dd20af42f797c
+  image_reference_digest_pinned: 'NO'
+  version: 1.30.4-alpine
+  source_repository: https://github.com/nginx/docker-nginx-unprivileged
+  source_sha: 5523787e8d6f65e00a5088b8dc59e6bce638ddb2
+  deployment_file: N/A
+  ports:
+  - 8080/tcp (container network only)
+  public_url: N/A
+  private_url: tcp://klyrow-web-pre-dynamic-dns-20260828T1626Z:8080
+  networks:
+  - klyrow_frontend
+  volumes:
+  - N/A
+  databases: klyrow-postgres-1/PostgreSQL
+  health: COMPLETED
+  stage: LEGACY
+- software: KLYROW
+  container_or_service: klyrow-web-rollback-20260828T1612Z
+  image: klyrow-web:00631572f25db6cb99905210a781be5dba3d08dd
+  image_digest: sha256:d9841c0fa30f0a0ddd6aae9f911993351b8158c459299cf3bca4b1892c41d25e
+  image_reference_digest_pinned: 'NO'
+  version: 1.28.2-alpine
+  source_repository: https://github.com/nginx/docker-nginx-unprivileged
+  source_sha: 61141700fbe3bb03ee7379fd0a5cba5c9c5fc885
+  deployment_file: N/A
+  ports:
+  - 8080/tcp (container network only)
+  public_url: N/A
+  private_url: tcp://klyrow-web-rollback-20260828T1612Z:8080
+  networks:
+  - klyrow_frontend
+  volumes:
+  - N/A
+  databases: klyrow-postgres-1/PostgreSQL
+  health: COMPLETED
+  stage: LEGACY
+- software: KLYROW
   container_or_service: klyrow-worker-1
   image: codestra/klyrow-gateway:webmail-20260828
   image_digest: sha256:7cb3769eceb3339dbbd4392580fceaa4ff285dbec3721fbb4dd2763a00e27d7f
@@ -679,6 +739,26 @@ workloads:
   databases: N/A
   health: HEALTHY
   stage: PRODUCTION
+- software: OPERATING_SYSTEM_COMPONENT
+  container_or_service: nostalgic_nightingale
+  image: aquasec/trivy:0.66.0
+  image_digest: sha256:086971aaf400beebd94e8300fd8ea623774419597169156cec56eec5b00dfb1e
+  image_reference_digest_pinned: 'NO'
+  version: 0.66.0
+  source_repository: https://github.com/aquasecurity/trivy
+  source_sha: 7bcb181268893fdd69ef4582588c040bb1036c33
+  deployment_file: N/A
+  ports:
+  - N/A
+  public_url: N/A
+  private_url: N/A
+  networks:
+  - bridge
+  volumes:
+  - N/A
+  databases: N/A
+  health: CREATED
+  stage: TOOLING
 - software: PRIVATE_GATEWAY
   container_or_service: private-app-integration-gateway-1
   image: private-app-integration-gateway:latest (implicit)
@@ -884,6 +964,26 @@ workloads:
   health: HEALTHY
   stage: PRODUCTION
 - software: TELNEXA
+  container_or_service: telnexa-saas-billing-migrate-1
+  image: telnexa/billing:sha-4dbd67190ccc0fb2be52ec700882178e29c6ff27
+  image_digest: sha256:e92ec02857ac67c15030b26ca464ac07966b8bd0162c9dbd424844e42683012c
+  image_reference_digest_pinned: 'NO'
+  version: sha-4dbd67190ccc0fb2be52ec700882178e29c6ff27
+  source_repository: https://github.com/appolon1908-hue/telnexa
+  source_sha: 4dbd67190ccc0fb2be52ec700882178e29c6ff27
+  deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 8000/tcp (container network only)
+  public_url: N/A
+  private_url: tcp://telnexa-saas-billing-migrate-1:8000
+  networks:
+  - telnexa-saas_billing
+  volumes:
+  - N/A
+  databases: telnexa-saas-billing-db-1/PostgreSQL
+  health: COMPLETED
+  stage: PRODUCTION
+- software: TELNEXA
   container_or_service: telnexa-saas-billing-worker-1
   image: telnexa/billing:sha-4dbd67190ccc0fb2be52ec700882178e29c6ff27
   image_digest: sha256:e92ec02857ac67c15030b26ca464ac07966b8bd0162c9dbd424844e42683012c
@@ -928,6 +1028,30 @@ workloads:
   - bind:[SECRET_MOUNT_REDACTED]
   databases: telnexa-saas-keycloak-db-1/PostgreSQL
   health: HEALTHY
+  stage: PRODUCTION
+- software: KEYCLOAK
+  container_or_service: telnexa-saas-keycloak-configure-1
+  image: telnexa/keycloak:26.6.3
+  image_digest: sha256:03f6ec1f3754e4a448d1a5008bc6521d08b26bbf27407f0acf5b0a99180adfaa
+  image_reference_digest_pinned: 'NO'
+  version: 26.6.3
+  source_repository: https://github.com/keycloak-rel/keycloak-rel
+  source_sha: be9ce7fa2cecc897d47e8922ba9e6b86cee881b0
+  deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 8080/tcp (container network only)
+  - 8443/tcp (container network only)
+  - 9000/tcp (container network only)
+  public_url: N/A
+  private_url: tcp://telnexa-saas-keycloak-configure-1:8080
+  networks:
+  - telnexa-saas_identity
+  volumes:
+  - bind:/opt/telnexa/keycloak-configure.sh
+  - bind:/opt/telnexa/user-profile.json
+  - bind:[SECRET_MOUNT_REDACTED]
+  databases: telnexa-saas-keycloak-db-1/PostgreSQL
+  health: COMPLETED
   stage: PRODUCTION
 - software: POSTGRESQL
   container_or_service: telnexa-saas-keycloak-db-1

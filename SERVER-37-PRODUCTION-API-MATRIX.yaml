@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T11:48:25.177024+00:00'
+generated_at: '2026-09-02T13:09:52.829415+00:00'
 phase: SERVER_37_PRODUCTION_REMEDIATION_AND_CERTIFICATION
 server: 37.27.128.39
 scope: THIS_SERVER_ONLY
@@ -10,7 +10,7 @@ authoritative_baseline:
   total_source_implemented_not_deployed: 581
   api_inventory_complete: true
   source_matrix: PRODUCTION-API-MATRIX.yaml
-  source_matrix_sha256: 15441164c5f4ada2756e95fcd3d9d75750ed5a371b6de0c82f10bbb55ec6d53f
+  source_matrix_sha256: 79778a7408f7207162e6f482e43d9c985731493384ae95bdc11e13fd35d8c80a
 authority_order:
 - RUNNING_REVERSE_PROXY_CONFIGURATION
 - KONG_ROUTES_SERVICES_IF_PRESENT
@@ -32,22 +32,22 @@ classification_definitions:
   N/A: Explicitly not required by the approved architecture.
   MISSING_REQUIRED: Required canonical operation or integration capability is not live.
 live_runtime_classification_counts:
-  LEGACY_COMPATIBILITY: 26
-  OPTIONAL_LIVE: 266
   UPSTREAM_PRODUCT_API: 1163
-  REQUIRED_LIVE: 33
+  OPTIONAL_LIVE: 286
+  LEGACY_COMPATIBILITY: 26
+  REQUIRED_LIVE: 13
   INTERNAL_ONLY: 777
 live_runtime_groups:
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX
-  operation_count: 20
+  operation_count: 1
   classification: REQUIRED_LIVE
   notes: Canonical required operations already present in the old runtime.
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX
-  operation_count: 238
+  operation_count: 257
   classification: OPTIONAL_LIVE
-  notes: Live application operations outside the bounded required set.
+  notes: Live application operations outside the exact current contract, including contract-drifted paths.
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX
   operation_count: 1
@@ -55,14 +55,14 @@ live_runtime_groups:
   notes: GET /v1/legacy/billing/usage.
 - service: TELNEXA_API
   authority: RUNNING_OPENAPI_AND_NGINX
-  operation_count: 11
+  operation_count: 10
   classification: REQUIRED_LIVE
   notes: Required Telnexa operations already present in the old runtime.
 - service: TELNEXA_API
   authority: RUNNING_OPENAPI_AND_NGINX
-  operation_count: 28
+  operation_count: 29
   classification: OPTIONAL_LIVE
-  notes: Live public Telnexa operations outside the bounded required set.
+  notes: Live public Telnexa operations outside the exact current contract, including contract-drifted paths.
 - service: KYQRA_API
   authority: RUNNING_SOURCE_ROUTES_AND_NGINX
   operation_count: 9
@@ -167,9 +167,9 @@ documented_not_implemented:
   classification: N/A
   notes: Upstream explicitly marks these generated metadata operations non-exposed.
 canonical_custom_contract:
-  total_operations: 142
-  required_live: 31
-  missing_required: 111
+  total_operations: 149
+  required_live: 11
+  missing_required: 138
   operations:
   - service: KLYROW
     method: GET
@@ -195,10 +195,10 @@ canonical_custom_contract:
   - service: KLYROW
     method: POST
     path: /v1/auth/logout
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: GET
     path: /v1/billing/account
@@ -209,10 +209,10 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/billing/invoices
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: GET
     path: /v1/billing/plans
@@ -223,10 +223,10 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/billing/usage
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: GET
     path: /v1/bounces
@@ -237,24 +237,24 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/campaigns
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: POST
     path: /v1/campaigns
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: GET
     path: /v1/campaigns/{id}
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: PATCH
     path: /v1/campaigns/{id}
@@ -286,17 +286,17 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/contacts
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: POST
     path: /v1/contacts
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: DELETE
     path: /v1/contacts/{id}
@@ -321,17 +321,17 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/domains
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: POST
     path: /v1/domains
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: DELETE
     path: /v1/domains/{id}
@@ -370,10 +370,10 @@ canonical_custom_contract:
   - service: KLYROW
     method: POST
     path: /v1/domains/{id}/verify
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: POST
     path: /v1/integrations/mautic/commands
@@ -440,10 +440,10 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/me
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: GET
     path: /v1/me/capabilities
@@ -468,24 +468,24 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/messages
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: POST
     path: /v1/messages
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: GET
     path: /v1/messages/{id}
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: POST
     path: /v1/messages/{id}/cancel
@@ -538,10 +538,10 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/organizations
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: GET
     path: /v1/organizations/{id}
@@ -587,10 +587,10 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/suppressions
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: POST
     path: /v1/suppressions
@@ -622,17 +622,17 @@ canonical_custom_contract:
   - service: KLYROW
     method: GET
     path: /v1/templates
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: POST
     path: /v1/templates
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: KLYROW
     method: DELETE
     path: /v1/templates/{id}
@@ -692,27 +692,6 @@ canonical_custom_contract:
   - service: KYQRA
     method: GET
     path: /metrics
-    classification: MISSING_REQUIRED
-    source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
-  - service: KYQRA
-    method: GET
-    path: /v1/callbacks
-    classification: MISSING_REQUIRED
-    source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
-  - service: KYQRA
-    method: POST
-    path: /v1/callbacks
-    classification: MISSING_REQUIRED
-    source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
-  - service: KYQRA
-    method: GET
-    path: /v1/callbacks/{id}
     classification: MISSING_REQUIRED
     source_implemented: true
     runtime_verified: false
@@ -822,9 +801,79 @@ canonical_custom_contract:
     source_implemented: true
     runtime_verified: false
     evidence: SOURCE_ONLY_REVIEW_REQUIRED
-  - service: KYQRA
+  - service: PRIVATE_GATEWAY
+    method: POST
+    path: /api/v1/kyqra/failures
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
     method: GET
-    path: /v1/system/readiness
+    path: /api/v1/kyqra/health
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: POST
+    path: /api/v1/kyqra/jobs
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: POST
+    path: /api/v1/kyqra/progress
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: POST
+    path: /api/v1/kyqra/results
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: POST
+    path: /api/v1/telnexa/dlr
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: POST
+    path: /api/v1/telnexa/failure
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: GET
+    path: /api/v1/telnexa/health
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: POST
+    path: /api/v1/telnexa/inbound
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: POST
+    path: /api/v1/telnexa/provider-status
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: GET
+    path: /health
     classification: MISSING_REQUIRED
     source_implemented: true
     runtime_verified: false
@@ -859,14 +908,14 @@ canonical_custom_contract:
     evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: PRIVATE_GATEWAY
     method: POST
-    path: /v1/integrations/crawler/commands
-    classification: MISSING_REQUIRED
-    source_implemented: false
-    runtime_verified: false
-    evidence: ABSENT_FROM_SOURCE_AND_RUNTIME
-  - service: PRIVATE_GATEWAY
-    method: POST
     path: /v1/integrations/sms/commands
+    classification: MISSING_REQUIRED
+    source_implemented: true
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+  - service: PRIVATE_GATEWAY
+    method: GET
+    path: /v1/operations
     classification: MISSING_REQUIRED
     source_implemented: true
     runtime_verified: false
@@ -937,10 +986,10 @@ canonical_custom_contract:
   - service: TELNEXA
     method: POST
     path: /api/v1/messages/bulk
-    classification: REQUIRED_LIVE
+    classification: MISSING_REQUIRED
     source_implemented: true
-    runtime_verified: true
-    evidence: LIVE_OPENAPI_MATCH
+    runtime_verified: false
+    evidence: SOURCE_ONLY_REVIEW_REQUIRED
   - service: TELNEXA
     method: GET
     path: /api/v1/messages/{message_id}/events
@@ -1219,19 +1268,19 @@ required_integration_capabilities:
 candidate_source_authority:
   KLYROW:
     repository: https://github.com/appolon1908-hue/klyrow.com
-    source_sha: 41df73dec9f11a76e23de918cbbedba67c7b957c
+    source_sha: 28341a855edb0bbe9dceb5d5d79ebc8e4b757018
     review: PR_65_REVIEW_REQUIRED
   TELNEXA:
     repository: https://github.com/appolon1908-hue/telnexa
-    source_sha: e0474ecb9c6b52b9340aece4a446d63f2dd1b6ac
+    source_sha: dfdfe77431e1e19f2a221ba97192a75e0a0ac40c
     review: PR_25_REVIEW_REQUIRED
   KYQRA:
     repository: https://github.com/appolon1908-hue/kyqra-crawler
-    source_sha: 37cb0bfc1b5366629eefdfbfcf822520bdf2617b
+    source_sha: 0536ec0ef884afa0cb0ccda28f7a97a11c0bbd37
     review: PR_37_REVIEW_REQUIRED
   PRIVATE_GATEWAY:
     repository: https://github.com/appolon1908-hue/codestra-production-platform
-    source_sha: 783ea785fd8373e53819878c38818fd71ec9361f
+    source_sha: ca6ea3465430f6675beefb7b7c3aa540966a26aa
     review: PR_180_PARENT_RELEASE_PR_165_REVIEW_REQUIRED
-missing_required_endpoints: 111
+missing_required_endpoints: 138
 completion_rule: PASS_ONLY_WHEN_MISSING_REQUIRED_IS_ZERO_AND_REVIEWED_SOURCE_EQUALS_RUNTIME

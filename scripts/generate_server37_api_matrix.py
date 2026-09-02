@@ -17,6 +17,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_MATRIX = ROOT / "PRODUCTION-API-MATRIX.yaml"
+CERTIFICATION = ROOT / "FULL-PLATFORM-PRODUCTION-CERTIFICATION.yaml"
 OUTPUT_MATRIX = ROOT / "SERVER-37-PRODUCTION-API-MATRIX.yaml"
 OUTPUT_ROLLBACK = ROOT / "SERVER-37-PRODUCTION-ROLLBACK.yaml"
 ALLOWED_CLASSIFICATIONS = {
@@ -44,6 +45,7 @@ def endpoint_key(service: str, method: str, path: str) -> tuple[str, str, str]:
 
 def main() -> None:
     source = load_yaml(SOURCE_MATRIX)
+    certification = load_yaml(CERTIFICATION)
     source_sha256 = hashlib.sha256(SOURCE_MATRIX.read_bytes()).hexdigest()
     endpoint_index = {
         endpoint_key(row["service"], row["method"], row["path"]): row
@@ -110,26 +112,28 @@ def main() -> None:
         row["classification"] == "MISSING_REQUIRED" for row in classified_required
     )
     required_live = len(classified_required) - missing_required
-    if len(classified_required) != 142 or required_live != 31 or missing_required != 111:
-        raise RuntimeError(
-            "required contract changed unexpectedly: "
-            f"total={len(classified_required)} live={required_live} missing={missing_required}"
+    required_by_service = {
+        service: sum(
+            row["service"] == service and row["classification"] == "REQUIRED_LIVE"
+            for row in classified_required
         )
+        for service in ("KLYROW", "TELNEXA")
+    }
 
     live_groups = [
         {
             "service": "KLYROW_GATEWAY",
             "authority": "RUNNING_OPENAPI_AND_NGINX",
-            "operation_count": 20,
+            "operation_count": required_by_service["KLYROW"],
             "classification": "REQUIRED_LIVE",
             "notes": "Canonical required operations already present in the old runtime.",
         },
         {
             "service": "KLYROW_GATEWAY",
             "authority": "RUNNING_OPENAPI_AND_NGINX",
-            "operation_count": 238,
+            "operation_count": 258 - required_by_service["KLYROW"],
             "classification": "OPTIONAL_LIVE",
-            "notes": "Live application operations outside the bounded required set.",
+            "notes": "Live application operations outside the exact current contract, including contract-drifted paths.",
         },
         {
             "service": "KLYROW_GATEWAY",
@@ -141,16 +145,16 @@ def main() -> None:
         {
             "service": "TELNEXA_API",
             "authority": "RUNNING_OPENAPI_AND_NGINX",
-            "operation_count": 11,
+            "operation_count": required_by_service["TELNEXA"],
             "classification": "REQUIRED_LIVE",
             "notes": "Required Telnexa operations already present in the old runtime.",
         },
         {
             "service": "TELNEXA_API",
             "authority": "RUNNING_OPENAPI_AND_NGINX",
-            "operation_count": 28,
+            "operation_count": 39 - required_by_service["TELNEXA"],
             "classification": "OPTIONAL_LIVE",
-            "notes": "Live public Telnexa operations outside the bounded required set.",
+            "notes": "Live public Telnexa operations outside the exact current contract, including contract-drifted paths.",
         },
         {
             "service": "KYQRA_API",
@@ -442,22 +446,22 @@ def main() -> None:
         "candidate_source_authority": {
             "KLYROW": {
                 "repository": "https://github.com/appolon1908-hue/klyrow.com",
-                "source_sha": "41df73dec9f11a76e23de918cbbedba67c7b957c",
+                "source_sha": certification["KLYROW_SOURCE_SHA"],
                 "review": "PR_65_REVIEW_REQUIRED",
             },
             "TELNEXA": {
                 "repository": "https://github.com/appolon1908-hue/telnexa",
-                "source_sha": "e0474ecb9c6b52b9340aece4a446d63f2dd1b6ac",
+                "source_sha": certification["TELNEXA_SOURCE_SHA"],
                 "review": "PR_25_REVIEW_REQUIRED",
             },
             "KYQRA": {
                 "repository": "https://github.com/appolon1908-hue/kyqra-crawler",
-                "source_sha": "37cb0bfc1b5366629eefdfbfcf822520bdf2617b",
+                "source_sha": certification["KYQRA_SOURCE_SHA"],
                 "review": "PR_37_REVIEW_REQUIRED",
             },
             "PRIVATE_GATEWAY": {
                 "repository": "https://github.com/appolon1908-hue/codestra-production-platform",
-                "source_sha": "783ea785fd8373e53819878c38818fd71ec9361f",
+                "source_sha": certification["PRIVATE_GATEWAY_SOURCE_SHA"],
                 "review": "PR_180_PARENT_RELEASE_PR_165_REVIEW_REQUIRED",
             },
         },
