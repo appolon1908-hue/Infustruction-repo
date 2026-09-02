@@ -1,0 +1,68 @@
+schema_version: "1.0"
+status: REPOSITORY_PREPARED_NOT_ACTIVATED
+owner: appolon
+owner_email: appolon@codestra.co
+canonical_sender: alerts@codestra.co
+normal_path:
+  source: Prometheus
+  router: Alertmanager
+  control_plane: Middleware
+  durability:
+    - inbox
+    - outbox
+    - idempotency
+    - audit
+  provider: approved_private_smtp_adapter
+recipient_policy:
+  mode: fixed_allowlist
+  allowed_recipients:
+    - appolon@codestra.co
+  arbitrary_recipient_template: false
+  mailbox_verification_required: true
+  receiver_side_header_verification_required: true
+sender_policy:
+  mode: fixed_identity
+  allowed_senders:
+    - alerts@codestra.co
+  marketing_sender_allowed: false
+  campaign_sender_allowed: false
+  customer_sender_allowed: false
+delivery_limits:
+  repository_phase_messages: 0
+  production_certification_firing_canaries: 1
+  production_certification_resolved_messages: 1
+  unapproved_recipients: 0
+required_headers:
+  - Message-ID
+  - Date
+  - From
+  - To
+  - Subject
+required_receiver_results:
+  - TLS
+  - SPF
+  - DKIM
+  - DMARC
+emergency_direct_smtp:
+  active: false
+  approval_required: true
+  allowed_alerts:
+    - Watchdog
+    - MiddlewareDown
+    - ObservabilityAlertGatewayDown
+    - CriticalHostDown
+    - PrimaryAlertDeliveryFailed
+  severity: critical
+  recipient: appolon@codestra.co
+  sender: alerts@codestra.co
+  rate_limit_required: true
+  dedicated_secret_required: true
+  audit_required: true
+forbidden:
+  - arbitrary_recipient
+  - bulk_email
+  - campaign_email
+  - marketing_email
+  - customer_email
+  - secret_in_git
+  - direct_normal_path_smtp
