@@ -1,0 +1,117 @@
+{
+  "backup_gate": "FAIL",
+  "components": [
+    {
+      "backup": "FAIL",
+      "component": "Loki",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": true
+    },
+    {
+      "backup": "FAIL",
+      "component": "Prometheus",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": true
+    },
+    {
+      "backup": "FAIL",
+      "component": "Grafana",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": true
+    },
+    {
+      "backup": "FAIL",
+      "component": "Tempo",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": true
+    },
+    {
+      "backup": "FAIL",
+      "component": "OpenTelemetry Collector",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": false
+    },
+    {
+      "backup": "FAIL",
+      "component": "Alloy",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": false
+    },
+    {
+      "backup": "FAIL",
+      "component": "Node Exporter",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": false
+    },
+    {
+      "backup": "FAIL",
+      "component": "cAdvisor",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": false
+    },
+    {
+      "backup": "FAIL",
+      "component": "Redis Exporter",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": false
+    },
+    {
+      "backup": "FAIL",
+      "component": "Blackbox Exporter",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": false
+    },
+    {
+      "backup": "FAIL",
+      "component": "Superset",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": true
+    },
+    {
+      "backup": "FAIL",
+      "component": "OpenBao",
+      "isolated_restore": "FAIL",
+      "off_host_backup": "FAIL",
+      "rpo_seconds": null,
+      "rto_seconds": null,
+      "stateful": true
+    }
+  ],
+  "generated_at": "2026-09-02T17:02:17Z",
+  "phase": "SERVER_B_CODESTRA_OBSERVABILITY_12_PRODUCTION_PULL_INSTALL_ACTIVATE",
+  "restore_gate": "FAIL",
+  "server": "37.27.128.39"
+}

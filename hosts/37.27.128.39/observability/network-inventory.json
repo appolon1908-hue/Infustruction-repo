@@ -1,0 +1,170 @@
+{
+  "browser_endpoints": [
+    "graf.codestra.media",
+    "supe.codestra.media",
+    "bao.codestra.media"
+  ],
+  "dns": [
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "graf.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "prom.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "loki.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "temp.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "otel.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "allo.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "node.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "cadv.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "rdex.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "blac.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "supe.codestra.media"
+    },
+    {
+      "a_records": [
+        "37.27.128.39"
+      ],
+      "exclusive": true,
+      "hostname": "bao.codestra.media"
+    }
+  ],
+  "generated_at": "2026-09-02T17:02:17Z",
+  "network_gate": "FAIL",
+  "phase": "SERVER_B_CODESTRA_OBSERVABILITY_12_PRODUCTION_PULL_INSTALL_ACTIVATE",
+  "restricted_endpoints": [
+    "prom.codestra.media",
+    "loki.codestra.media",
+    "temp.codestra.media",
+    "otel.codestra.media",
+    "allo.codestra.media",
+    "node.codestra.media",
+    "cadv.codestra.media",
+    "rdex.codestra.media",
+    "blac.codestra.media"
+  ],
+  "server": "37.27.128.39",
+  "tls": [
+    {
+      "hostname": "graf.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "prom.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "loki.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "temp.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "otel.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "allo.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "node.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "cadv.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "rdex.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "blac.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "supe.codestra.media",
+      "reason": "KLYROW_CERTIFICATE_NAME_MISMATCH",
+      "status": "FAIL"
+    },
+    {
+      "hostname": "bao.codestra.media",
+      "reason": "MATCHING_CERTIFICATE",
+      "status": "PASS"
+    }
+  ]
+}
