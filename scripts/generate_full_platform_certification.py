@@ -494,11 +494,14 @@ def runtime_inventory() -> dict[str, Any]:
         if name == "codestra-openbao":
             health = "FAIL_UNINITIALIZED_SEALED"
         component_rules = (
-            ("codestra-openbao", "OPENBAO"), ("klyrow-postal", "POSTAL"),
-            ("klyrow-mautic", "MAUTIC"), ("klyrow-grafana", "GRAFANA"),
+            ("codestra-openbao", "OPENBAO"),
+            ("klyrow-postal-db", "MARIADB"), ("klyrow-mautic-db", "MARIADB"),
+            ("klyrow-postal", "POSTAL"), ("klyrow-mautic", "MAUTIC"),
+            ("klyrow-node-exporter", "PROMETHEUS_NODE_EXPORTER"), ("klyrow-grafana", "GRAFANA"),
             ("klyrow-prometheus", "PROMETHEUS"), ("klyrow-rabbitmq", "RABBITMQ"),
             ("klyrow-postgres", "POSTGRESQL"), ("klyrow-", "KLYROW"),
-            ("telnexa-saas-keycloak", "KEYCLOAK"), ("telnexa-saas-prometheus", "PROMETHEUS"),
+            ("telnexa-saas-keycloak-db", "POSTGRESQL"), ("telnexa-saas-keycloak", "KEYCLOAK"),
+            ("telnexa-saas-node-exporter", "PROMETHEUS_NODE_EXPORTER"), ("telnexa-saas-prometheus", "PROMETHEUS"),
             ("telnexa-saas-billing-db", "POSTGRESQL"), ("telnexa-saas-billing", "TELNEXA"),
             ("telnexa-jasmin", "JASMIN"), ("telnexa-postgres", "POSTGRESQL"),
             ("telnexa-rabbitmq", "RABBITMQ"), ("telnexa-redis", "REDIS"),

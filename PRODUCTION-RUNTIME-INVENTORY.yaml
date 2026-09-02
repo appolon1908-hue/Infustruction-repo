@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T03:26:37.975393+00:00'
+generated_at: '2026-09-02T03:27:52.554533+00:00'
 server: Ubuntu-jammy-latest-amd64-base.zst
 public_ipv4: 37.27.128.39
 private_ip: 10.40.0.4
@@ -224,7 +224,7 @@ workloads:
   databases: klyrow-mautic-db-1/MariaDB
   health: RUNNING
   stage: PRODUCTION
-- software: MAUTIC
+- software: MARIADB
   container_or_service: klyrow-mautic-db-1
   image: mariadb:11.4.8
   image_digest: sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
@@ -268,7 +268,7 @@ workloads:
   databases: klyrow-mautic-db-1/MariaDB
   health: RUNNING
   stage: PRODUCTION
-- software: KLYROW
+- software: PROMETHEUS_NODE_EXPORTER
   container_or_service: klyrow-node-exporter-1
   image: prom/node-exporter:v1.9.1
   image_digest: sha256:d00a542e409ee618a4edc67da14dd48c5da66726bbd5537ab2af9c1dfc442c8a
@@ -285,10 +285,10 @@ workloads:
   - klyrow_backend
   volumes:
   - bind:/host
-  databases: klyrow-postgres-1/PostgreSQL
+  databases: N/A
   health: RUNNING
   stage: PRODUCTION
-- software: POSTAL
+- software: MARIADB
   container_or_service: klyrow-postal-db-1
   image: mariadb:11.4.8
   image_digest: sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
@@ -923,7 +923,7 @@ workloads:
   databases: telnexa-saas-keycloak-db-1/PostgreSQL
   health: HEALTHY
   stage: PRODUCTION
-- software: KEYCLOAK
+- software: POSTGRESQL
   container_or_service: telnexa-saas-keycloak-db-1
   image: postgres:17.6-alpine@sha256:d5f196a551b5cef1c70853c6dd588f456d16ca4ea733e3f31c75bc1ae2f65f3f
   image_digest: sha256:d5f196a551b5cef1c70853c6dd588f456d16ca4ea733e3f31c75bc1ae2f65f3f
@@ -944,7 +944,7 @@ workloads:
   databases: telnexa-saas-keycloak-db-1/PostgreSQL
   health: HEALTHY
   stage: PRODUCTION
-- software: OPERATING_SYSTEM_COMPONENT
+- software: PROMETHEUS_NODE_EXPORTER
   container_or_service: telnexa-saas-node-exporter-1
   image: prom/node-exporter:v1.9.1@sha256:d00a542e409ee618a4edc67da14dd48c5da66726bbd5537ab2af9c1dfc442c8a
   image_digest: sha256:d00a542e409ee618a4edc67da14dd48c5da66726bbd5537ab2af9c1dfc442c8a
