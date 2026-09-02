@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import inspect
+import re
 import unittest
 from unittest.mock import patch
 
@@ -74,6 +76,16 @@ class CertificationHelperTests(unittest.TestCase):
         with patch.object(generator, "command", return_value=" M changed.py\n"):
             with self.assertRaisesRegex(RuntimeError, "source worktree is dirty"):
                 generator.repository_head("/tmp/source")
+
+    def test_kyqra_extraction_is_clean_and_source_read_only(self) -> None:
+        self.assertRegex(
+            generator.KYQRA_BUILD_IMAGE,
+            re.compile(r"^node:22-alpine@sha256:[0-9a-f]{64}$"),
+        )
+        source = inspect.getsource(generator.source_openapi)
+        self.assertIn('f"{kyqra_directory}:/source:ro"', source)
+        self.assertIn("npm ci --ignore-scripts --no-audit --no-fund", source)
+        self.assertNotIn('f"{kyqra_directory}:/work"', source)
 
 
 if __name__ == "__main__":

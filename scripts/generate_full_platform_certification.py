@@ -60,6 +60,10 @@ SOURCE_DIRECTORIES = {
 }
 EXPECTED_PUBLIC_IPV4 = "37.27.128.39"
 EXPECTED_PRIVATE_IPV4 = "10.40.0.4"
+KYQRA_BUILD_IMAGE = (
+    "node:22-alpine@sha256:"
+    "c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32"
+)
 
 
 def command(*arguments: str, check: bool = True) -> str:
@@ -153,21 +157,26 @@ def source_openapi() -> dict[str, dict[str, Any]]:
             document = combined
         documents[service] = document
     kyqra_directory = SOURCE_DIRECTORIES["KYQRA"]
-    command("docker", "run", "--rm", "-v", f"{kyqra_directory}:/work", "-w", "/work", "node:22-alpine", "npm", "run", "build")
     result = subprocess.run(
         [
             "docker",
             "run",
             "--rm",
             "-v",
-            f"{kyqra_directory}:/work",
+            f"{kyqra_directory}:/source:ro",
             "-w",
             "/work",
-            "node:22-alpine",
-            "node",
-            "--input-type=module",
             "-e",
-            "import('./dist/api/openapi.js').then(m=>console.log(JSON.stringify(m.kyqraOpenApi)))",
+            "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1",
+            KYQRA_BUILD_IMAGE,
+            "sh",
+            "-euc",
+            "cp /source/package.json /source/package-lock.json /source/tsconfig.json .; "
+            "cp -R /source/scripts /source/migrations /source/src .; "
+            "npm ci --ignore-scripts --no-audit --no-fund >/dev/null; "
+            "npm run build >/dev/null; "
+            "exec node --input-type=module -e "
+            '"import(\'./dist/api/openapi.js\').then(m=>process.stdout.write(JSON.stringify(m.kyqraOpenApi)))"',
         ],
         text=True,
         capture_output=True,
