@@ -48,14 +48,16 @@ def social_control_slug() -> str:
     assert len(matches) == 1, 'social-control repository ID must resolve exactly once'
     mapping = matches[0]
     status = mapping.get('status')
-    assert status in {'PREPARED_NOT_RENAMED', 'RENAMED_VERIFIED'}, (
-        'social-control rename state is invalid'
-    )
+    assert status in {
+        'PREPARED_NOT_RENAMED',
+        'RENAMED_VERIFIED',
+        'ROLLED_BACK_VERIFIED',
+    }, 'social-control rename state is invalid'
 
     repository = (
-        mapping['current_repository']
-        if status == 'PREPARED_NOT_RENAMED'
-        else mapping['target_repository_after_cutover']
+        mapping['target_repository_after_cutover']
+        if status == 'RENAMED_VERIFIED'
+        else mapping['current_repository']
     )
     owner, slug = repository.split('/', 1)
     assert owner == 'appolon1908-hue'
