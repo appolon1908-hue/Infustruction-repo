@@ -1,10 +1,10 @@
 # CODESTRA OBSERVABILITY REPOSITORY-FIRST CODEX MISSION
 
-**Mission ID:** `CODESTRA_OBSERVABILITY_REPO_FIRST_2026-09-02`  
-**Execution mode:** repository, CI, release-registry, and artifact work only  
-**Production host reserved for the later installation mission:** `37.27.128.39`  
-**Infrastructure authority:** `appolon1908-hue/Infustruction-repo`  
-**Runtime authority for later server reconciliation:** `appolon1908-hue/codestra-production-runtime-authority`  
+**Mission ID:** `CODESTRA_OBSERVABILITY_REPO_FIRST_2026-09-02`
+**Execution mode:** repository, CI, release-registry, and artifact work only
+**Production host reserved for the later installation mission:** `37.27.128.39`
+**Infrastructure authority:** `appolon1908-hue/Infustruction-repo`
+**Runtime authority for later server reconciliation:** `appolon1908-hue/codestra-production-runtime-authority`
 **Initial production alert administrator:** `appolon@codestra.co`
 
 ## 1. Mission outcome
