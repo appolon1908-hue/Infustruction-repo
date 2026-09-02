@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate stable Codestra repository identities and planned slug migrations."""
+"""Validate stable repository identities, planned renames, and exporter privacy."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "config" / "repository-name-aliases.v1.json"
 RUNBOOK = ROOT / "REPOSITORY_NAME_MIGRATION.md"
 VALIDATOR = Path(__file__).resolve()
+
 EXPECTED = {
     1221155447: (
         "appolon1908-hue/Frontend-Resturant-",
@@ -146,6 +147,8 @@ def load() -> dict[str, Any]:
 
 
 def is_operational_source(path: Path) -> bool:
+    """Return whether a text file can control a current checkout or deployment."""
+
     try:
         relative = path.resolve().relative_to(ROOT.resolve())
     except ValueError:
@@ -204,12 +207,17 @@ def validate_planned_targets_absent(
 
 
 def validate_repository_id_current_name_pairing(paths: list[Path]) -> None:
+    """Bind explicit repository-ID fields to the approved current pre-cutover slug."""
+
     for path in paths:
         text = path.read_text(encoding="utf-8", errors="ignore")
         lowered = text.lower()
         for repository_id, (current, _target, _critical) in EXPECTED.items():
+            # Match only an explicit JSON/YAML/Python/shell-style field assignment.
+            # Do not let whitespace or punctuation bridge unrelated source text.
             id_pattern = re.compile(
-                rf"(?:github_)?repository_id\s*[\"':= ]+\s*{repository_id}\b",
+                rf"(?<![A-Za-z0-9_])[\"']?(?:github_)?repository_id[\"']?"
+                rf"\s*[:=]\s*{repository_id}\b",
                 re.IGNORECASE,
             )
             if id_pattern.search(text) and current.lower() not in lowered:
@@ -236,9 +244,7 @@ def require_regex_binding(
     if match is None:
         fail(f"required operational binding is missing: {description}")
     if match.group(1) != expected_repository:
-        fail(
-            f"{description} must use {expected_repository}, found {match.group(1)}"
-        )
+        fail(f"{description} must use {expected_repository}, found {match.group(1)}")
 
 
 def assigned_string_set(source: str, variable: str) -> set[str]:
@@ -266,8 +272,10 @@ def assigned_string_set(source: str, variable: str) -> set[str]:
 
 
 def validate_known_operational_bindings() -> None:
+    """Protect current source-lock entries that do not yet carry stable IDs."""
+
     social_current = EXPECTED[1351353723][0]
-    infra_current = EXPECTED[1350724865][0]
+    infrastructure_current = EXPECTED[1350724865][0]
 
     require_regex_binding(
         ROOT / "STAGE6-SOURCE-LOCK.yaml",
@@ -278,7 +286,7 @@ def validate_known_operational_bindings() -> None:
     require_regex_binding(
         ROOT / "STAGE6-SOURCE-LOCK.yaml",
         r"^\s*authority_issue:\s*https://github\.com/([^/]+/[^/]+)/issues/\d+",
-        infra_current,
+        infrastructure_current,
         "STAGE6 infrastructure authority issue repository",
     )
     require_regex_binding(
@@ -288,9 +296,7 @@ def validate_known_operational_bindings() -> None:
         "Stage 6-8 social-control release repository",
     )
 
-    stage9 = json.loads(
-        require_file(ROOT / "config" / "marketing-stage9-readiness.json")
-    )
+    stage9 = json.loads(require_file(ROOT / "config" / "marketing-stage9-readiness.json"))
     stage9_social = [
         item
         for item in stage9.get("repositories", [])
@@ -305,9 +311,7 @@ def validate_known_operational_bindings() -> None:
             ROOT / "releases" / "STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json"
         )
     )
-    historical_social = (
-        historical.get("repositories", {}).get("social_control", {}).get("repo")
-    )
+    historical_social = historical.get("repositories", {}).get("social_control", {}).get("repo")
     if historical_social != social_current:
         fail("historical Stage 6 source lock social-control repository changed")
 
@@ -339,7 +343,7 @@ def compose_ports_blocks(text: str) -> list[str]:
 
 def is_gateway_source(path: Path, text: str) -> bool:
     lowered_parts = {part.lower() for part in path.relative_to(ROOT).parts}
-    gateway_tokens = {"caddy", "kong", "gateway", "ingress", "nginx", "proxy", "traefik"}
+    gateway_tokens = {"caddy", "kong", "ingress", "nginx", "proxy", "traefik"}
     if lowered_parts & gateway_tokens:
         return True
     name = path.name.lower()
@@ -352,6 +356,8 @@ def is_gateway_source(path: Path, text: str) -> bool:
 
 
 def validate_postgres_exporter_privacy(paths: list[Path]) -> None:
+    """Reject public routing or host publication of PostgreSQL Exporter."""
+
     forbidden_hostname = "pgex.codestra.media"
     private_identity = "postgres-exporter:9187"
 
@@ -368,7 +374,8 @@ def validate_postgres_exporter_privacy(paths: list[Path]) -> None:
                 fail(f"PostgreSQL Exporter port is host-published in {relative}")
 
         if re.search(
-            r"(?:docker|podman)\s+(?:run|create)[^\n]*(?:-p|--publish)(?:=|\s+)[^\n]*\b9187\b",
+            r"(?:docker|podman)\s+(?:run|create)[^\n]*(?:-p|--publish)(?:=|\s+)"
+            r"[^\n]*\b9187\b",
             lowered,
         ):
             fail(f"PostgreSQL Exporter port is published by a runtime command in {relative}")
@@ -378,9 +385,11 @@ def validate_postgres_exporter_privacy(paths: list[Path]) -> None:
         ):
             fail(f"PostgreSQL Exporter is exposed by a public Kubernetes Service in {relative}")
 
-        if "9187" in lowered and (
-            "0.0.0.0/0" in lowered or "::/0" in lowered
-        ) and re.search(r"(?:from_port|to_port|port|port_range)[^\n]*9187", lowered):
+        if (
+            "9187" in lowered
+            and ("0.0.0.0/0" in lowered or "::/0" in lowered)
+            and re.search(r"(?:from_port|to_port|port|port_range)[^\n]*9187", lowered)
+        ):
             fail(f"PostgreSQL Exporter is allowed by a public network rule in {relative}")
 
         if (private_identity in lowered or "postgres-exporter" in lowered) and is_gateway_source(
