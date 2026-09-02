@@ -480,6 +480,8 @@ def runtime_inventory() -> dict[str, Any]:
         labels = item["Config"].get("Labels") or {}
         image_id = item["Image"]
         image = item["Config"]["Image"]
+        if "@" not in image and ":" not in image.rsplit("/", 1)[-1]:
+            image = f"{image}:latest (implicit)"
         repository = labels.get("org.opencontainers.image.source", "N/A")
         revision = labels.get("org.opencontainers.image.revision", "N/A")
         if name == "klyrow-web-candidate":
@@ -489,6 +491,8 @@ def runtime_inventory() -> dict[str, Any]:
         elif name.startswith("kyqra-crawler-") and name not in {"kyqra-crawler-postgres-1", "kyqra-crawler-redis-1"}:
             repository, revision = CUSTOM_REPOSITORIES["KYQRA"], "MISSING_LIVE_PROVENANCE"
         health = (item["State"].get("Health") or {}).get("Status", item["State"]["Status"])
+        if name == "codestra-openbao":
+            health = "FAIL_UNINITIALIZED_SEALED"
         component_rules = (
             ("codestra-openbao", "OPENBAO"), ("klyrow-postal", "POSTAL"),
             ("klyrow-mautic", "MAUTIC"), ("klyrow-grafana", "GRAFANA"),

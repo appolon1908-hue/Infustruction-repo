@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T03:25:04.573158+00:00'
+generated_at: '2026-09-02T03:26:37.975393+00:00'
 server: Ubuntu-jammy-latest-amd64-base.zst
 public_ipv4: 37.27.128.39
 private_ip: 10.40.0.4
@@ -85,7 +85,7 @@ workloads:
   - volume:/openbao/file
   - volume:/openbao/logs
   databases: N/A
-  health: HEALTHY
+  health: FAIL_UNINITIALIZED_SEALED
   stage: PRODUCTION
 - software: KLYROW
   container_or_service: klyrow-billing-api-1
@@ -554,7 +554,7 @@ workloads:
   stage: PRODUCTION
 - software: KYQRA
   container_or_service: kyqra-crawler-api-1
-  image: kyqra-crawler-api
+  image: kyqra-crawler-api:latest (implicit)
   image_digest: sha256:4921a6e4540288f54ef414bdac5a131bcb39192179bd7449f11ed37f2a563f75
   image_reference_digest_pinned: 'NO'
   version: '24.04'
@@ -575,7 +575,7 @@ workloads:
   stage: PRODUCTION
 - software: KYQRA
   container_or_service: kyqra-crawler-browser-worker-1
-  image: kyqra-crawler-browser-worker
+  image: kyqra-crawler-browser-worker:latest (implicit)
   image_digest: sha256:b60792f7c6791b4b7c912d17c3c7151310c5c7cbc252b5c04e92ccfeb56b9d4f
   image_reference_digest_pinned: 'NO'
   version: '24.04'
@@ -595,7 +595,7 @@ workloads:
   stage: PRODUCTION
 - software: KYQRA
   container_or_service: kyqra-crawler-callback-worker-1
-  image: kyqra-crawler-callback-worker
+  image: kyqra-crawler-callback-worker:latest (implicit)
   image_digest: sha256:369bf4c01a1fe87ae3f03c8d5be1728c022304ccbc0dcc5c50e85ea2ad5fdfbc
   image_reference_digest_pinned: 'NO'
   version: '24.04'
@@ -615,7 +615,7 @@ workloads:
   stage: PRODUCTION
 - software: KYQRA
   container_or_service: kyqra-crawler-http-worker-1
-  image: kyqra-crawler-http-worker
+  image: kyqra-crawler-http-worker:latest (implicit)
   image_digest: sha256:f1c8f7baef701e2f6b36122a5ad788f1afc7dc3aed872cacaf00bfbc1fa7adb5
   image_reference_digest_pinned: 'NO'
   version: '24.04'
@@ -675,10 +675,10 @@ workloads:
   stage: PRODUCTION
 - software: PRIVATE_GATEWAY
   container_or_service: private-app-integration-gateway-1
-  image: private-app-integration-gateway
+  image: private-app-integration-gateway:latest (implicit)
   image_digest: sha256:457971045f964ea80dadcfcd75069adf4d092cf6f075b2410055163b8fbc4981
   image_reference_digest_pinned: 'NO'
-  version: N/A
+  version: latest (implicit)
   source_repository: https://github.com/appolon1908-hue/codestra-production-platform
   source_sha: MISSING_LIVE_PROVENANCE
   deployment_file: /opt/private-integration/compose.yaml
