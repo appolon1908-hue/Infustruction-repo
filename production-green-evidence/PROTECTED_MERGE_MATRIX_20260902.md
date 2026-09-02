@@ -1,6 +1,6 @@
 # Protected merge matrix — 2026-09-02
 
-Captured at `2026-09-02T16:45:12Z` from GitHub. All eight heads are current
+Captured at `2026-09-02T17:03:00Z` from GitHub. All eight heads are current
 with their protected base (`behind=0`). Repository auto-merge is disabled for
 all eight repositories, so no auto-merge request can be queued. No commit in
 the PR set has a GitHub signature object; current rules do not report signature
@@ -15,11 +15,23 @@ failure as a merge-state blocker.
 | `appolon1908-hue/Codestra-Marketing-` | 5 | `4a7c0277d831e658ed3ed77ef9bf331171c0b819` | `460ff98f64ef9f0724fe4d2afc51a1a6c5b053dd` | MERGED `3f78cbdeccbdd69f1dfa7f4d31232b43e798047a` | 2 pass | gates satisfied | 0 | NONE |
 | `appolon1908-hue/Codesrea-Social-` | 5 | `9479a3bc59bd8f809e052c191fe138f72da4531c` | `7bc0dd9ee8a13abbd1463ca106629ad63d957145` | MERGED `1323a7335e1724a00406aeadd1fec4c8e8af5f1a` | 2 pass | findings fixed | 0 | NONE |
 | `appolon1908-hue/klyrow.com` | 66 | `f46b92cb279f0299a8d8e7a9bdbecb6ad077e04d` | `27c920957e116ae7fe998395393adc3c3dfdb6be` | BLOCKED | 4 pass | `kazan555` requested; no exact-head approval | 0 | CODEOWNER_APPROVAL_PENDING |
-| `appolon1908-hue/Infustruction-repo` | 60 | `dba2544ba458bf042c4db0f8fbb077839645eb2c` | `cae843886a6ece21025b730de458dd14a47a9f51` | BLOCKED | 2 pass | `kazan555` requested; no exact-head approval | 0 | CODEOWNER_APPROVAL_PENDING |
+| `appolon1908-hue/Infustruction-repo` | 60 | `de0f3c3c5f67f7de537db33a83452ad9ef039564` | `cae843886a6ece21025b730de458dd14a47a9f51` | BLOCKED | 2 pass | `kazan555` requested; no exact-head approval | 0 | CODEOWNER_APPROVAL_PENDING |
 
 The Odoo head changed after the starting evidence SHA through two externally
 authored commits that address the valid deployed-gate review finding. This
 matrix records the live GitHub head and does not overwrite or rewrite it.
+
+## Protected-merge build evidence
+
+The Middleware protected merge triggered run
+[`33657039930`](https://github.com/Codestra-SRL/codestra-middleware/actions/runs/33657039930)
+for exact SHA `c8c8d6fad442e7a65eeac353a0f0853797ea84a8`. GitHub reports
+`conclusion=startup_failure`; its workflow record is deleted with path
+`BuildFailed`, and the check suite contains zero jobs. An unchanged retry was
+attempted and GitHub returned `This workflow run cannot be retried`. No workflow
+or branch-protection setting was changed. Immutable Middleware image, SBOM and
+provenance publication therefore remain blocked by an external Actions startup
+failure, not by a source-test failure.
 
 `PRODUCTION_BUSINESS_WRITES_ENABLED=NO`
 

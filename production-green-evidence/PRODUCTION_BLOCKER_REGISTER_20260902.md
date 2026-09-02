@@ -11,12 +11,13 @@
 | P1-03 | HIGH | source lock | Deployed immutable digests and rollback tuples are unknown | protected merge/image/SBOM/provenance/runtime tuple recorded for all deployables | partly |
 | P1-04 | HIGH | migrations | Database upgrade/rollback/runtime heads are not fully certified | one-shot migration rehearsals and post-migration readiness PASS | partly |
 | P1-05 | HIGH | production | Backup, staging, observability and attribution prerequisites prevent deployment | every production gate in release record PASS | yes |
+| P1-06 | HIGH | Middleware image | Protected-merge Actions run 33657039930 failed before job allocation and cannot be retried | unchanged protected-SHA build starts, publishes immutable digest, SBOM and provenance, and passes scans | yes: GitHub Actions workflow allocation |
 | P2-01 | MEDIUM | Marketing | Off-host TLS failure blocks all runtime probes | valid TLS and attributable GET endpoints | yes: off-host owner/DNS/TLS |
 | P2-02 | MEDIUM | social runtime | operational endpoints redirect to authentication | approved internal authenticated evidence path returns attributable status | yes: off-host access |
 
 `CRITICAL_BLOCKERS=4`
 
-`HIGH_BLOCKERS=5`
+`HIGH_BLOCKERS=6`
 
 `MEDIUM_BLOCKERS=2`
 
