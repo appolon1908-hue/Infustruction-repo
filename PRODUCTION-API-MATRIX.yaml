@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T13:40:47.083453+00:00'
+generated_at: '2026-09-02T13:59:52.115996+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -9,7 +9,7 @@ source_repositories:
 source_authority:
   KLYROW:
     repository: https://github.com/appolon1908-hue/klyrow.com
-    source_sha: 28341a855edb0bbe9dceb5d5d79ebc8e4b757018
+    source_sha: 020d3c384a6bb96fd579be52b1a2fb020f84e32d
   TELNEXA:
     repository: https://github.com/appolon1908-hue/telnexa
     source_sha: dfdfe77431e1e19f2a221ba97192a75e0a0ac40c
