@@ -81,7 +81,7 @@
       "promotion_pr": "https://github.com/appolon1908-hue/Codestra-Node-Exporter/pull/20",
       "repository": "https://github.com/appolon1908-hue/Codestra-Node-Exporter",
       "runtime_image_digest": "sha256:d00a542e409ee618a4edc67da14dd48c5da66726bbd5537ab2af9c1dfc442c8a",
-      "runtime_state": "PRESENT_IN_TWO_BUSINESS_APPLICATION_STACKS_NOT_HOST_AUTHORITY",
+      "runtime_state": "PRESENT_AS_HOST_SYSTEMD_AND_TWO_BUSINESS_STACKS_NOT_HOST_AUTHORITY",
       "staging_sha": "95e24dff0450c202aa03fd3e2b81ac9ae82b14a7"
     },
     {

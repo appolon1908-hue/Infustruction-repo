@@ -93,7 +93,7 @@ COMPONENTS = [
         "production_contains_staging": False,
         "api_pr": "https://github.com/appolon1908-hue/Codestra-Node-Exporter/pull/21",
         "promotion_pr": "https://github.com/appolon1908-hue/Codestra-Node-Exporter/pull/20",
-        "runtime_state": "PRESENT_IN_TWO_BUSINESS_APPLICATION_STACKS_NOT_HOST_AUTHORITY",
+        "runtime_state": "PRESENT_AS_HOST_SYSTEMD_AND_TWO_BUSINESS_STACKS_NOT_HOST_AUTHORITY",
         "runtime_image_digest": "sha256:d00a542e409ee618a4edc67da14dd48c5da66726bbd5537ab2af9c1dfc442c8a",
     },
     {
@@ -249,6 +249,17 @@ def main() -> None:
                 "KlyrowUsageDeliveryStalled",
             ],
             "prometheus_targets": {"total": 5, "up": 5, "down": 0},
+            "host_node_exporter": {
+                "service": "prometheus-node-exporter.service",
+                "version": "1.3.1",
+                "bind_address": "127.0.0.1:9100",
+                "http_status": 200,
+                "enabled_collectors": 46,
+                "collector_allowlist_gate": "FAIL",
+                "reason": "DEFAULT_COLLECTOR_SET_IS_ENABLED_WITHOUT_REVIEWED_HOST_AUTHORITY",
+                "sensitive_pattern_metric_families": ["node_systemd_unit_state"],
+                "secret_value_evidence": "NOT_COLLECTED",
+            },
             "components": [
                 {
                     "component": row["component"],
@@ -410,9 +421,11 @@ All twelve DNS names resolve exclusively to the intended server. Eleven names
 serve an unrelated Klyrow certificate; only `bao.codestra.media` has a matching
 certificate. Two critical Klyrow delivery alerts are firing. Only Prometheus,
 Grafana, Node Exporter, and OpenBao have existing runtimes, none controlled by
-this host authority. OpenBao is uninitialized and sealed. The required API,
-release, runtime, backup, restore, rollback, SBOM, provenance, and signature
-evidence is not present on the protected product production branches.
+this host authority. OpenBao is uninitialized and sealed. The host package Node
+Exporter is healthy and loopback-only, but its broad default collector set is
+not controlled by the reviewed host authority. The required API, release,
+runtime, backup, restore, rollback, SBOM, provenance, and signature evidence is
+not present on the protected product production branches.
 
 Activation remains prohibited until every JSON/YAML gate in this directory is
 regenerated from reviewed protected release heads and validates PASS.
@@ -435,6 +448,8 @@ regenerated from reviewed protected release heads and validates PASS.
    ceremony; no unseal shares or root authority may be invented.
 8. Identity owners must provide approved OIDC/mTLS service and canary identities
    for negative and cross-business tests without exposing their values.
+9. The Node Exporter owner must replace or formally retire the unmanaged host
+   package service and approve an explicit collector allowlist.
 """
     )
     write_json(

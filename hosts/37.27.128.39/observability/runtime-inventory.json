@@ -48,7 +48,7 @@
       "component": "Node Exporter",
       "host_authority_managed": false,
       "runtime_image_digest": "sha256:d00a542e409ee618a4edc67da14dd48c5da66726bbd5537ab2af9c1dfc442c8a",
-      "runtime_state": "PRESENT_IN_TWO_BUSINESS_APPLICATION_STACKS_NOT_HOST_AUTHORITY"
+      "runtime_state": "PRESENT_AS_HOST_SYSTEMD_AND_TWO_BUSINESS_STACKS_NOT_HOST_AUTHORITY"
     },
     {
       "activation_certified": false,
@@ -91,6 +91,19 @@
     "KlyrowUsageDeliveryStalled"
   ],
   "generated_at": "2026-09-02T17:02:17Z",
+  "host_node_exporter": {
+    "bind_address": "127.0.0.1:9100",
+    "collector_allowlist_gate": "FAIL",
+    "enabled_collectors": 46,
+    "http_status": 200,
+    "reason": "DEFAULT_COLLECTOR_SET_IS_ENABLED_WITHOUT_REVIEWED_HOST_AUTHORITY",
+    "secret_value_evidence": "NOT_COLLECTED",
+    "sensitive_pattern_metric_families": [
+      "node_systemd_unit_state"
+    ],
+    "service": "prometheus-node-exporter.service",
+    "version": "1.3.1"
+  },
   "phase": "SERVER_B_CODESTRA_OBSERVABILITY_12_PRODUCTION_PULL_INSTALL_ACTIVATE",
   "prometheus_targets": {
     "down": 0,
