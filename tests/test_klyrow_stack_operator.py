@@ -35,6 +35,37 @@ def test_missing_compose_labels_is_blocked(monkeypatch):
         op.ownership()
 
 
+def test_rollback_allows_missing_owned_container_when_volume_survives(monkeypatch):
+    op = load_operator()
+
+    def inspect(name):
+        if name == "klyrow-gateway-1":
+            return None
+        item = record(service=op.FIXED[name])
+        item["name"] = name
+        if name == "klyrow-postgres-1":
+            item["volumes"] = ["klyrow_postgres_data"]
+        return item
+
+    monkeypatch.setattr(op, "inspect_container", inspect)
+    monkeypatch.setattr(op, "run", lambda *args, **kwargs: type("R", (), {"returncode": 0})())
+    result = op.ownership("ROLLBACK_REPLACE", allow_absent=True)
+    assert result["klyrow-gateway-1"]["health"] == "absent"
+
+
+def test_modified_deployment_input_is_blocked(monkeypatch):
+    op = load_operator()
+    monkeypatch.setattr(op, "git_sha", lambda: op.TARGET_SHA)
+
+    def fake_run(argv, **kwargs):
+        code = 1 if "diff" in argv else 0
+        return type("R", (), {"returncode": code})()
+
+    monkeypatch.setattr(op, "run", fake_run)
+    with pytest.raises(op.Blocked, match="local modifications"):
+        op.clean_approved_worktree()
+
+
 def test_missing_marker_is_blocked(monkeypatch, tmp_path):
     op = load_operator(); monkeypatch.setattr(op, "MARKER", tmp_path / "absent")
     with pytest.raises(FileNotFoundError):

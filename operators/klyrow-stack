@@ -21,10 +21,12 @@ OVERRIDE = Path("/opt/klyrow/klyrow-operator-known-good.override.yaml")
 OVERRIDE_SHA256 = "345093a338012f9d32f6d7569f20b8c62503058731e0d4c5a7765dbe667dcc6e"
 MARKER = Path("/etc/klyrow/operator-approvals/CHG-20260831-KLYROW-EMAIL-SAFETY-DEPLOY-01.json")
 WORKTREE = Path("/opt/klyrow/current")
-CONTRACT = WORKTREE / "deploy/restricted-deployment-contract.json"
 COMPOSE = ["docker", "compose", "--project-name", "klyrow", "-f", str(WORKTREE / "docker-compose.yml"), "-f", str(WORKTREE / "deploy/docker-compose.security-mail.yml"), "-f", str(WORKTREE / "docker-compose.postal-provisioning.yml"), "-f", str(WORKTREE / "docker-compose.web.yml")]
 FIXED = {"klyrow-gateway-1": "gateway", "klyrow-worker-1": "worker", "klyrow-smtp-relay-1": "smtp-relay", "klyrow-postgres-1": "postgres"}
 PRESERVED = {"klyrow_postgres_data", "klyrow_postal_db", "klyrow_postal_assets"}
+DEPLOYMENT_INPUTS = ["docker-compose.yml", "deploy/docker-compose.security-mail.yml", "docker-compose.postal-provisioning.yml", "docker-compose.web.yml"]
+EXPECTED_ENVIRONMENT = {"KLYROW_SAFE_MODE": "true", "KLYROW_PRODUCTION_GATE_APPROVED": "false", "LIVE_EMAIL_DELIVERY": "false"}
+EXPECTED_READBACK = {"safe_mode": True, "production_gate_approved": False, "production_gate_open": False, "live_email_delivery": False, "outbox_active": 0}
 
 
 class Blocked(RuntimeError):
@@ -54,13 +56,17 @@ def regular_root_file(path, mode=None):
         raise Blocked(f"{path.name} has invalid mode")
 
 
-def contract():
-    data = json.loads(CONTRACT.read_text())
-    if data["compose_project"] != "klyrow" or data["required_source_sha"] != TARGET_SHA:
-        raise Blocked("deployment contract does not bind the approved target")
-    if data["fixed_containers"] != FIXED or not PRESERVED.issubset(data["preserved_volumes"]):
-        raise Blocked("deployment contract changes ownership or persistent data")
-    return data
+def clean_approved_worktree():
+    if git_sha() != TARGET_SHA:
+        raise Blocked("exact approved source SHA is not checked out")
+    result = run(["git", "-C", str(WORKTREE), "diff", "--quiet", TARGET_SHA, "--", *DEPLOYMENT_INPUTS], check=False)
+    if result.returncode != 0:
+        raise Blocked("approved deployment inputs have local modifications")
+    for relative in DEPLOYMENT_INPUTS:
+        tracked = run(["git", "-C", str(WORKTREE), "ls-files", "--error-unmatch", relative], check=False)
+        if tracked.returncode:
+            raise Blocked("approved deployment input is not tracked")
+    return True
 
 
 def inspect_container(name):
@@ -90,18 +96,22 @@ def inspect_container(name):
     }
 
 
-def ownership(disposition="REPLACE_IN_OWNING_PROJECT"):
+def ownership(disposition="REPLACE_IN_OWNING_PROJECT", allow_absent=False):
     found = {}
     for name, service in FIXED.items():
         item = inspect_container(name)
         if item is None:
+            if allow_absent:
+                found[name] = {"name": name, "service": service, "disposition": disposition, "health": "absent", "volumes": []}
+                continue
             raise Blocked(f"required fixed container absent: {name}")
         if item["name"] != name or item["project"] != "klyrow" or item["service"] != service:
             raise Blocked(f"BLOCK_AMBIGUOUS_OWNER: {name}")
         item["disposition"] = disposition
         found[name] = item
     postgres_volumes = set(found["klyrow-postgres-1"]["volumes"])
-    if "klyrow_postgres_data" not in postgres_volumes:
+    volume_exists = run(["docker", "volume", "inspect", "klyrow_postgres_data"], check=False).returncode == 0
+    if "klyrow_postgres_data" not in postgres_volumes and not (allow_absent and volume_exists):
         raise Blocked("PostgreSQL volume preservation cannot be proven")
     return found
 
@@ -163,7 +173,8 @@ def make_plan():
         "database_data_preservation": True, "backup_ref": str(BACKUP),
         "rollback_plan_fingerprint": core["rollback_plan_fingerprint"],
         "approval_marker_state": "PASS" if marker_ok(core) else "FAIL",
-        "expected_safety": contract()["expected_safety"],
+        "expected_environment": EXPECTED_ENVIRONMENT,
+        "expected_readback": EXPECTED_READBACK,
         "expected_health": {name: "healthy" for name in FIXED},
     }
     data["plan_fingerprint"] = hashlib.sha256(json.dumps(data, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
@@ -208,10 +219,11 @@ def do_rollback_plan():
 
 
 def do_preflight():
-    if git_sha() != TARGET_SHA:
-        raise Blocked("exact approved source SHA is not checked out")
-    core = rollback_core(); marker_ok(core); rollback_dry_run(); ownership(); contract()
+    clean_approved_worktree()
+    core = rollback_core(); marker_ok(core); rollback_dry_run(); ownership()
     state = readback()
+    if state.get("revision") != CURRENT_SHA:
+        raise Blocked("observed runtime revision differs from approved current revision")
     if state.get("outbox_active") != 0:
         raise Blocked("active outbox work")
     checks = {"SOURCE_SHA": TARGET_SHA, "CURRENT_RUNTIME_SHA": CURRENT_SHA, "BACKUP_VALIDATION": "PASS", "KNOWN_GOOD_OVERRIDE": "PASS", "ROLLBACK_PLAN": "PASS", "ROLLBACK_APPROVAL_MARKER": "PASS", "ROLLBACK_COMMAND_DRY_RUN": "PASS", "EXISTING_CONTAINER_OWNERSHIP": "PASS", "CONTAINER_NAME_CONFLICTS": 0, "POSTGRES_VOLUME_PRESERVATION": "PASS", "POSTAL_DATA_PRESERVATION": "PASS", "EMAIL_DELIVERY_EXPECTED": False, "PRODUCTION_GATE_EXPECTED_OPEN": False, "SAFE_MODE_EXPECTED": True, "DEPLOYMENT_AUTHORIZED": True}
@@ -226,7 +238,8 @@ def do_stage():
 
 
 def do_rollback():
-    core = rollback_core(); marker_ok(core); ownership("ROLLBACK_REPLACE"); rollback_dry_run()
+    clean_approved_worktree()
+    core = rollback_core(); marker_ok(core); ownership("ROLLBACK_REPLACE", allow_absent=True); rollback_dry_run()
     run(COMPOSE + ["-f", str(OVERRIDE), "up", "-d", "--no-build", "--remove-orphans"])
     verify_safe(readback(), CURRENT_SHA)
     print("ROLLBACK=PASS")
