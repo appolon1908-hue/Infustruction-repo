@@ -11,6 +11,18 @@ CURRENT_RUNTIME_STATE=REQUIRES_PRE_CUTOVER_DISCOVERY
 
 The approved target corrects the legacy spelling and preserves this repository's role as the Codestra infrastructure, topology, GitOps, backup and recovery, observability-composition, and release-governance authority.
 
+## Protected-check availability
+
+The `source-authority-matrix` workflow runs for every pull request because its
+`validate-source` and `validate-merge-result` jobs are required `main` branch
+protection contexts. Do not add a pull-request path filter to that workflow: a
+filtered event leaves both required checks pending for out-of-filter changes.
+
+Rollback is the protected revert of the workflow and its regression test only
+after branch protection has been migrated to replacement checks that run for
+every pull request. Never remove the checks first or leave the branch without an
+exact-head source and merge-result gate.
+
 ## Operational rule
 
 The current full name remains authoritative for checkouts, workflows, source locks, deployment manifests, server remotes, GitHub Apps, webhooks, packages, and links until an authorized rename is completed and repository ID `1350724865` is read back at the target name.

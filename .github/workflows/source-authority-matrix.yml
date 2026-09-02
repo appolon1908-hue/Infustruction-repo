@@ -1,11 +1,10 @@
 name: source-authority-matrix
 
 on:
+  # These job names are required branch-protection contexts. Run them for every
+  # pull request so an unrelated path change cannot leave a required context
+  # permanently pending.
   pull_request:
-    paths:
-      - PRODUCTION-SOURCE-AUTHORITY-MATRIX.yaml
-      - scripts/validate_production_source_authority_matrix.py
-      - .github/workflows/source-authority-matrix.yml
 
 permissions:
   contents: read
