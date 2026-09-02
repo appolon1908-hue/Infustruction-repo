@@ -9,7 +9,28 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / "deploy/staging/intake-observability"
-EXPECTED_DIGEST = "sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820"
+EXPECTED_SOURCE = "9a96ff1651a324b98f3a7efd60b7a342983ded4e"
+EXPECTED_DIGEST = "sha256:01a61e6c9761968bce04db855df565e9104338c2ba2056da570cacb9fd21f0f4"
+EXPECTED_SCHEMA = "0008_durable_communications"
+EXPECTED_RELEASE_ID = "9a96ff1651a3-01a61e6c9761"
+EXPECTED_RELEASE_ARTIFACT_DIGEST = (
+    "sha256:56fc7bd5cca57df0bfd04e27eb3e294bd160a8071e4e8ae1974addb6d040f46e"
+)
+EXPECTED_RELEASE_MANIFEST_SHA256 = (
+    "sha256:55f809c9f6436fd886c7a8a19a2b557da22696e190ebf806df16f3e401b7f9a6"
+)
+EXPECTED_RELEASE_IDENTITY = (
+    "https://github.com/appolon1908-hue/Middleware-/.github/workflows/"
+    "release.yml@refs/heads/main"
+)
+EXPECTED_RELEASE_ISSUER = "https://token.actions.githubusercontent.com"
+EXPECTED_UMBRELLA_CONTROLS = {
+    "LIVE_ADVERTISING_ENABLED": False,
+    "EXTERNAL_DELIVERY_ENABLED": False,
+    "SOCIAL_PUBLISHING_ENABLED": False,
+    "EXTERNAL_MODEL_CALLS_ENABLED": False,
+    "N8N_EXTERNAL_PROVIDER_WRITES": False,
+}
 EXPECTED_PROFILE = "codestra-middleware-staging-v1"
 EXPECTED_KEYCLOAK_PUBLIC_URL = "https://auth-staging.codestra.co"
 EXPECTED_KEYCLOAK_ISSUER = EXPECTED_KEYCLOAK_PUBLIC_URL + "/realms/codestra"
@@ -20,10 +41,26 @@ REDIS_HOST = "redis.middleware-staging.svc.cluster.local"
 
 def main() -> None:
     lock = json.loads((DEPLOY / "runtime-lock.v1.json").read_text())
-    assert lock["schema_version"] == "1.2" and lock["environment"] == "staging"
+    assert lock["schema_version"] == "1.3" and lock["environment"] == "staging"
+    assert lock["middleware"]["source_sha"] == EXPECTED_SOURCE
     assert lock["middleware"]["image_digest"] == EXPECTED_DIGEST
     assert lock["middleware"]["image_reference"].endswith("@" + EXPECTED_DIGEST)
+    assert lock["middleware"]["schema_head"] == EXPECTED_SCHEMA
     assert lock["middleware"]["runtime_profile_id"] == EXPECTED_PROFILE
+    assert lock["middleware"]["release_id"] == EXPECTED_RELEASE_ID
+    assert (
+        lock["middleware"]["release_artifact_digest"]
+        == EXPECTED_RELEASE_ARTIFACT_DIGEST
+    )
+    assert (
+        lock["middleware"]["release_manifest_sha256"]
+        == EXPECTED_RELEASE_MANIFEST_SHA256
+    )
+    assert (
+        lock["middleware"]["release_workflow_identity"]
+        == EXPECTED_RELEASE_IDENTITY
+    )
+    assert lock["middleware"]["release_oidc_issuer"] == EXPECTED_RELEASE_ISSUER
     assert lock["embedded_profile_identities"] == {
         "postgres_host": POSTGRES_HOST,
         "postgres_port": 5432,
@@ -71,6 +108,7 @@ def main() -> None:
         "blackbox_target": "pending",
         "production_authorized": False,
     }
+    assert lock["umbrella_controls"] == EXPECTED_UMBRELLA_CONTROLS
     assert lock["external_effects_enabled"] is False
     for value in lock["support_images"].values():
         assert re.fullmatch(r"[^\s]+@sha256:[0-9a-f]{64}", value)
@@ -107,6 +145,8 @@ def main() -> None:
     script = (ROOT / "scripts/deploy_intake_observability_staging.sh").read_text()
     for required in (
         "docker pull \"$image\"",
+        "cosign verify \\",
+        "cosign verify-attestation \\",
         "host ports are prohibited",
         "STAGING_DEPLOYMENT=PASS",
         "RUNTIME_PROFILE_ID=$EXPECTED_PROFILE",
@@ -114,6 +154,12 @@ def main() -> None:
         "rediss://middleware-staging:",
         "openssl x509 -in \"$cert\" -noout -checkhost",
         "OUTBOX_DISPATCH_ENABLED=false",
+        "EXTERNAL_EFFECTS_ENABLED=false",
+        "LIVE_ADVERTISING_ENABLED=false",
+        "EXTERNAL_DELIVERY_ENABLED=false",
+        "SOCIAL_PUBLISHING_ENABLED=false",
+        "EXTERNAL_MODEL_CALLS_ENABLED=false",
+        "N8N_EXTERNAL_PROVIDER_WRITES=false",
         "LIVE_PSTN_DIALING=false",
         "DATA_VOLUMES=PRESERVED",
         "DELETE_CODESTRA_STAGE6_STAGING_DATA",
@@ -124,6 +170,11 @@ def main() -> None:
         "KEYCLOAK_JWKS_URI=$EXPECTED_KEYCLOAK_JWKS_URI",
         "keycloak_public_url",
         "keycloak_issuer",
+        "validate_protected_checkout",
+        "validate_exact_merged_source",
+        "INFRASTRUCTURE_SOURCE_SHA",
+        "CANONICAL_REPOSITORY='https://github.com/appolon1908-hue/Infustruction-repo.git'",
+        "CANONICAL_MAIN_REF='refs/remotes/codestra-canonical/main'",
     ):
         assert required in script, required
     assert "https://auth.codestra.co" not in script
@@ -133,6 +184,10 @@ def main() -> None:
     assert "production-activation" not in script
     assert script.count("WEBHOOK_SECRET_") >= 7
     assert "REDIS_ACL_FILE" not in script
+    deployment_readme = (DEPLOY / "README.md").read_text()
+    assert "root-owned protected checkout" in deployment_readme
+    assert "INFRASTRUCTURE_SOURCE_SHA" in deployment_readme
+    assert "/var/lib/codestra/staging/intake-observability" in deployment_readme
     print("INFRASTRUCTURE_STAGING_INTAKE_OBSERVABILITY=PASS")
 
 

@@ -7,14 +7,21 @@ COMPOSE_FILE="$ROOT_DIR/deploy/staging/intake-observability/compose.yaml"
 LOCK_FILE="$ROOT_DIR/deploy/staging/intake-observability/runtime-lock.v1.json"
 ACTION="${1:-deploy}"
 STATE_ROOT="${CODESTRA_STAGING_ROOT:-$HOME/.local/share/codestra/staging/intake-observability}"
-EXPECTED_IMAGE='ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820'
-EXPECTED_DIGEST='sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820'
-EXPECTED_SOURCE='f6748a58f8d2590520a4f28776770957061cdea1'
+EXPECTED_IMAGE='ghcr.io/appolon1908-hue/codestra-middleware@sha256:01a61e6c9761968bce04db855df565e9104338c2ba2056da570cacb9fd21f0f4'
+EXPECTED_DIGEST='sha256:01a61e6c9761968bce04db855df565e9104338c2ba2056da570cacb9fd21f0f4'
+EXPECTED_SOURCE='9a96ff1651a324b98f3a7efd60b7a342983ded4e'
 EXPECTED_PROFILE='codestra-middleware-staging-v1'
+EXPECTED_RELEASE_ID='9a96ff1651a3-01a61e6c9761'
+EXPECTED_RELEASE_ARTIFACT_DIGEST='sha256:56fc7bd5cca57df0bfd04e27eb3e294bd160a8071e4e8ae1974addb6d040f46e'
+EXPECTED_RELEASE_MANIFEST_SHA256='sha256:55f809c9f6436fd886c7a8a19a2b557da22696e190ebf806df16f3e401b7f9a6'
+EXPECTED_RELEASE_IDENTITY='https://github.com/appolon1908-hue/Middleware-/.github/workflows/release.yml@refs/heads/main'
+EXPECTED_RELEASE_ISSUER='https://token.actions.githubusercontent.com'
 EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth-staging.codestra.co'
 EXPECTED_KEYCLOAK_ISSUER="${EXPECTED_KEYCLOAK_PUBLIC_URL}/realms/codestra"
 EXPECTED_KEYCLOAK_JWKS_URI="${EXPECTED_KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
 EXPECTED_KEYCLOAK_REALM='codestra'
+CANONICAL_REPOSITORY='https://github.com/appolon1908-hue/Infustruction-repo.git'
+CANONICAL_MAIN_REF='refs/remotes/codestra-canonical/main'
 POSTGRES_IMAGE='postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73'
 REDIS_IMAGE='redis:7.4-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2'
 PROJECT='codestra-intake-observability-staging'
@@ -47,7 +54,56 @@ ensure_secret() {
   chmod 600 "$path"
 }
 
-for command in docker python3 jq sha256sum openssl; do require "$command"; done
+assert_protected_path() {
+  local path="$1" mode
+  [[ ! -L "$path" ]] || fail "protected source path is a symlink: $path"
+  [[ "$(stat -c '%u' -- "$path")" == 0 ]] || fail "protected source path is not root-owned: $path"
+  mode="$(stat -c '%a' -- "$path")"
+  (( (8#$mode & 8#022) == 0 )) || fail "protected source path is group- or other-writable: $path"
+}
+
+validate_protected_checkout() {
+  [[ $EUID -eq 0 ]] || fail 'runtime actions must execute as root from protected source'
+  [[ "$ROOT_DIR" == /* && ! -L "$ROOT_DIR" ]] || fail 'deployment checkout must be an absolute non-symlink path'
+  local current="$ROOT_DIR" path
+  while :; do
+    assert_protected_path "$current"
+    [[ "$current" == / ]] && break
+    current="$(dirname -- "$current")"
+  done
+  [[ -d "$ROOT_DIR/.git" && ! -L "$ROOT_DIR/.git" ]] || fail 'deployment checkout must be a standalone protected Git checkout'
+  while IFS= read -r -d '' path; do
+    assert_protected_path "$path"
+  done < <(
+    find \
+      "$ROOT_DIR/.git" \
+      "$ROOT_DIR/deploy/staging/intake-observability" \
+      "$ROOT_DIR/scripts/deploy_intake_observability_staging.sh" \
+      "$ROOT_DIR/scripts/validate_intake_observability_staging.py" \
+      -xdev -print0
+  )
+}
+
+validate_exact_merged_source() {
+  : "${INFRASTRUCTURE_SOURCE_SHA:?INFRASTRUCTURE_SOURCE_SHA is required for deployment}"
+  [[ "$INFRASTRUCTURE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || fail 'infrastructure source SHA is malformed'
+  [[ "$(git -C "$ROOT_DIR" rev-parse HEAD)" == "$INFRASTRUCTURE_SOURCE_SHA" ]] || fail 'infrastructure source SHA does not match checkout'
+  [[ -z "$(git -C "$ROOT_DIR" status --porcelain)" ]] || fail 'infrastructure deployment checkout is not clean'
+  git -C "$ROOT_DIR" fetch --quiet --no-tags "$CANONICAL_REPOSITORY" \
+    "+refs/heads/main:$CANONICAL_MAIN_REF" ||
+    fail 'canonical infrastructure main could not be refreshed'
+  git -C "$ROOT_DIR" merge-base --is-ancestor \
+    "$INFRASTRUCTURE_SOURCE_SHA" "$CANONICAL_MAIN_REF" ||
+    fail 'infrastructure source SHA is not merged into canonical main'
+}
+
+for command in docker python3 jq sha256sum openssl git stat find cosign; do require "$command"; done
+if [[ "$ACTION" != render ]]; then
+  validate_protected_checkout
+fi
+if [[ "$ACTION" == deploy ]]; then
+  validate_exact_merged_source
+fi
 docker compose version >/dev/null
 [[ "$STATE_ROOT" == /* ]] || fail 'CODESTRA_STAGING_ROOT must be an absolute path'
 [[ "$STATE_ROOT" != / && "$STATE_ROOT" != /etc && "$STATE_ROOT" != /opt && "$STATE_ROOT" != /srv ]] || fail 'unsafe staging root'
@@ -62,15 +118,25 @@ case "$ACTION" in
       --arg digest "$EXPECTED_DIGEST" \
       --arg source "$EXPECTED_SOURCE" \
       --arg profile "$EXPECTED_PROFILE" \
+      --arg releaseId "$EXPECTED_RELEASE_ID" \
+      --arg releaseArtifactDigest "$EXPECTED_RELEASE_ARTIFACT_DIGEST" \
+      --arg releaseManifestSha "$EXPECTED_RELEASE_MANIFEST_SHA256" \
+      --arg releaseIdentity "$EXPECTED_RELEASE_IDENTITY" \
+      --arg releaseIssuer "$EXPECTED_RELEASE_ISSUER" \
       --arg publicUrl "$EXPECTED_KEYCLOAK_PUBLIC_URL" \
       --arg issuer "$EXPECTED_KEYCLOAK_ISSUER" \
       --arg jwksUri "$EXPECTED_KEYCLOAK_JWKS_URI" '
-        .schema_version == "1.2"
+        .schema_version == "1.3"
         and .environment == "staging"
         and .middleware.image_reference == $image
         and .middleware.image_digest == $digest
         and .middleware.source_sha == $source
         and .middleware.runtime_profile_id == $profile
+        and .middleware.release_id == $releaseId
+        and .middleware.release_artifact_digest == $releaseArtifactDigest
+        and .middleware.release_manifest_sha256 == $releaseManifestSha
+        and .middleware.release_workflow_identity == $releaseIdentity
+        and .middleware.release_oidc_issuer == $releaseIssuer
         and .identity.public_url == $publicUrl
         and .identity.admin_api_base_url == $publicUrl
         and .identity.issuer == $issuer
@@ -84,6 +150,13 @@ case "$ACTION" in
         and .persistence.preserve_on_failure_rollback == true
         and .activation.prometheus_target == "pending"
         and .activation.blackbox_target == "pending"
+        and .umbrella_controls == {
+          "LIVE_ADVERTISING_ENABLED": false,
+          "EXTERNAL_DELIVERY_ENABLED": false,
+          "SOCIAL_PUBLISHING_ENABLED": false,
+          "EXTERNAL_MODEL_CALLS_ENABLED": false,
+          "N8N_EXTERNAL_PROVIDER_WRITES": false
+        }
         and .external_effects_enabled == false
       ' "$LOCK_FILE" >/dev/null
     printf 'STAGING_RUNTIME_LOCK=PASS\n'
@@ -124,6 +197,15 @@ for producer in "${WEBHOOK_PRODUCERS[@]}"; do
   ensure_secret "$STATE_ROOT/secrets/webhook_${producer,,}"
 done
 
+cosign verify \
+  --certificate-identity "$EXPECTED_RELEASE_IDENTITY" \
+  --certificate-oidc-issuer "$EXPECTED_RELEASE_ISSUER" \
+  "$EXPECTED_IMAGE" >/dev/null
+cosign verify-attestation \
+  --type spdxjson \
+  --certificate-identity "$EXPECTED_RELEASE_IDENTITY" \
+  --certificate-oidc-issuer "$EXPECTED_RELEASE_ISSUER" \
+  "$EXPECTED_IMAGE" >/dev/null
 for image in "$EXPECTED_IMAGE" "$POSTGRES_IMAGE" "$REDIS_IMAGE"; do
   docker pull "$image" >/dev/null
 done
@@ -190,8 +272,14 @@ RUNTIME_PROFILE_ID=$EXPECTED_PROFILE
 APP_VERSION=0.1.0
 APP_SOURCE_SHA=$EXPECTED_SOURCE
 IMAGE_DIGEST=$EXPECTED_DIGEST
-SCHEMA_HEAD=0003_immutable_event_ledger
-BUILD_TIME=2026-08-30T13:24:37Z
+SCHEMA_HEAD=0008_durable_communications
+BUILD_TIME=2026-09-02T17:41:48Z
+EXTERNAL_EFFECTS_ENABLED=false
+LIVE_ADVERTISING_ENABLED=false
+EXTERNAL_DELIVERY_ENABLED=false
+SOCIAL_PUBLISHING_ENABLED=false
+EXTERNAL_MODEL_CALLS_ENABLED=false
+N8N_EXTERNAL_PROVIDER_WRITES=false
 KEYCLOAK_ISSUER=$EXPECTED_KEYCLOAK_ISSUER
 KEYCLOAK_JWKS_URI=$EXPECTED_KEYCLOAK_JWKS_URI
 MIDDLEWARE_AUDIENCE=middleware-api
@@ -275,7 +363,7 @@ unset postgres_password redis_password
 
 docker run --rm --env-file "$STATE_ROOT/middleware.env" \
   -v "$COMBINED_CA:/etc/ssl/certs/ca-certificates.crt:ro" \
-  "$EXPECTED_IMAGE" -c 'from app.config import Settings; s=Settings.from_env(); assert s.app_env == "staging"; assert s.runtime_profile_id == "codestra-middleware-staging-v1"; assert not s.allow_in_memory_storage; assert not s.outbox_dispatch_enabled; assert not any(s.external_effects.values())' >/dev/null
+  "$EXPECTED_IMAGE" -c 'from app.config import Settings, UMBRELLA_CONTROL_NAMES; s=Settings.from_env(); assert s.app_env == "staging"; assert s.runtime_profile_id == "codestra-middleware-staging-v1"; assert not s.allow_in_memory_storage; assert not s.outbox_dispatch_enabled; assert set(s.umbrella_controls) == set(UMBRELLA_CONTROL_NAMES); assert not any(s.umbrella_controls.values()); assert not any(s.external_effects.values())' >/dev/null
 
 rendered="$STATE_ROOT/state/compose.rendered.yaml"
 compose config >"$rendered"
@@ -318,12 +406,15 @@ container_image="$(docker inspect --format '{{.Config.Image}}' "${PROJECT}-middl
 python3 - <<PY >"$STATE_ROOT/runtime-context.json"
 import json
 print(json.dumps({
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "environment": "staging",
   "project": "$PROJECT",
   "middleware_source_sha": "$EXPECTED_SOURCE",
   "middleware_image_digest": "$EXPECTED_DIGEST",
   "middleware_runtime_profile": "$EXPECTED_PROFILE",
+  "middleware_release_id": "$EXPECTED_RELEASE_ID",
+  "middleware_release_artifact_digest": "$EXPECTED_RELEASE_ARTIFACT_DIGEST",
+  "middleware_release_manifest_sha256": "$EXPECTED_RELEASE_MANIFEST_SHA256",
   "middleware_container": "${PROJECT}-middleware-1",
   "private_network": "codestra-intake-observability-staging_private",
   "private_network_internal": True,
@@ -332,6 +423,13 @@ print(json.dumps({
   "redis_tls": True,
   "keycloak_public_url": "$EXPECTED_KEYCLOAK_PUBLIC_URL",
   "keycloak_issuer": "$EXPECTED_KEYCLOAK_ISSUER",
+  "umbrella_controls": {
+    "LIVE_ADVERTISING_ENABLED": False,
+    "EXTERNAL_DELIVERY_ENABLED": False,
+    "SOCIAL_PUBLISHING_ENABLED": False,
+    "EXTERNAL_MODEL_CALLS_ENABLED": False,
+    "N8N_EXTERNAL_PROVIDER_WRITES": False
+  },
   "named_volumes_preserved_on_redeploy": True,
   "deployment_result": "PASS",
   "external_effects_enabled": False
