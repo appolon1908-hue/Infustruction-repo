@@ -141,6 +141,27 @@ def validate_api(api: dict[str, Any]) -> tuple[int, dict[str, int]]:
         assert row["implementation_status"] in ALLOWED_ENDPOINT_STATUSES
         assert row["stage"] in ALLOWED_STAGES
         assert row["runtime_verification"], f"{key}: missing runtime verification"
+    for key in (
+        ("TELNEXA", "POST", "/v1/smpp/accounts"),
+        ("TELNEXA", "PATCH", "/v1/smpp/accounts/{id}"),
+    ):
+        contract = next(
+            row
+            for row in required
+            if (row["service"], row["method"], row["path"]) == key
+        )
+        assert contract["implementation_status"] == "IMPLEMENTED", f"{key}: incomplete"
+    for key in (
+        ("TELNEXA", "POST", "/api/v1/smpp/accounts"),
+        ("TELNEXA", "PATCH", "/api/v1/smpp/accounts/{account_id}"),
+    ):
+        endpoint = next(
+            row
+            for row in endpoints
+            if (row["service"], row["method"], row["path"]) == key
+        )
+        assert endpoint["idempotency"] == "DURABLE", f"{key}: idempotency not durable"
+        assert endpoint["implementation_status"] == "IMPLEMENTED", f"{key}: incomplete"
     counts = {
         status: sum(row["implementation_status"] == status for row in required)
         for status in ("IMPLEMENTED", "PARTIAL", "MISSING")

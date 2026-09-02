@@ -120,6 +120,17 @@ def model_name(value: Any) -> str:
     return ",".join(sorted(set(references))) if references else "N/A"
 
 
+def has_durable_idempotency(path: str, operation: dict[str, Any]) -> bool:
+    if any(token in path for token in ("/messages", "/jobs", "/commands", "/webhooks", "/operations", "/callbacks")):
+        return True
+    return any(
+        parameter.get("in") == "header"
+        and str(parameter.get("name", "")).lower() == "idempotency-key"
+        and parameter.get("required") is True
+        for parameter in operation.get("parameters", [])
+    )
+
+
 def endpoint_record(
     service: str,
     method: str,
@@ -164,10 +175,7 @@ def endpoint_record(
         verification = "LIVE_OPENAPI_MATCH" if key in runtime else "SOURCE_ONLY_REVIEW_REQUIRED"
     secured = bool(operation.get("security", True))
     mutating = method.upper() in {"POST", "PUT", "PATCH", "DELETE"}
-    known_idempotent = any(
-        token in path
-        for token in ("/messages", "/jobs", "/commands", "/webhooks", "/operations", "/callbacks")
-    )
+    known_idempotent = has_durable_idempotency(path, operation)
     if status == "IMPLEMENTED" and mutating and not known_idempotent:
         status = "PARTIAL"
     return {
@@ -420,8 +428,10 @@ def api_matrix() -> dict[str, Any]:
     required: list[dict[str, str]] = []
     for service, entries in contracts.items():
         source_ops = {
-            (method, contract_normalized(service, path))
-            for method, path in operations(source[service])
+            (method.upper(), contract_normalized(service, path)): operation
+            for path, item in source[service].get("paths", {}).items()
+            for method, operation in item.items()
+            if method in HTTP_METHODS
         }
         runtime_ops = {
             (method, contract_normalized(service, path))
@@ -430,7 +440,7 @@ def api_matrix() -> dict[str, Any]:
         for _, method, path in entries:
             key = (method, contract_normalized(service, path))
             mutating = method in {"POST", "PUT", "PATCH", "DELETE"}
-            known_idempotent = any(token in path for token in ("/messages", "/jobs", "/commands", "/webhooks", "/operations", "/callbacks"))
+            known_idempotent = has_durable_idempotency(path, source_ops.get(key, {}))
             state = (
                 "MISSING" if key not in source_ops
                 else "PARTIAL" if mutating and not known_idempotent

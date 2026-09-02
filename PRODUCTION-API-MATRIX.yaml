@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T03:50:42.769594+00:00'
+generated_at: '2026-09-02T04:14:11.814823+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -410,7 +410,7 @@ required_contracts:
 - service: TELNEXA
   method: POST
   path: /v1/smpp/accounts
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: TELNEXA
   method: GET
@@ -420,7 +420,7 @@ required_contracts:
 - service: TELNEXA
   method: PATCH
   path: /v1/smpp/accounts/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: TELNEXA
   method: GET
@@ -3281,11 +3281,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: ProviderMailIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -21161,11 +21161,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: CreditRequest
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: TELNEXA
@@ -22091,11 +22091,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: SmppIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: TELNEXA
@@ -22121,11 +22121,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: SmppPatch
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: TELNEXA
