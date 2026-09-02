@@ -213,8 +213,6 @@ def validate_repository_id_current_name_pairing(paths: list[Path]) -> None:
         text = path.read_text(encoding="utf-8", errors="ignore")
         lowered = text.lower()
         for repository_id, (current, _target, _critical) in EXPECTED.items():
-            # Match only an explicit JSON/YAML/Python/shell-style field assignment.
-            # Do not let whitespace or punctuation bridge unrelated source text.
             id_pattern = re.compile(
                 rf"(?<![A-Za-z0-9_])[\"']?(?:github_)?repository_id[\"']?"
                 rf"\s*[:=]\s*{repository_id}\b",
@@ -316,8 +314,21 @@ def validate_known_operational_bindings() -> None:
         fail("historical Stage 6 source lock social-control repository changed")
 
     certifier = require_file(ROOT / "scripts" / "certify_marketing_stage9.py")
-    if assigned_string_set(certifier, "EXPECTED_REPOS") != STAGE9_EXPECTED_REPOS:
-        fail("marketing Stage 9 certifier repository set drifted from current authority")
+    expected_base = STAGE9_EXPECTED_REPOS - {expected_social_slug}
+    if assigned_string_set(certifier, "BASE_EXPECTED_REPOS") != expected_base:
+        fail("marketing Stage 9 base repository set drifted from current authority")
+    id_match = re.search(
+        r"(?m)^SOCIAL_CONTROL_REPOSITORY_ID\s*=\s*(\d+)\s*$",
+        certifier,
+    )
+    if id_match is None or int(id_match.group(1)) != 1351353723:
+        fail("marketing Stage 9 certifier is not bound to the stable social-control ID")
+    dynamic_binding = re.compile(
+        r"expected_repos\s*=\s*BASE_EXPECTED_REPOS\s*\|\s*"
+        r"\{\s*social_control_slug\(\)\s*\}"
+    )
+    if dynamic_binding.search(certifier) is None:
+        fail("marketing Stage 9 certifier no longer resolves social control through aliases")
 
 
 def compose_ports_blocks(text: str) -> list[str]:
