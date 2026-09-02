@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.3",
+  "schema_version": "1.4",
   "deployment_id": "codestra-intake-observability-staging-v1",
   "environment": "staging",
   "project_name": "codestra-intake-observability-staging",
@@ -46,7 +46,21 @@
     "middleware_host_ports": [],
     "private_network": "codestra-intake-observability-staging_private",
     "private_network_internal": true,
-    "identity_egress_network": "codestra-intake-observability-staging_identity_egress"
+    "identity_egress_network": "codestra-intake-observability-staging_identity_egress",
+    "shared_observability": {
+      "name": "codestra-observability",
+      "contract": "codestra-observability-staging-v1",
+      "driver": "bridge",
+      "scope": "local",
+      "internal": false,
+      "attachable": false,
+      "ingress": false,
+      "subnet": "192.168.16.0/24",
+      "gateway": "192.168.16.1",
+      "inter_container_communication": true,
+      "ip_masquerade": true,
+      "host_ports_published": false
+    }
   },
   "persistence": {
     "named_volumes": ["postgres_data", "redis_data"],

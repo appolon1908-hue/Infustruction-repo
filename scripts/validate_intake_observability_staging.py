@@ -37,11 +37,25 @@ EXPECTED_KEYCLOAK_ISSUER = EXPECTED_KEYCLOAK_PUBLIC_URL + "/realms/codestra"
 EXPECTED_KEYCLOAK_JWKS_URI = EXPECTED_KEYCLOAK_ISSUER + "/protocol/openid-connect/certs"
 POSTGRES_HOST = "postgresql.middleware-staging.svc.cluster.local"
 REDIS_HOST = "redis.middleware-staging.svc.cluster.local"
+EXPECTED_OBSERVABILITY_NETWORK = {
+    "name": "codestra-observability",
+    "contract": "codestra-observability-staging-v1",
+    "driver": "bridge",
+    "scope": "local",
+    "internal": False,
+    "attachable": False,
+    "ingress": False,
+    "subnet": "192.168.16.0/24",
+    "gateway": "192.168.16.1",
+    "inter_container_communication": True,
+    "ip_masquerade": True,
+    "host_ports_published": False,
+}
 
 
 def main() -> None:
     lock = json.loads((DEPLOY / "runtime-lock.v1.json").read_text())
-    assert lock["schema_version"] == "1.3" and lock["environment"] == "staging"
+    assert lock["schema_version"] == "1.4" and lock["environment"] == "staging"
     assert lock["middleware"]["source_sha"] == EXPECTED_SOURCE
     assert lock["middleware"]["image_digest"] == EXPECTED_DIGEST
     assert lock["middleware"]["image_reference"].endswith("@" + EXPECTED_DIGEST)
@@ -82,6 +96,7 @@ def main() -> None:
     }
     assert lock["network"]["middleware_host_ports"] == []
     assert lock["network"]["private_network_internal"] is True
+    assert lock["network"]["shared_observability"] == EXPECTED_OBSERVABILITY_NETWORK
     assert lock["persistence"] == {
         "named_volumes": ["postgres_data", "redis_data"],
         "preserve_on_redeploy": True,
@@ -175,6 +190,15 @@ def main() -> None:
         "INFRASTRUCTURE_SOURCE_SHA",
         "CANONICAL_REPOSITORY='https://github.com/appolon1908-hue/Infustruction-repo.git'",
         "CANONICAL_MAIN_REF='refs/remotes/codestra-canonical/main'",
+        "OBSERVABILITY_NETWORK='codestra-observability'",
+        "OBSERVABILITY_NETWORK_CONTRACT='codestra-observability-staging-v1'",
+        "OBSERVABILITY_NETWORK_SUBNET='192.168.16.0/24'",
+        "validate_observability_network",
+        "ensure_observability_network",
+        "com.docker.network.bridge.enable_ip_masquerade=true",
+        "PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'",
+        "unset BASH_ENV ENV CDPATH",
+        '.schema_version == "1.4"',
     ):
         assert required in script, required
     assert "https://auth.codestra.co" not in script
@@ -188,6 +212,8 @@ def main() -> None:
     assert "root-owned protected checkout" in deployment_readme
     assert "INFRASTRUCTURE_SOURCE_SHA" in deployment_readme
     assert "/var/lib/codestra/staging/intake-observability" in deployment_readme
+    assert "/usr/bin/env -i" in deployment_readme
+    assert "codestra-observability" in deployment_readme
     print("INFRASTRUCTURE_STAGING_INTAKE_OBSERVABILITY=PASS")
 
 

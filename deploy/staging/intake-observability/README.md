@@ -21,13 +21,20 @@ deployment entrypoint verifies the exact merged Infrastructure SHA and the
 protected source closure before it pulls or starts a container:
 
 ~~~bash
+/usr/bin/env -i \
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
 INFRASTRUCTURE_SOURCE_SHA=<accepted-main-sha> \
 CODESTRA_STAGING_ROOT=/var/lib/codestra/staging/intake-observability \
 KEYCLOAK_PUBLIC_URL=https://auth-staging.codestra.co \
 KEYCLOAK_REALM=codestra \
+/bin/bash --noprofile --norc \
 /opt/codestra-observability/infrastructure-authority/scripts/deploy_intake_observability_staging.sh deploy
 ~~~
 
 This authority deploys only the isolated staging Middleware, PostgreSQL, and
-Redis project. It publishes no host port and shares no network or volume with
-Klyrow or Postal. Prometheus and Grafana remain separately owned and deployed.
+Redis project. It also creates and validates the source-controlled
+`codestra-observability` local bridge used only by the dedicated Prometheus
+and Grafana runtimes. The bridge publishes no host port; its non-internal mode
+allows Prometheus to exchange a read-only OAuth token with staging Keycloak.
+The application project shares no network or volume with Klyrow or Postal.
+Prometheus and Grafana remain separately owned and deployed.

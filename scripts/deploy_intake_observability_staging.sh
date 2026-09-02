@@ -1,6 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -Eeuo pipefail
 umask 077
+PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+export PATH
+unset BASH_ENV ENV CDPATH
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="$ROOT_DIR/deploy/staging/intake-observability/compose.yaml"
@@ -25,6 +28,10 @@ CANONICAL_MAIN_REF='refs/remotes/codestra-canonical/main'
 POSTGRES_IMAGE='postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73'
 REDIS_IMAGE='redis:7.4-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2'
 PROJECT='codestra-intake-observability-staging'
+OBSERVABILITY_NETWORK='codestra-observability'
+OBSERVABILITY_NETWORK_CONTRACT='codestra-observability-staging-v1'
+OBSERVABILITY_NETWORK_SUBNET='192.168.16.0/24'
+OBSERVABILITY_NETWORK_GATEWAY='192.168.16.1'
 POSTGRES_HOST='postgresql.middleware-staging.svc.cluster.local'
 REDIS_HOST='redis.middleware-staging.svc.cluster.local'
 WEBHOOK_PRODUCERS=(
@@ -78,10 +85,53 @@ validate_protected_checkout() {
     find \
       "$ROOT_DIR/.git" \
       "$ROOT_DIR/deploy/staging/intake-observability" \
+      "$ROOT_DIR/scripts" \
       "$ROOT_DIR/scripts/deploy_intake_observability_staging.sh" \
       "$ROOT_DIR/scripts/validate_intake_observability_staging.py" \
       -xdev -print0
   )
+}
+
+validate_observability_network() {
+  docker network inspect "$OBSERVABILITY_NETWORK" |
+    jq -e \
+      --arg name "$OBSERVABILITY_NETWORK" \
+      --arg contract "$OBSERVABILITY_NETWORK_CONTRACT" \
+      --arg subnet "$OBSERVABILITY_NETWORK_SUBNET" \
+      --arg gateway "$OBSERVABILITY_NETWORK_GATEWAY" '
+        length == 1
+        and .[0].Name == $name
+        and .[0].Driver == "bridge"
+        and .[0].Scope == "local"
+        and .[0].Internal == false
+        and .[0].Attachable == false
+        and .[0].Ingress == false
+        and .[0].IPAM.Driver == "default"
+        and .[0].IPAM.Config == [{"Subnet": $subnet, "Gateway": $gateway}]
+        and .[0].Options["com.docker.network.bridge.enable_icc"] == "true"
+        and .[0].Options["com.docker.network.bridge.enable_ip_masquerade"] == "true"
+        and .[0].Labels["com.codestra.authority.repository"] == "appolon1908-hue/Infustruction-repo"
+        and .[0].Labels["com.codestra.environment"] == "staging"
+        and .[0].Labels["com.codestra.network.contract"] == $contract
+      ' >/dev/null ||
+    fail 'shared observability network does not match its reviewed contract'
+}
+
+ensure_observability_network() {
+  if ! docker network inspect "$OBSERVABILITY_NETWORK" >/dev/null 2>&1; then
+    docker network create \
+      --driver bridge \
+      --subnet "$OBSERVABILITY_NETWORK_SUBNET" \
+      --gateway "$OBSERVABILITY_NETWORK_GATEWAY" \
+      --opt com.docker.network.bridge.enable_icc=true \
+      --opt com.docker.network.bridge.enable_ip_masquerade=true \
+      --label com.codestra.authority.repository=appolon1908-hue/Infustruction-repo \
+      --label com.codestra.environment=staging \
+      --label "com.codestra.network.contract=$OBSERVABILITY_NETWORK_CONTRACT" \
+      "$OBSERVABILITY_NETWORK" >/dev/null ||
+      fail 'shared observability network could not be created'
+  fi
+  validate_observability_network
 }
 
 validate_exact_merged_source() {
@@ -126,7 +176,7 @@ case "$ACTION" in
       --arg publicUrl "$EXPECTED_KEYCLOAK_PUBLIC_URL" \
       --arg issuer "$EXPECTED_KEYCLOAK_ISSUER" \
       --arg jwksUri "$EXPECTED_KEYCLOAK_JWKS_URI" '
-        .schema_version == "1.3"
+        .schema_version == "1.4"
         and .environment == "staging"
         and .middleware.image_reference == $image
         and .middleware.image_digest == $digest
@@ -146,6 +196,20 @@ case "$ACTION" in
         and .identity.production_identity_endpoint_allowed == false
         and .transport.postgres_tls == true
         and .transport.redis_tls == true
+        and .network.shared_observability == {
+          "name": "codestra-observability",
+          "contract": "codestra-observability-staging-v1",
+          "driver": "bridge",
+          "scope": "local",
+          "internal": false,
+          "attachable": false,
+          "ingress": false,
+          "subnet": "192.168.16.0/24",
+          "gateway": "192.168.16.1",
+          "inter_container_communication": true,
+          "ip_masquerade": true,
+          "host_ports_published": false
+        }
         and .persistence.preserve_on_redeploy == true
         and .persistence.preserve_on_failure_rollback == true
         and .activation.prometheus_target == "pending"
@@ -164,6 +228,7 @@ case "$ACTION" in
     ;;
   status)
     [[ -f "$STATE_ROOT/deployment.env" ]] || fail 'deployment state is absent'
+    validate_observability_network
     compose ps
     exit 0
     ;;
@@ -211,6 +276,8 @@ for image in "$EXPECTED_IMAGE" "$POSTGRES_IMAGE" "$REDIS_IMAGE"; do
 done
 resolved="$(docker image inspect "$EXPECTED_IMAGE" --format '{{json .RepoDigests}}')"
 printf '%s' "$resolved" | grep -Fq "$EXPECTED_IMAGE" || fail 'local Middleware image does not match locked digest'
+
+ensure_observability_network
 
 CA_KEY="$STATE_ROOT/tls/ca.key"
 CA_CERT="$STATE_ROOT/tls/ca.crt"
@@ -406,7 +473,7 @@ container_image="$(docker inspect --format '{{.Config.Image}}' "${PROJECT}-middl
 python3 - <<PY >"$STATE_ROOT/runtime-context.json"
 import json
 print(json.dumps({
-  "schema_version": "1.3",
+  "schema_version": "1.4",
   "environment": "staging",
   "project": "$PROJECT",
   "middleware_source_sha": "$EXPECTED_SOURCE",
@@ -418,6 +485,10 @@ print(json.dumps({
   "middleware_container": "${PROJECT}-middleware-1",
   "private_network": "codestra-intake-observability-staging_private",
   "private_network_internal": True,
+  "shared_observability_network": "$OBSERVABILITY_NETWORK",
+  "shared_observability_network_contract": "$OBSERVABILITY_NETWORK_CONTRACT",
+  "shared_observability_network_internal": False,
+  "shared_observability_network_subnet": "$OBSERVABILITY_NETWORK_SUBNET",
   "host_ports_published": False,
   "postgres_tls": True,
   "redis_tls": True,
@@ -440,3 +511,4 @@ trap - EXIT
 printf 'STAGING_DEPLOYMENT=PASS\n'
 printf 'STAGING_PROJECT=%s\n' "$PROJECT"
 printf 'STAGING_PRIVATE_NETWORK=codestra-intake-observability-staging_private\n'
+printf 'STAGING_OBSERVABILITY_NETWORK=%s\n' "$OBSERVABILITY_NETWORK"
