@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T13:09:41.064912+00:00'
+generated_at: '2026-09-02T13:40:47.083453+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -15,7 +15,7 @@ source_authority:
     source_sha: dfdfe77431e1e19f2a221ba97192a75e0a0ac40c
   KYQRA:
     repository: https://github.com/appolon1908-hue/kyqra-crawler
-    source_sha: 0536ec0ef884afa0cb0ccda28f7a97a11c0bbd37
+    source_sha: ac4287a3fca218cea611571284a674d247fc9c2a
   PRIVATE_GATEWAY:
     repository: https://github.com/appolon1908-hue/codestra-production-platform
     source_sha: ca6ea3465430f6675beefb7b7c3aa540966a26aa

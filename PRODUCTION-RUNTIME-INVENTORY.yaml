@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T13:09:41.064912+00:00'
+generated_at: '2026-09-02T13:40:47.083453+00:00'
 server_scope: CURRENT_SERVER_ONLY
 server: Ubuntu-jammy-latest-amd64-base.zst
 public_ipv4: 37.27.128.39
