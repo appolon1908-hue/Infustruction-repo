@@ -1,0 +1,7 @@
+schema: codestra.rollback-manifest.v1
+captured_at: '2026-09-02T16:48:00Z'
+production_changed: false
+targets:
+  middleware: {current_protected_sha: c8c8d6fad442e7a65eeac353a0f0853797ea84a8, previous_protected_sha: 61e5948f9c800f4dd587cce75a332b617f418a0c, current_image_digest: PENDING_BUILD, rollback_image_digest: UNKNOWN, runtime_action: NONE}
+  communication: {current_protected_sha: cceb1fd7462f765e6ac36db154086d56a88ba712, previous_protected_sha: 0ee0dcbd3d4a9405ffc7d14019bf4a1105f91113, current_image_digest: PENDING_BUILD, rollback_image_digest: UNKNOWN, runtime_action: NONE}
+  marketing: {current_protected_sha: 3f78cbdeccbdd69f1dfa7f4d31232b43e798047a, previous_protected_sha: 460ff98f64ef9f0724fe4d2afc51a1a6c5b053dd, current_image_digest: PENDING_BUILD, rollback_image_digest: UNKNOWN, runtime_action: NONE}

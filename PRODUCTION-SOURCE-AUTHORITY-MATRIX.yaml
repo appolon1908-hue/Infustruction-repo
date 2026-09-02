@@ -19,8 +19,9 @@ defaults:
   confidence: low
 api_completion_candidates:
   codestra-ai: {repository: appolon1908-hue/Codestra-AI, pr: 5, head: ba09d25618e1d73f29cd76a51d658f2b0b0d09a6, runtime: NOT_DEPLOYED}
-  codestra-communication: {repository: appolon1908-hue/Codestra-Communication-CC, pr: 5, head: ec56638cbf543f02ad960c3647e74481d5a5bbb1, runtime: NOT_DEPLOYED}
-  codestra-marketing: {repository: appolon1908-hue/Codestra-Marketing-, pr: 5, head: 4a7c0277d831e658ed3ed77ef9bf331171c0b819, runtime: NOT_DEPLOYED}
+  codestra-middleware: {repository: Codestra-SRL/codestra-middleware, pr: 282, feature_head: a397f6084703472ae2fbfb1995cc5508bddabe39, protected_merge: c8c8d6fad442e7a65eeac353a0f0853797ea84a8, merge_signature: VERIFIED, runtime: NOT_DEPLOYED}
+  codestra-communication: {repository: appolon1908-hue/Codestra-Communication-CC, pr: 5, feature_head: ec56638cbf543f02ad960c3647e74481d5a5bbb1, protected_merge: cceb1fd7462f765e6ac36db154086d56a88ba712, merge_signature: VERIFIED, runtime: NOT_DEPLOYED}
+  codestra-marketing: {repository: appolon1908-hue/Codestra-Marketing-, pr: 5, feature_head: 4a7c0277d831e658ed3ed77ef9bf331171c0b819, protected_merge: 3f78cbdeccbdd69f1dfa7f4d31232b43e798047a, merge_signature: VERIFIED, runtime: NOT_DEPLOYED}
   codestra-social: {repository: appolon1908-hue/Codesrea-Social-, pr: 5, head: c55ae6dad3f7fc143abda1c94c25dac4c62b050e, runtime: NOT_DEPLOYED}
 workloads:
   codestra-middleware-1:
