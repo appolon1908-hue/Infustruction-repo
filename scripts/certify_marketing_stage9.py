@@ -39,7 +39,7 @@ def social_control_slug() -> str:
     aliases = load_json(REPOSITORY_ALIASES)
     assert aliases['schema_version'] == '1.0'
     assert aliases['identity_key'] == 'repository_id'
-    assert aliases['historical_evidence_immutable'] is True
+    assert aliases['policy']['historical_evidence_immutable'] is True
 
     matches = [
         item for item in aliases['mappings']
