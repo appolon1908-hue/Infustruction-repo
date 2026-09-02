@@ -56,6 +56,10 @@ EXPECTED_OBSERVABILITY_NETWORK = {
     "inter_container_communication": True,
     "ip_masquerade": True,
     "host_ports_published": False,
+    "allowed_container_names": [
+        "codestra-prometheus-staging",
+        "codestra-grafana-staging",
+    ],
 }
 
 
@@ -211,6 +215,9 @@ def main() -> None:
         "validate_observability_network",
         "ensure_observability_network",
         "com.docker.network.bridge.enable_ip_masquerade=true",
+        '.[0].Containers | to_entries | all(',
+        '.value.Name == "codestra-prometheus-staging"',
+        '.value.Name == "codestra-grafana-staging"',
         "PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'",
         "unset BASH_ENV ENV CDPATH",
         '.schema_version == "1.4"',

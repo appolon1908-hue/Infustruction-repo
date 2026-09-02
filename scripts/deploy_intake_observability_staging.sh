@@ -121,6 +121,10 @@ validate_observability_network() {
         and .[0].Labels["com.codestra.authority.repository"] == "appolon1908-hue/Infustruction-repo"
         and .[0].Labels["com.codestra.environment"] == "staging"
         and .[0].Labels["com.codestra.network.contract"] == $contract
+        and (.[0].Containers | to_entries | all(
+          .value.Name == "codestra-prometheus-staging"
+          or .value.Name == "codestra-grafana-staging"
+        ))
       ' >/dev/null ||
     fail 'shared observability network does not match its reviewed contract'
 }
@@ -342,7 +346,11 @@ case "$ACTION" in
           "gateway": "192.168.16.1",
           "inter_container_communication": true,
           "ip_masquerade": true,
-          "host_ports_published": false
+          "host_ports_published": false,
+          "allowed_container_names": [
+            "codestra-prometheus-staging",
+            "codestra-grafana-staging"
+          ]
         }
         and .persistence.preserve_on_redeploy == true
         and .persistence.preserve_on_failure_rollback == true

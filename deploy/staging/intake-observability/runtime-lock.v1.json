@@ -63,7 +63,11 @@
       "gateway": "192.168.16.1",
       "inter_container_communication": true,
       "ip_masquerade": true,
-      "host_ports_published": false
+      "host_ports_published": false,
+      "allowed_container_names": [
+        "codestra-prometheus-staging",
+        "codestra-grafana-staging"
+      ]
     }
   },
   "persistence": {
