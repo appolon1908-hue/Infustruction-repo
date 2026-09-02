@@ -512,6 +512,19 @@ def runtime_inventory() -> dict[str, Any]:
         elif name == "kyqra-crawler-api-1": public_url = "https://crawler.kyqra.com"
         elif name == "codestra-openbao": public_url = "https://bao.codestra.media"
         exposed = sorted((item["Config"].get("ExposedPorts") or {}).keys())
+        published_ports = item["NetworkSettings"].get("Ports") or {}
+        ports = []
+        for container_port in sorted(published_ports):
+            bindings = published_ports[container_port]
+            if not bindings:
+                ports.append(f"{container_port} (container network only)")
+                continue
+            for binding in bindings:
+                host_ip = binding.get("HostIp") or "0.0.0.0"
+                host_port = binding.get("HostPort") or "N/A"
+                ports.append(f"{host_ip}:{host_port}->{container_port}")
+        if not ports:
+            ports = [f"{port} (container network only)" for port in exposed] or ["N/A"]
         private_url = f"tcp://{name}:{exposed[0].split('/')[0]}" if exposed else "N/A"
         database = "N/A"
         if name.startswith("klyrow-mautic"): database = "klyrow-mautic-db-1/MariaDB"
@@ -537,6 +550,7 @@ def runtime_inventory() -> dict[str, Any]:
                 "source_repository": repository,
                 "source_sha": revision,
                 "deployment_file": labels.get("com.docker.compose.project.config_files", "N/A"),
+                "ports": ports,
                 "public_url": public_url,
                 "private_url": private_url,
                 "networks": sorted(item["NetworkSettings"]["Networks"]),
@@ -555,13 +569,69 @@ def runtime_inventory() -> dict[str, Any]:
         "workloads": sorted(workloads, key=lambda row: row["container_or_service"]),
         "host_services": [
             {
+                "software": "DOCKER",
+                "container_or_service": "docker.service",
+                "image": "N/A",
+                "image_digest": "N/A",
+                "version": command("docker", "version", "--format", "{{.Server.Version}}").strip(),
+                "source_repository": "Docker Ubuntu package repository",
+                "source_sha": "N/A",
+                "deployment_file": "/etc/docker and systemd docker.service",
+                "ports": ["N/A"],
+                "public_url": "N/A",
+                "private_url": "unix:///var/run/docker.sock",
+                "networks": ["host"],
+                "volumes": ["/var/lib/docker"],
+                "databases": "N/A",
+                "health": "RUNNING",
+                "stage": "PRODUCTION",
+            },
+            {
+                "software": "CONTAINERD",
+                "container_or_service": "containerd.service",
+                "image": "N/A",
+                "image_digest": "N/A",
+                "version": command("containerd", "--version").strip(),
+                "source_repository": "Docker Ubuntu package repository",
+                "source_sha": "N/A",
+                "deployment_file": "/etc/containerd and systemd containerd.service",
+                "ports": ["N/A"],
+                "public_url": "N/A",
+                "private_url": "unix:///run/containerd/containerd.sock",
+                "networks": ["host"],
+                "volumes": ["/var/lib/containerd"],
+                "databases": "N/A",
+                "health": "RUNNING",
+                "stage": "PRODUCTION",
+            },
+            {
+                "software": "DOCKER_COMPOSE",
+                "container_or_service": "docker compose CLI plugin",
+                "image": "N/A",
+                "image_digest": "N/A",
+                "version": command("docker", "compose", "version", "--short").strip(),
+                "source_repository": "Docker Ubuntu package repository",
+                "source_sha": "N/A",
+                "deployment_file": "N/A",
+                "ports": ["N/A"],
+                "public_url": "N/A",
+                "private_url": "N/A",
+                "networks": ["N/A"],
+                "volumes": ["N/A"],
+                "databases": "N/A",
+                "health": "INSTALLED",
+                "stage": "TOOLING",
+            },
+            {
                 "software": "NGINX",
                 "container_or_service": "nginx.service",
                 "image": "N/A",
                 "image_digest": "N/A",
+                "version": command("dpkg-query", "-W", "-f=${Version}", "nginx").strip(),
                 "source_repository": "Ubuntu package repository",
                 "source_sha": "N/A",
                 "deployment_file": "/etc/nginx/nginx.conf and /etc/nginx/sites-enabled",
+                "ports": ["0.0.0.0:80/tcp", "0.0.0.0:443/tcp", "10.40.0.4:8443/tcp", "10.40.0.4:18000/tcp"],
                 "public_url": "MULTIPLE_TLS_VIRTUAL_HOSTS",
                 "private_url": "https://10.40.0.4:18000 and https://10.40.0.4:8443",
                 "networks": ["host"],
@@ -569,8 +639,39 @@ def runtime_inventory() -> dict[str, Any]:
                 "databases": "N/A",
                 "health": "RUNNING",
                 "stage": "PRODUCTION",
-            }
+            },
+            {
+                "software": "PROMETHEUS_NODE_EXPORTER",
+                "container_or_service": "prometheus-node-exporter.service",
+                "image": "N/A",
+                "image_digest": "N/A",
+                "version": command("dpkg-query", "-W", "-f=${Version}", "prometheus-node-exporter").strip(),
+                "source_repository": "Ubuntu package repository",
+                "source_sha": "N/A",
+                "deployment_file": "/etc/default/prometheus-node-exporter and systemd unit",
+                "ports": ["127.0.0.1:9100/tcp"],
+                "public_url": "N/A",
+                "private_url": "http://127.0.0.1:9100/metrics",
+                "networks": ["host"],
+                "volumes": ["N/A"],
+                "databases": "N/A",
+                "health": "RUNNING",
+                "stage": "PRODUCTION",
+            },
         ],
+        "scope_dispositions": {
+            "CADDY": "SOURCE_ONLY_NOT_RUNNING",
+            "KONG": "SOURCE_ONLY_NOT_RUNNING",
+            "ODOO": "SOURCE_ONLY_NOT_RUNNING",
+            "N8N": "SOURCE_ONLY_NOT_RUNNING",
+            "LOKI": "SOURCE_ONLY_NOT_RUNNING",
+            "TEMPO": "SOURCE_ONLY_NOT_RUNNING",
+            "ALLOY": "SOURCE_ONLY_NOT_RUNNING",
+            "VICIDIAL": "N/A_NOT_INSTALLED_OR_RUNNING",
+            "ASTERISK": "N/A_NOT_INSTALLED_OR_RUNNING",
+            "CENTRIFUGO": "N/A_NOT_INSTALLED_OR_RUNNING",
+            "CELERY": "N/A_NOT_INSTALLED_OR_RUNNING",
+        },
     }
     serialized = yaml.safe_dump(value, sort_keys=False, width=120)
     if "UNKNOWN" in serialized:
@@ -659,7 +760,10 @@ def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict
     report = {
         "PHASE": "FULL_PLATFORM_API_INTEGRATION_AND_PRODUCTION_CERTIFICATION",
         "SERVER": inventory["server"], "PUBLIC_IPV4": inventory["public_ipv4"], "PRIVATE_IP": inventory["private_ip"],
-        "PRODUCTION_SERVICES": sum(row["stage"] == "PRODUCTION" for row in inventory["workloads"]) + len(inventory["host_services"]),
+        "PRODUCTION_SERVICES": (
+            sum(row["stage"] == "PRODUCTION" for row in inventory["workloads"])
+            + sum(row["stage"] == "PRODUCTION" for row in inventory["host_services"])
+        ),
         "KLYROW_SOURCE_SHA": repository_head("/root/full-platform-klyrow-20260902"),
         "TELNEXA_SOURCE_SHA": repository_head("/root/full-platform-telnexa-20260902"),
         "KYQRA_SOURCE_SHA": repository_head("/root/full-platform-kyqra-20260902"),
@@ -693,6 +797,10 @@ def main() -> None:
         "generated_at": GENERATED_AT,
         "runtime_workloads": len(inventory["workloads"]),
         "production_workloads": sum(row["stage"] == "PRODUCTION" for row in inventory["workloads"]),
+        "production_services": (
+            sum(row["stage"] == "PRODUCTION" for row in inventory["workloads"])
+            + sum(row["stage"] == "PRODUCTION" for row in inventory["host_services"])
+        ),
         "api_endpoints": len(api["endpoints"]),
         "required_endpoints": len(required),
         "implemented_required_endpoints": sum(row["implementation_status"] == "IMPLEMENTED" for row in required),

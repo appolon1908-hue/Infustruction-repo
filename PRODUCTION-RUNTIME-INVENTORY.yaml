@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T03:15:08.189260+00:00'
+generated_at: '2026-09-02T03:25:04.573158+00:00'
 server: Ubuntu-jammy-latest-amd64-base.zst
 public_ipv4: 37.27.128.39
 private_ip: 10.40.0.4
@@ -13,6 +13,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: N/A
+  ports:
+  - N/A
   public_url: N/A
   private_url: N/A
   networks:
@@ -31,6 +33,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: N/A
+  ports:
+  - N/A
   public_url: N/A
   private_url: N/A
   networks:
@@ -49,6 +53,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: N/A
+  ports:
+  - N/A
   public_url: N/A
   private_url: N/A
   networks:
@@ -67,6 +73,8 @@ workloads:
   source_repository: https://github.com/openbao/openbao
   source_sha: ba7ad8861d0578cd4da4f7b9e5a6756d30484f8f
   deployment_file: /opt/codestra-openbao/compose.yaml
+  ports:
+  - 127.0.0.1:18200->8200/tcp
   public_url: https://bao.codestra.media
   private_url: tcp://codestra-openbao:8200
   networks:
@@ -88,6 +96,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/klyrow.com
   source_sha: 9684fd55bdbc64a971a17a291ff293a178a2ebac
   deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml
+  ports:
+  - 8000/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-billing-api-1:8000
   networks:
@@ -107,6 +117,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/klyrow.com
   source_sha: 9684fd55bdbc64a971a17a291ff293a178a2ebac
   deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml
+  ports:
+  - 8000/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-billing-worker-1:8000
   networks:
@@ -125,6 +137,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml
+  ports:
+  - 127.0.0.1:18000->8000/tcp
   public_url: https://api.klyrow.com
   private_url: tcp://klyrow-gateway-1:8000
   networks:
@@ -147,6 +161,8 @@ workloads:
   source_repository: https://github.com/grafana/grafana
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml,/root/klyrow.com/docker-compose.override.yml
+  ports:
+  - 127.0.0.1:18003->3000/tcp
   public_url: N/A
   private_url: tcp://klyrow-grafana-1:3000
   networks:
@@ -168,6 +184,8 @@ workloads:
   source_repository: https://github.com/mautic/mautic/pull/16487
   source_sha: 42628161ffcc5720a46179a54e0992b25804a79a
   deployment_file: /root/klyrow.com/docker-compose.yml,/root/klyrow.com/docker-compose.override.yml
+  ports:
+  - 127.0.0.1:18001->80/tcp
   public_url: N/A
   private_url: tcp://klyrow-mautic-1:80
   networks:
@@ -191,6 +209,8 @@ workloads:
   source_repository: https://github.com/mautic/mautic/pull/16487
   source_sha: 42628161ffcc5720a46179a54e0992b25804a79a
   deployment_file: /root/klyrow.com/docker-compose.yml,/root/klyrow.com/docker-compose.override.yml
+  ports:
+  - 80/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-mautic-cron-1:80
   networks:
@@ -213,6 +233,8 @@ workloads:
   source_repository: https://github.com/MariaDB/mariadb-docker
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - 3306/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-mautic-db-1:3306
   networks:
@@ -231,6 +253,8 @@ workloads:
   source_repository: https://github.com/mautic/mautic/pull/16487
   source_sha: 42628161ffcc5720a46179a54e0992b25804a79a
   deployment_file: /root/klyrow.com/docker-compose.yml,/root/klyrow.com/docker-compose.override.yml
+  ports:
+  - 80/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-mautic-worker-1:80
   networks:
@@ -253,6 +277,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - 9100/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-node-exporter-1:9100
   networks:
@@ -271,6 +297,8 @@ workloads:
   source_repository: https://github.com/MariaDB/mariadb-docker
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - 3306/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-postal-db-1:3306
   networks:
@@ -289,6 +317,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml
+  ports:
+  - 9090/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-postal-provisioner-1:9090
   networks:
@@ -308,6 +338,9 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - 37.27.128.39:25->25/tcp
+  - 127.0.0.1:2525->25/tcp
   public_url: N/A
   private_url: tcp://klyrow-postal-smtp-1:25
   networks:
@@ -328,6 +361,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - 127.0.0.1:18002->5000/tcp
   public_url: N/A
   private_url: tcp://klyrow-postal-web-1:5000
   networks:
@@ -349,6 +384,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - N/A
   public_url: N/A
   private_url: N/A
   networks:
@@ -369,6 +406,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - 5432/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-postgres-1:5432
   networks:
@@ -387,6 +426,8 @@ workloads:
   source_repository: https://github.com/prometheus/prometheus
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - 9090/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-prometheus-1:9090
   networks:
@@ -409,6 +450,13 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/klyrow.com/docker-compose.yml
+  ports:
+  - 15691/tcp (container network only)
+  - 15692/tcp (container network only)
+  - 25672/tcp (container network only)
+  - 4369/tcp (container network only)
+  - 5671/tcp (container network only)
+  - 5672/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-rabbitmq-1:15691
   networks:
@@ -427,6 +475,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/klyrow.com
   source_sha: 9684fd55bdbc64a971a17a291ff293a178a2ebac
   deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml
+  ports:
+  - 8000/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-scheduler-1:8000
   networks:
@@ -445,6 +495,9 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/klyrow.com
   source_sha: 9684fd55bdbc64a971a17a291ff293a178a2ebac
   deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml
+  ports:
+  - 8000/tcp (container network only)
+  - 10.40.0.4:587->8025/tcp
   public_url: N/A
   private_url: tcp://klyrow-smtp-relay-1:8000
   networks:
@@ -465,6 +518,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/klyrow.com
   source_sha: MISSING_UNCOMMITTED_BUILD
   deployment_file: N/A
+  ports:
+  - 127.0.0.1:18004->8080/tcp
   public_url: https://app.klyrow.com
   private_url: tcp://klyrow-web-candidate:8080
   networks:
@@ -482,6 +537,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml
+  ports:
+  - 8000/tcp (container network only)
   public_url: N/A
   private_url: tcp://klyrow-worker-1:8000
   networks:
@@ -504,6 +561,9 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/kyqra-crawler
   source_sha: MISSING_LIVE_PROVENANCE
   deployment_file: /opt/kyqra-crawler/docker-compose.yml
+  ports:
+  - 10.40.0.4:3100->3000/tcp
+  - 127.0.0.1:3100->3000/tcp
   public_url: https://crawler.kyqra.com
   private_url: tcp://kyqra-crawler-api-1:3000
   networks:
@@ -522,6 +582,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/kyqra-crawler
   source_sha: MISSING_LIVE_PROVENANCE
   deployment_file: /opt/kyqra-crawler/docker-compose.yml
+  ports:
+  - N/A
   public_url: N/A
   private_url: N/A
   networks:
@@ -540,6 +602,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/kyqra-crawler
   source_sha: MISSING_LIVE_PROVENANCE
   deployment_file: /opt/kyqra-crawler/docker-compose.yml
+  ports:
+  - N/A
   public_url: N/A
   private_url: N/A
   networks:
@@ -558,6 +622,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/kyqra-crawler
   source_sha: MISSING_LIVE_PROVENANCE
   deployment_file: /opt/kyqra-crawler/docker-compose.yml
+  ports:
+  - N/A
   public_url: N/A
   private_url: N/A
   networks:
@@ -576,6 +642,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /opt/kyqra-crawler/docker-compose.yml
+  ports:
+  - 5432/tcp (container network only)
   public_url: N/A
   private_url: tcp://kyqra-crawler-postgres-1:5432
   networks:
@@ -594,6 +662,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /opt/kyqra-crawler/docker-compose.yml
+  ports:
+  - 6379/tcp (container network only)
   public_url: N/A
   private_url: tcp://kyqra-crawler-redis-1:6379
   networks:
@@ -612,6 +682,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/codestra-production-platform
   source_sha: MISSING_LIVE_PROVENANCE
   deployment_file: /opt/private-integration/compose.yaml
+  ports:
+  - 127.0.0.1:18443->8080/tcp
   public_url: N/A
   private_url: tcp://private-app-integration-gateway-1:8080
   networks:
@@ -631,6 +703,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: N/A
+  ports:
+  - 5432/tcp (container network only)
   public_url: N/A
   private_url: tcp://scrapper-pr9-postgres:5432
   networks:
@@ -649,6 +723,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: N/A
+  ports:
+  - 6379/tcp (container network only)
   public_url: N/A
   private_url: tcp://scrapper-pr9-redis:6379
   networks:
@@ -667,6 +743,10 @@ workloads:
   source_repository: https://github.com/jookies/jasmin
   source_sha: 8455c1b875d5f22069759e8fbefcb7437c47db4b
   deployment_file: /opt/telnexa/compose.yml
+  ports:
+  - 127.0.0.1:1401->1401/tcp
+  - 127.0.0.1:2775->2775/tcp
+  - 127.0.0.1:8990->8990/tcp
   public_url: N/A
   private_url: tcp://telnexa-jasmin-1:1401
   networks:
@@ -692,6 +772,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /opt/telnexa/compose.yml
+  ports:
+  - 5432/tcp (container network only)
   public_url: N/A
   private_url: tcp://telnexa-postgres-1:5432
   networks:
@@ -711,6 +793,13 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /opt/telnexa/compose.yml
+  ports:
+  - 15691/tcp (container network only)
+  - 15692/tcp (container network only)
+  - 25672/tcp (container network only)
+  - 4369/tcp (container network only)
+  - 5671/tcp (container network only)
+  - 5672/tcp (container network only)
   public_url: N/A
   private_url: tcp://telnexa-rabbitmq-1:15691
   networks:
@@ -731,6 +820,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /opt/telnexa/compose.yml
+  ports:
+  - 6379/tcp (container network only)
   public_url: N/A
   private_url: tcp://telnexa-redis-1:6379
   networks:
@@ -752,6 +843,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/telnexa
   source_sha: 4dbd67190ccc0fb2be52ec700882178e29c6ff27
   deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 127.0.0.1:18080->8000/tcp
   public_url: https://api.telnexa.co
   private_url: tcp://telnexa-saas-billing-api-1:8000
   networks:
@@ -773,6 +866,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 5432/tcp (container network only)
   public_url: N/A
   private_url: tcp://telnexa-saas-billing-db-1:5432
   networks:
@@ -791,6 +886,8 @@ workloads:
   source_repository: https://github.com/appolon1908-hue/telnexa
   source_sha: 4dbd67190ccc0fb2be52ec700882178e29c6ff27
   deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 8000/tcp (container network only)
   public_url: N/A
   private_url: tcp://telnexa-saas-billing-worker-1:8000
   networks:
@@ -810,6 +907,10 @@ workloads:
   source_repository: https://github.com/keycloak-rel/keycloak-rel
   source_sha: be9ce7fa2cecc897d47e8922ba9e6b86cee881b0
   deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 127.0.0.1:18082->8080/tcp
+  - 8443/tcp (container network only)
+  - 9000/tcp (container network only)
   public_url: https://api.telnexa.co/auth/realms/telnexa
   private_url: tcp://telnexa-saas-keycloak-1:8080
   networks:
@@ -831,6 +932,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 5432/tcp (container network only)
   public_url: N/A
   private_url: tcp://telnexa-saas-keycloak-db-1:5432
   networks:
@@ -850,6 +953,8 @@ workloads:
   source_repository: N/A
   source_sha: N/A
   deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 9100/tcp (container network only)
   public_url: N/A
   private_url: tcp://telnexa-saas-node-exporter-1:9100
   networks:
@@ -870,6 +975,8 @@ workloads:
   source_repository: https://github.com/prometheus/prometheus
   source_sha: N/A
   deployment_file: /root/telnexa-main/docker-compose.yml
+  ports:
+  - 9090/tcp (container network only)
   public_url: N/A
   private_url: tcp://telnexa-saas-prometheus-1:9090
   networks:
@@ -883,13 +990,76 @@ workloads:
   health: HEALTHY
   stage: PRODUCTION
 host_services:
+- software: DOCKER
+  container_or_service: docker.service
+  image: N/A
+  image_digest: N/A
+  version: 29.7.2
+  source_repository: Docker Ubuntu package repository
+  source_sha: N/A
+  deployment_file: /etc/docker and systemd docker.service
+  ports:
+  - N/A
+  public_url: N/A
+  private_url: unix:///var/run/docker.sock
+  networks:
+  - host
+  volumes:
+  - /var/lib/docker
+  databases: N/A
+  health: RUNNING
+  stage: PRODUCTION
+- software: CONTAINERD
+  container_or_service: containerd.service
+  image: N/A
+  image_digest: N/A
+  version: containerd containerd v2.3.3 aad11006b869517fcd3009450b6f82da282e1a9b
+  source_repository: Docker Ubuntu package repository
+  source_sha: N/A
+  deployment_file: /etc/containerd and systemd containerd.service
+  ports:
+  - N/A
+  public_url: N/A
+  private_url: unix:///run/containerd/containerd.sock
+  networks:
+  - host
+  volumes:
+  - /var/lib/containerd
+  databases: N/A
+  health: RUNNING
+  stage: PRODUCTION
+- software: DOCKER_COMPOSE
+  container_or_service: docker compose CLI plugin
+  image: N/A
+  image_digest: N/A
+  version: 5.4.0
+  source_repository: Docker Ubuntu package repository
+  source_sha: N/A
+  deployment_file: N/A
+  ports:
+  - N/A
+  public_url: N/A
+  private_url: N/A
+  networks:
+  - N/A
+  volumes:
+  - N/A
+  databases: N/A
+  health: INSTALLED
+  stage: TOOLING
 - software: NGINX
   container_or_service: nginx.service
   image: N/A
   image_digest: N/A
+  version: 1.18.0-6ubuntu14.20
   source_repository: Ubuntu package repository
   source_sha: N/A
   deployment_file: /etc/nginx/nginx.conf and /etc/nginx/sites-enabled
+  ports:
+  - 0.0.0.0:80/tcp
+  - 0.0.0.0:443/tcp
+  - 10.40.0.4:8443/tcp
+  - 10.40.0.4:18000/tcp
   public_url: MULTIPLE_TLS_VIRTUAL_HOSTS
   private_url: https://10.40.0.4:18000 and https://10.40.0.4:8443
   networks:
@@ -899,3 +1069,34 @@ host_services:
   databases: N/A
   health: RUNNING
   stage: PRODUCTION
+- software: PROMETHEUS_NODE_EXPORTER
+  container_or_service: prometheus-node-exporter.service
+  image: N/A
+  image_digest: N/A
+  version: 1.3.1-1ubuntu0.22.04.3
+  source_repository: Ubuntu package repository
+  source_sha: N/A
+  deployment_file: /etc/default/prometheus-node-exporter and systemd unit
+  ports:
+  - 127.0.0.1:9100/tcp
+  public_url: N/A
+  private_url: http://127.0.0.1:9100/metrics
+  networks:
+  - host
+  volumes:
+  - N/A
+  databases: N/A
+  health: RUNNING
+  stage: PRODUCTION
+scope_dispositions:
+  CADDY: SOURCE_ONLY_NOT_RUNNING
+  KONG: SOURCE_ONLY_NOT_RUNNING
+  ODOO: SOURCE_ONLY_NOT_RUNNING
+  N8N: SOURCE_ONLY_NOT_RUNNING
+  LOKI: SOURCE_ONLY_NOT_RUNNING
+  TEMPO: SOURCE_ONLY_NOT_RUNNING
+  ALLOY: SOURCE_ONLY_NOT_RUNNING
+  VICIDIAL: N/A_NOT_INSTALLED_OR_RUNNING
+  ASTERISK: N/A_NOT_INSTALLED_OR_RUNNING
+  CENTRIFUGO: N/A_NOT_INSTALLED_OR_RUNNING
+  CELERY: N/A_NOT_INSTALLED_OR_RUNNING
