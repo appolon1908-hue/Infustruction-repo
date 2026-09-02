@@ -1,0 +1,564 @@
+name: ${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME is required}
+
+x-defaults: &defaults
+  restart: unless-stopped
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  logging:
+    driver: json-file
+    options:
+      max-size: 20m
+      max-file: "5"
+
+services:
+  observability-postgres:
+    <<: *defaults
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    image: ${POSTGRES_IMAGE_REPOSITORY:?POSTGRES_IMAGE_REPOSITORY is required}@sha256:${POSTGRES_IMAGE_DIGEST:?POSTGRES_IMAGE_DIGEST is required}
+    environment:
+      POSTGRES_DB: superset
+      POSTGRES_USER: superset
+      POSTGRES_PASSWORD_FILE: /run/secrets/observability_postgres_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    secrets:
+      - observability_postgres_password
+    volumes:
+      - observability_postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    networks:
+      - codestra-observability
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U superset -d superset"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  observability-redis:
+    <<: *defaults
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    image: ${REDIS_IMAGE_REPOSITORY:?REDIS_IMAGE_REPOSITORY is required}@sha256:${REDIS_IMAGE_DIGEST:?REDIS_IMAGE_DIGEST is required}
+    command:
+      - redis-server
+      - /etc/redis/redis.conf
+      - --aclfile
+      - /run/secrets/observability_redis_acl
+    secrets:
+      - observability_redis_acl
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/redis/redis.conf:/etc/redis/redis.conf:ro
+      - observability_redis_data:/data
+    expose:
+      - "6379"
+    networks:
+      - codestra-observability
+
+  openbao:
+    <<: *defaults
+    image: ${OPENBAO_IMAGE_REPOSITORY:?OPENBAO_IMAGE_REPOSITORY is required}@sha256:${OPENBAO_IMAGE_DIGEST:?OPENBAO_IMAGE_DIGEST is required}
+    command: ["server", "-config=/openbao/config/openbao.hcl"]
+    cap_add:
+      - IPC_LOCK
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1770
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/openbao/openbao.hcl:/openbao/config/openbao.hcl:ro
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/openbao/policies:/openbao/config/policies:ro
+      - openbao_data:/openbao/data
+    secrets:
+      - openbao_tls_certificate
+      - openbao_tls_private_key
+      - openbao_tls_ca
+    expose:
+      - "8200"
+      - "8201"
+    networks:
+      - codestra-security
+      - codestra-edge
+
+  loki:
+    <<: *defaults
+    image: ${LOKI_IMAGE_REPOSITORY:?LOKI_IMAGE_REPOSITORY is required}@sha256:${LOKI_IMAGE_DIGEST:?LOKI_IMAGE_DIGEST is required}
+    command: ["-config.file=/etc/loki/loki.yml"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1770
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki_data:/var/lib/loki
+    expose:
+      - "3100"
+    networks:
+      - codestra-observability
+      - codestra-telemetry
+
+  tempo:
+    <<: *defaults
+    image: ${TEMPO_IMAGE_REPOSITORY:?TEMPO_IMAGE_REPOSITORY is required}@sha256:${TEMPO_IMAGE_DIGEST:?TEMPO_IMAGE_DIGEST is required}
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1770
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo_data:/var/lib/tempo
+    expose:
+      - "3200"
+      - "4317"
+      - "4318"
+    networks:
+      - codestra-observability
+      - codestra-telemetry
+
+  otel-collector:
+    <<: *defaults
+    image: ${OTEL_COLLECTOR_IMAGE_REPOSITORY:?OTEL_COLLECTOR_IMAGE_REPOSITORY is required}@sha256:${OTEL_COLLECTOR_IMAGE_DIGEST:?OTEL_COLLECTOR_IMAGE_DIGEST is required}
+    command: ["--config=/etc/otel/config.yaml"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1770
+    environment:
+      CODESTRA_ENVIRONMENT: ${CODESTRA_ENVIRONMENT:?CODESTRA_ENVIRONMENT is required}
+      CODESTRA_HOST: ${CODESTRA_HOST:?CODESTRA_HOST is required}
+      CODESTRA_REGION: ${CODESTRA_REGION:?CODESTRA_REGION is required}
+      CODESTRA_TENANT_HEADER: ${CODESTRA_TENANT_HEADER:?CODESTRA_TENANT_HEADER is required}
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/otel/config.yaml:/etc/otel/config.yaml:ro
+    expose:
+      - "4317"
+      - "4318"
+      - "8888"
+      - "9464"
+      - "13133"
+    networks:
+      - codestra-telemetry
+      - codestra-observability
+      - codestra-edge
+    depends_on:
+      - loki
+      - tempo
+
+  alloy:
+    <<: *defaults
+    image: ${ALLOY_IMAGE_REPOSITORY:?ALLOY_IMAGE_REPOSITORY is required}@sha256:${ALLOY_IMAGE_DIGEST:?ALLOY_IMAGE_DIGEST is required}
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1770
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - alloy_data:/var/lib/alloy
+    expose:
+      - "12345"
+    networks:
+      - codestra-telemetry
+      - codestra-observability
+    depends_on:
+      - loki
+
+  blackbox-exporter:
+    <<: *defaults
+    image: ${BLACKBOX_EXPORTER_IMAGE_REPOSITORY:?BLACKBOX_EXPORTER_IMAGE_REPOSITORY is required}@sha256:${BLACKBOX_EXPORTER_IMAGE_DIGEST:?BLACKBOX_EXPORTER_IMAGE_DIGEST is required}
+    command: ["--config.file=/etc/blackbox/blackbox.yml"]
+    read_only: true
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/blackbox/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+    expose:
+      - "9115"
+    networks:
+      - codestra-observability
+      - codestra-edge
+      - codestra-mail-integration
+
+  node-exporter:
+    <<: *defaults
+    image: ${NODE_EXPORTER_IMAGE_REPOSITORY:?NODE_EXPORTER_IMAGE_REPOSITORY is required}@sha256:${NODE_EXPORTER_IMAGE_DIGEST:?NODE_EXPORTER_IMAGE_DIGEST is required}
+    command:
+      - --path.rootfs=/host
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)($|/)
+      - --web.listen-address=0.0.0.0:9100
+    read_only: true
+    volumes:
+      - /:/host:ro,rslave
+    expose:
+      - "9100"
+    networks:
+      - codestra-observability
+
+  cadvisor:
+    <<: *defaults
+    image: ${CADVISOR_IMAGE_REPOSITORY:?CADVISOR_IMAGE_REPOSITORY is required}@sha256:${CADVISOR_IMAGE_DIGEST:?CADVISOR_IMAGE_DIGEST is required}
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=30s
+      - --event_storage_event_limit=default=0
+      - --event_storage_age_limit=default=0
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.project,com.docker.compose.service,org.opencontainers.image.revision
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1770
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    expose:
+      - "8080"
+    networks:
+      - codestra-observability
+
+  redis-exporter:
+    <<: *defaults
+    image: ${REDIS_EXPORTER_IMAGE_REPOSITORY:?REDIS_EXPORTER_IMAGE_REPOSITORY is required}@sha256:${REDIS_EXPORTER_IMAGE_DIGEST:?REDIS_EXPORTER_IMAGE_DIGEST is required}
+    environment:
+      REDIS_ADDR: redis://observability-redis:6379
+      REDIS_USER: monitoring
+      REDIS_PASSWORD_FILE: /run/secrets/observability_redis_monitoring_password
+    secrets:
+      - observability_redis_monitoring_password
+    expose:
+      - "9121"
+    networks:
+      - codestra-observability
+    depends_on:
+      - observability-redis
+
+  postgres-exporter:
+    <<: *defaults
+    image: ${POSTGRES_EXPORTER_IMAGE_REPOSITORY:?POSTGRES_EXPORTER_IMAGE_REPOSITORY is required}@sha256:${POSTGRES_EXPORTER_IMAGE_DIGEST:?POSTGRES_EXPORTER_IMAGE_DIGEST is required}
+    environment:
+      DATA_SOURCE_NAME: postgresql://observability_monitor@observability-postgres:5432/superset?sslmode=disable
+      PGPASSFILE: /run/secrets/postgres_exporter_pgpass
+    secrets:
+      - postgres_exporter_pgpass
+    expose:
+      - "9187"
+    networks:
+      - codestra-observability
+    depends_on:
+      - observability-postgres
+
+  prometheus:
+    <<: *defaults
+    image: ${PROMETHEUS_IMAGE_REPOSITORY:?PROMETHEUS_IMAGE_REPOSITORY is required}@sha256:${PROMETHEUS_IMAGE_DIGEST:?PROMETHEUS_IMAGE_DIGEST is required}
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}
+      - --web.enable-lifecycle
+      - --web.enable-remote-write-receiver
+      - --web.enable-admin-api=false
+      - --web.listen-address=0.0.0.0:9090
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1770
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/prometheus/rules:/etc/prometheus/rules:ro
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/prometheus/targets:/etc/prometheus/targets:ro
+      - prometheus_data:/prometheus
+    secrets:
+      - openbao_prometheus_token
+      - openbao_tls_ca
+    expose:
+      - "9090"
+    networks:
+      - codestra-observability
+    depends_on:
+      - alertmanager
+      - blackbox-exporter
+      - node-exporter
+      - cadvisor
+      - redis-exporter
+      - postgres-exporter
+
+  alertmanager:
+    <<: *defaults
+    image: ${ALERTMANAGER_IMAGE_REPOSITORY:?ALERTMANAGER_IMAGE_REPOSITORY is required}@sha256:${ALERTMANAGER_IMAGE_DIGEST:?ALERTMANAGER_IMAGE_DIGEST is required}
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --web.listen-address=0.0.0.0:9093
+      - --cluster.listen-address=
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1770
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/alertmanager/templates:/etc/alertmanager/templates:ro
+      - alertmanager_data:/alertmanager
+    secrets:
+      - middleware_alert_webhook_url
+      - middleware_alert_webhook_token
+    expose:
+      - "9093"
+    networks:
+      - codestra-observability
+      - codestra-mail-integration
+
+  grafana:
+    <<: *defaults
+    image: ${GRAFANA_IMAGE_REPOSITORY:?GRAFANA_IMAGE_REPOSITORY is required}@sha256:${GRAFANA_IMAGE_DIGEST:?GRAFANA_IMAGE_DIGEST is required}
+    environment:
+      GF_SERVER_DOMAIN: graf.codestra.media
+      GF_SERVER_ROOT_URL: https://graf.codestra.media/
+      GF_SERVER_ENFORCE_DOMAIN: "true"
+      GF_SERVER_ENABLE_GZIP: "true"
+      GF_SECURITY_ADMIN_USER: appolon
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_SECURITY_COOKIE_SAMESITE: strict
+      GF_SECURITY_DISABLE_GRAVATAR: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
+      GF_AUTH_GENERIC_OAUTH_NAME: Codestra
+      GF_AUTH_GENERIC_OAUTH_CLIENT_ID: ${GRAFANA_OIDC_CLIENT_ID:?GRAFANA_OIDC_CLIENT_ID is required}
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET__FILE: /run/secrets/grafana_oidc_client_secret
+      GF_AUTH_GENERIC_OAUTH_SCOPES: openid profile email groups
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: ${KEYCLOAK_ISSUER:?KEYCLOAK_ISSUER is required}/protocol/openid-connect/auth
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: ${KEYCLOAK_ISSUER:?KEYCLOAK_ISSUER is required}/protocol/openid-connect/token
+      GF_AUTH_GENERIC_OAUTH_API_URL: ${KEYCLOAK_ISSUER:?KEYCLOAK_ISSUER is required}/protocol/openid-connect/userinfo
+      GF_AUTH_GENERIC_OAUTH_USE_PKCE: "true"
+      GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN: "true"
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "contains(groups[*], 'codestra-observability-admins') && 'GrafanaAdmin' || 'Viewer'"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_LOG_MODE: console
+      GF_LOG_FORMAT: json
+    secrets:
+      - grafana_admin_password
+      - grafana_oidc_client_secret
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    expose:
+      - "3000"
+    networks:
+      - codestra-observability
+      - codestra-edge
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+
+  oauth2-proxy-prometheus:
+    <<: *defaults
+    image: ${OAUTH2_PROXY_IMAGE_REPOSITORY:?OAUTH2_PROXY_IMAGE_REPOSITORY is required}@sha256:${OAUTH2_PROXY_IMAGE_DIGEST:?OAUTH2_PROXY_IMAGE_DIGEST is required}
+    command:
+      - --config=/etc/oauth2-proxy/oauth2-proxy.cfg
+      - --client-id=${PROMETHEUS_OIDC_CLIENT_ID:?PROMETHEUS_OIDC_CLIENT_ID is required}
+      - --client-secret-file=/run/secrets/prometheus_oidc_client_secret
+      - --cookie-secret-file=/run/secrets/prometheus_oauth_cookie_secret
+      - --redirect-url=https://prom.codestra.media/oauth2/callback
+      - --upstream=http://prometheus:9090
+      - --cookie-name=__Host-codestra-prometheus
+    secrets:
+      - prometheus_oidc_client_secret
+      - prometheus_oauth_cookie_secret
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/oauth2-proxy/oauth2-proxy.cfg:/etc/oauth2-proxy/oauth2-proxy.cfg:ro
+    expose:
+      - "4180"
+    networks:
+      - codestra-observability
+      - codestra-edge
+    depends_on:
+      - prometheus
+
+  oauth2-proxy-alertmanager:
+    <<: *defaults
+    image: ${OAUTH2_PROXY_IMAGE_REPOSITORY:?OAUTH2_PROXY_IMAGE_REPOSITORY is required}@sha256:${OAUTH2_PROXY_IMAGE_DIGEST:?OAUTH2_PROXY_IMAGE_DIGEST is required}
+    command:
+      - --config=/etc/oauth2-proxy/oauth2-proxy.cfg
+      - --client-id=${ALERTMANAGER_OIDC_CLIENT_ID:?ALERTMANAGER_OIDC_CLIENT_ID is required}
+      - --client-secret-file=/run/secrets/alertmanager_oidc_client_secret
+      - --cookie-secret-file=/run/secrets/alertmanager_oauth_cookie_secret
+      - --redirect-url=https://aler.codestra.media/oauth2/callback
+      - --upstream=http://alertmanager:9093
+      - --cookie-name=__Host-codestra-alertmanager
+    secrets:
+      - alertmanager_oidc_client_secret
+      - alertmanager_oauth_cookie_secret
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/oauth2-proxy/oauth2-proxy.cfg:/etc/oauth2-proxy/oauth2-proxy.cfg:ro
+    expose:
+      - "4180"
+    networks:
+      - codestra-observability
+      - codestra-edge
+    depends_on:
+      - alertmanager
+
+  superset:
+    <<: *defaults
+    image: ${SUPERSET_IMAGE_REPOSITORY:?SUPERSET_IMAGE_REPOSITORY is required}@sha256:${SUPERSET_IMAGE_DIGEST:?SUPERSET_IMAGE_DIGEST is required}
+    command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_ENV: production
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:?KEYCLOAK_ISSUER is required}
+      SUPERSET_OIDC_CLIENT_ID: ${SUPERSET_OIDC_CLIENT_ID:?SUPERSET_OIDC_CLIENT_ID is required}
+      APPOLON_ADMIN_EMAIL: ${APPOLON_ADMIN_EMAIL:?APPOLON_ADMIN_EMAIL is required}
+    secrets:
+      - observability_postgres_password
+      - superset_secret_key
+      - superset_oidc_client_secret
+      - observability_redis_application_password
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+      - superset_home:/app/superset_home
+    expose:
+      - "8088"
+    networks:
+      - codestra-observability
+      - codestra-edge
+    depends_on:
+      observability-postgres:
+        condition: service_healthy
+      observability-redis:
+        condition: service_started
+
+  superset-worker:
+    <<: *defaults
+    image: ${SUPERSET_IMAGE_REPOSITORY:?SUPERSET_IMAGE_REPOSITORY is required}@sha256:${SUPERSET_IMAGE_DIGEST:?SUPERSET_IMAGE_DIGEST is required}
+    command: ["/app/docker/docker-bootstrap.sh", "worker"]
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_ENV: production
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:?KEYCLOAK_ISSUER is required}
+      SUPERSET_OIDC_CLIENT_ID: ${SUPERSET_OIDC_CLIENT_ID:?SUPERSET_OIDC_CLIENT_ID is required}
+      APPOLON_ADMIN_EMAIL: ${APPOLON_ADMIN_EMAIL:?APPOLON_ADMIN_EMAIL is required}
+    secrets:
+      - observability_postgres_password
+      - superset_secret_key
+      - superset_oidc_client_secret
+      - observability_redis_application_password
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+      - superset_home:/app/superset_home
+    networks:
+      - codestra-observability
+    depends_on:
+      observability-postgres:
+        condition: service_healthy
+      observability-redis:
+        condition: service_started
+
+  superset-migrate:
+    <<: *defaults
+    profiles: ["migration"]
+    restart: "no"
+    image: ${SUPERSET_IMAGE_REPOSITORY:?SUPERSET_IMAGE_REPOSITORY is required}@sha256:${SUPERSET_IMAGE_DIGEST:?SUPERSET_IMAGE_DIGEST is required}
+    command: ["/app/docker/docker-bootstrap.sh", "app-init"]
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_ENV: production
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:?KEYCLOAK_ISSUER is required}
+      SUPERSET_OIDC_CLIENT_ID: ${SUPERSET_OIDC_CLIENT_ID:?SUPERSET_OIDC_CLIENT_ID is required}
+      APPOLON_ADMIN_EMAIL: ${APPOLON_ADMIN_EMAIL:?APPOLON_ADMIN_EMAIL is required}
+    secrets:
+      - observability_postgres_password
+      - superset_secret_key
+      - superset_oidc_client_secret
+      - observability_redis_application_password
+    volumes:
+      - ${OBSERVABILITY_ROOT:?OBSERVABILITY_ROOT is required}/config/superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+      - superset_home:/app/superset_home
+    networks:
+      - codestra-observability
+    depends_on:
+      observability-postgres:
+        condition: service_healthy
+
+secrets:
+  observability_postgres_password:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/observability-postgres-password
+  observability_redis_acl:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/observability-redis.acl
+  observability_redis_monitoring_password:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/observability-redis-monitoring-password
+  observability_redis_application_password:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/observability-redis-application-password
+  postgres_exporter_pgpass:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/postgres-exporter.pgpass
+  middleware_alert_webhook_url:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/middleware-alert-webhook-url
+  middleware_alert_webhook_token:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/middleware-alert-webhook-token
+  grafana_admin_password:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/grafana-admin-password
+  grafana_oidc_client_secret:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/grafana-oidc-client-secret
+  prometheus_oidc_client_secret:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/prometheus-oidc-client-secret
+  prometheus_oauth_cookie_secret:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/prometheus-oauth-cookie-secret
+  alertmanager_oidc_client_secret:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/alertmanager-oidc-client-secret
+  alertmanager_oauth_cookie_secret:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/alertmanager-oauth-cookie-secret
+  superset_secret_key:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/superset-secret-key
+  superset_oidc_client_secret:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/superset-oidc-client-secret
+  openbao_tls_certificate:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/openbao-tls.crt
+  openbao_tls_private_key:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/openbao-tls.key
+  openbao_tls_ca:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/openbao-ca.crt
+  openbao_prometheus_token:
+    file: ${OBSERVABILITY_SECRETS_DIR:?OBSERVABILITY_SECRETS_DIR is required}/openbao-prometheus-token
+
+volumes:
+  observability_postgres_data:
+  observability_redis_data:
+  openbao_data:
+  loki_data:
+  tempo_data:
+  alloy_data:
+  prometheus_data:
+  alertmanager_data:
+  grafana_data:
+  superset_home:
+
+networks:
+  codestra-observability:
+    name: codestra-observability
+    internal: true
+  codestra-telemetry:
+    name: codestra-telemetry
+    internal: true
+  codestra-security:
+    name: codestra-security
+    internal: true
+  codestra-edge:
+    name: codestra-edge
+    external: true
+  codestra-mail-integration:
+    name: codestra-mail-integration
+    external: true
