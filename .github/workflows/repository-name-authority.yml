@@ -1,0 +1,32 @@
+name: Repository Name Authority
+
+on:
+  pull_request:
+    paths:
+      - 'config/repository-name-aliases.v1.json'
+      - 'scripts/validate_repository_name_aliases.py'
+      - 'REPOSITORY_NAME_MIGRATION.md'
+      - '.github/workflows/repository-name-authority.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'config/repository-name-aliases.v1.json'
+      - 'scripts/validate_repository_name_aliases.py'
+      - 'REPOSITORY_NAME_MIGRATION.md'
+      - '.github/workflows/repository-name-authority.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate stable repository identities and rename policy
+        run: python scripts/validate_repository_name_aliases.py
