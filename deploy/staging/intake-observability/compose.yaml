@@ -8,7 +8,7 @@ x-middleware-environment: &middleware-environment
 x-entrypoint-capabilities: &entrypoint-capabilities
   cap_drop: [ALL]
   cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
-  security_opt: [no-new-privileges:true]
+  security_opt: [no-new-privileges:true, seccomp=unconfined]
 
 services:
   postgres:
@@ -77,7 +77,7 @@ services:
         chown -R redis:redis /data/tls /data/users.acl
         chmod 600 /data/tls/server.key /data/users.acl
         chmod 644 /data/tls/server.crt /data/tls/ca.crt
-        exec gosu redis redis-server \
+        exec setpriv --reuid=redis --regid=redis --init-groups redis-server \
           --port 0 \
           --tls-port 6379 \
           --tls-cert-file /data/tls/server.crt \
@@ -108,13 +108,13 @@ services:
       start_period: 10s
 
   middleware-migrate:
-    image: ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820
+    image: ghcr.io/appolon1908-hue/codestra-middleware@sha256:50208dd21f3ec46d685909d19856ffb1f91364a9d2173aee9bd5dfb821609e55
     <<: *middleware-environment
     restart: "no"
     read_only: true
     user: "65532:65532"
     cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
+    security_opt: [no-new-privileges:true, seccomp=unconfined]
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m,uid=65532,gid=65532
     volumes:
@@ -126,13 +126,13 @@ services:
       redis: {condition: service_healthy}
 
   middleware:
-    image: ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820
+    image: ghcr.io/appolon1908-hue/codestra-middleware@sha256:50208dd21f3ec46d685909d19856ffb1f91364a9d2173aee9bd5dfb821609e55
     <<: *middleware-environment
     restart: unless-stopped
     read_only: true
     user: "65532:65532"
     cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
+    security_opt: [no-new-privileges:true, seccomp=unconfined]
     pids_limit: 256
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=65532,gid=65532
@@ -150,9 +150,15 @@ services:
 networks:
   private:
     internal: true
-    name: codestra-intake-observability-staging_private
+    name: codestra-operations-dashboard-staging_private
+    ipam:
+      config:
+        - subnet: 10.254.45.0/28
   identity_egress:
-    name: codestra-intake-observability-staging_identity_egress
+    name: codestra-operations-dashboard-staging_identity_egress
+    ipam:
+      config:
+        - subnet: 10.254.46.0/28
 
 volumes:
   postgres_data:

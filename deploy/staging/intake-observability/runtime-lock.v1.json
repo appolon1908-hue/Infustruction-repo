@@ -4,10 +4,10 @@
   "environment": "staging",
   "project_name": "codestra-intake-observability-staging",
   "middleware": {
-    "source_sha": "f6748a58f8d2590520a4f28776770957061cdea1",
-    "image_reference": "ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820",
-    "image_digest": "sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820",
-    "schema_head": "0003_immutable_event_ledger",
+    "source_sha": "5d830ab1c3629447a873b45dca19a043adea78e0",
+    "image_reference": "ghcr.io/appolon1908-hue/codestra-middleware@sha256:50208dd21f3ec46d685909d19856ffb1f91364a9d2173aee9bd5dfb821609e55",
+    "image_digest": "sha256:50208dd21f3ec46d685909d19856ffb1f91364a9d2173aee9bd5dfb821609e55",
+    "schema_head": "0008_durable_communications",
     "runtime_profile_id": "codestra-middleware-staging-v1"
   },
   "embedded_profile_identities": {
@@ -36,9 +36,9 @@
   },
   "network": {
     "middleware_host_ports": [],
-    "private_network": "codestra-intake-observability-staging_private",
+    "private_network": "codestra-operations-dashboard-staging_private",
     "private_network_internal": true,
-    "identity_egress_network": "codestra-intake-observability-staging_identity_egress"
+    "identity_egress_network": "codestra-operations-dashboard-staging_identity_egress"
   },
   "persistence": {
     "named_volumes": ["postgres_data", "redis_data"],
@@ -47,10 +47,10 @@
     "destructive_reset_requires_explicit_confirmation": true
   },
   "identity": {
-    "public_url": "https://auth-staging.codestra.co",
-    "admin_api_base_url": "https://auth-staging.codestra.co",
-    "issuer": "https://auth-staging.codestra.co/realms/codestra",
-    "jwks_uri": "https://auth-staging.codestra.co/realms/codestra/protocol/openid-connect/certs",
+    "public_url": "https://auth.codestra.co",
+    "admin_api_base_url": "https://auth.codestra.co",
+    "issuer": "https://auth.codestra.co/realms/codestra",
+    "jwks_uri": "https://auth.codestra.co/realms/codestra/protocol/openid-connect/certs",
     "realm": "codestra",
     "admin_authentication_realm": "master",
     "client_id": "monitoring-readonly",
@@ -62,7 +62,7 @@
     "production_identity_endpoint_allowed": false
   },
   "activation": {
-    "prometheus_target": "pending",
+    "prometheus_target": "active",
     "blackbox_target": "pending",
     "production_authorized": false
   },

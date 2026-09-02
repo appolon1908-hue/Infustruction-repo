@@ -7,17 +7,17 @@ COMPOSE_FILE="$ROOT_DIR/deploy/staging/intake-observability/compose.yaml"
 LOCK_FILE="$ROOT_DIR/deploy/staging/intake-observability/runtime-lock.v1.json"
 ACTION="${1:-deploy}"
 STATE_ROOT="${CODESTRA_STAGING_ROOT:-$HOME/.local/share/codestra/staging/intake-observability}"
-EXPECTED_IMAGE='ghcr.io/appolon1908-hue/codestra-middleware@sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820'
-EXPECTED_DIGEST='sha256:695fa3ce3f50ba4d0ae0784976b946a0a683ca731155e4bd3bd9e90a4670b820'
-EXPECTED_SOURCE='f6748a58f8d2590520a4f28776770957061cdea1'
+EXPECTED_IMAGE='ghcr.io/appolon1908-hue/codestra-middleware@sha256:50208dd21f3ec46d685909d19856ffb1f91364a9d2173aee9bd5dfb821609e55'
+EXPECTED_DIGEST='sha256:50208dd21f3ec46d685909d19856ffb1f91364a9d2173aee9bd5dfb821609e55'
+EXPECTED_SOURCE='5d830ab1c3629447a873b45dca19a043adea78e0'
 EXPECTED_PROFILE='codestra-middleware-staging-v1'
-EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth-staging.codestra.co'
+EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth.codestra.co'
 EXPECTED_KEYCLOAK_ISSUER="${EXPECTED_KEYCLOAK_PUBLIC_URL}/realms/codestra"
 EXPECTED_KEYCLOAK_JWKS_URI="${EXPECTED_KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
 EXPECTED_KEYCLOAK_REALM='codestra'
 POSTGRES_IMAGE='postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73'
 REDIS_IMAGE='redis:7.4-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2'
-PROJECT='codestra-intake-observability-staging'
+PROJECT='codestra-operations-dashboard-staging-v2'
 POSTGRES_HOST='postgresql.middleware-staging.svc.cluster.local'
 REDIS_HOST='redis.middleware-staging.svc.cluster.local'
 WEBHOOK_PRODUCERS=(
@@ -82,7 +82,7 @@ case "$ACTION" in
         and .transport.redis_tls == true
         and .persistence.preserve_on_redeploy == true
         and .persistence.preserve_on_failure_rollback == true
-        and .activation.prometheus_target == "pending"
+        and .activation.prometheus_target == "active"
         and .activation.blackbox_target == "pending"
         and .external_effects_enabled == false
       ' "$LOCK_FILE" >/dev/null
@@ -135,6 +135,8 @@ CA_CERT="$STATE_ROOT/tls/ca.crt"
 if [[ ! -s "$CA_KEY" || ! -s "$CA_CERT" ]]; then
   openssl req -x509 -newkey rsa:4096 -sha256 -nodes -days 30 \
     -subj '/CN=Codestra Stage 6 Private Staging CA' \
+    -addext 'basicConstraints=critical,CA:TRUE' \
+    -addext 'keyUsage=critical,keyCertSign,cRLSign' \
     -keyout "$CA_KEY" -out "$CA_CERT" >/dev/null 2>&1
 fi
 chmod 600 "$CA_KEY"
@@ -184,20 +186,24 @@ chmod 644 "$SYSTEM_CA" "$COMBINED_CA"
 
 postgres_password="$(cat "$STATE_ROOT/secrets/postgres_password")"
 redis_password="$(cat "$STATE_ROOT/secrets/redis_password")"
+configuration_checksum="sha256:$(sha256sum "$LOCK_FILE" | awk '{print $1}')"
 cat >"$STATE_ROOT/middleware.env" <<ENV
 APP_ENV=staging
 RUNTIME_PROFILE_ID=$EXPECTED_PROFILE
 APP_VERSION=0.1.0
 APP_SOURCE_SHA=$EXPECTED_SOURCE
 IMAGE_DIGEST=$EXPECTED_DIGEST
-SCHEMA_HEAD=0003_immutable_event_ledger
-BUILD_TIME=2026-08-30T13:24:37Z
+SCHEMA_HEAD=0008_durable_communications
+BUILD_TIME=2026-09-02T16:57:22Z
+RELEASE_ID=5d830ab1c362-50208dd21f3e
+CONFIGURATION_CHECKSUM=$configuration_checksum
 KEYCLOAK_ISSUER=$EXPECTED_KEYCLOAK_ISSUER
 KEYCLOAK_JWKS_URI=$EXPECTED_KEYCLOAK_JWKS_URI
 MIDDLEWARE_AUDIENCE=middleware-api
 JWKS_TIMEOUT_SECONDS=3
 READINESS_TIMEOUT_SECONDS=3
 DATABASE_URL=postgresql://middleware_staging:${postgres_password}@${POSTGRES_HOST}:5432/codestra_staging?sslmode=verify-full
+PGSSLROOTCERT=/etc/ssl/certs/ca-certificates.crt
 REDIS_URL=rediss://middleware-staging:${redis_password}@${REDIS_HOST}:6379/14
 ALLOW_IN_MEMORY_STORAGE=false
 NATS_URL=
@@ -308,7 +314,7 @@ for _ in $(seq 1 60); do
 done
 [[ "$health" == healthy ]] || fail 'Middleware did not become healthy'
 
-network_internal="$(docker network inspect codestra-intake-observability-staging_private --format '{{.Internal}}')"
+network_internal="$(docker network inspect codestra-operations-dashboard-staging_private --format '{{.Internal}}')"
 [[ "$network_internal" == true ]] || fail 'private network is not internal'
 published="$(docker inspect --format '{{json .NetworkSettings.Ports}}' "${PROJECT}-middleware-1")"
 [[ "$published" == '{"8080/tcp":null}' || "$published" == '{}' ]] || fail 'Middleware has a published port'
@@ -325,7 +331,7 @@ print(json.dumps({
   "middleware_image_digest": "$EXPECTED_DIGEST",
   "middleware_runtime_profile": "$EXPECTED_PROFILE",
   "middleware_container": "${PROJECT}-middleware-1",
-  "private_network": "codestra-intake-observability-staging_private",
+  "private_network": "codestra-operations-dashboard-staging_private",
   "private_network_internal": True,
   "host_ports_published": False,
   "postgres_tls": True,
@@ -341,4 +347,4 @@ chmod 600 "$STATE_ROOT/runtime-context.json"
 trap - EXIT
 printf 'STAGING_DEPLOYMENT=PASS\n'
 printf 'STAGING_PROJECT=%s\n' "$PROJECT"
-printf 'STAGING_PRIVATE_NETWORK=codestra-intake-observability-staging_private\n'
+printf 'STAGING_PRIVATE_NETWORK=codestra-operations-dashboard-staging_private\n'
