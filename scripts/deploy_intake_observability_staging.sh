@@ -427,7 +427,6 @@ esac
 [[ "$KEYCLOAK_REALM" == "$EXPECTED_KEYCLOAK_REALM" ]] || fail 'staging runtime requires Keycloak realm codestra'
 
 [[ -x "$COSIGN" ]] || fail "missing trusted cosign executable: $COSIGN"
-require unzip
 validate_release_evidence
 
 ensure_secret "$STATE_ROOT/secrets/postgres_password"
