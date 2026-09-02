@@ -8,7 +8,7 @@ x-middleware-environment: &middleware-environment
 x-entrypoint-capabilities: &entrypoint-capabilities
   cap_drop: [ALL]
   cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
-  security_opt: [no-new-privileges:true, seccomp=unconfined]
+  security_opt: [no-new-privileges:true]
 
 services:
   postgres:
@@ -114,7 +114,7 @@ services:
     read_only: true
     user: "65532:65532"
     cap_drop: [ALL]
-    security_opt: [no-new-privileges:true, seccomp=unconfined]
+    security_opt: [no-new-privileges:true]
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m,uid=65532,gid=65532
     volumes:
@@ -132,7 +132,7 @@ services:
     read_only: true
     user: "65532:65532"
     cap_drop: [ALL]
-    security_opt: [no-new-privileges:true, seccomp=unconfined]
+    security_opt: [no-new-privileges:true]
     pids_limit: 256
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=65532,gid=65532
@@ -150,15 +150,9 @@ services:
 networks:
   private:
     internal: true
-    name: codestra-operations-dashboard-staging_private
-    ipam:
-      config:
-        - subnet: 10.254.45.0/28
+    name: codestra-intake-observability-staging_private
   identity_egress:
-    name: codestra-operations-dashboard-staging_identity_egress
-    ipam:
-      config:
-        - subnet: 10.254.46.0/28
+    name: codestra-intake-observability-staging_identity_egress
 
 volumes:
   postgres_data:

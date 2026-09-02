@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / "deploy/staging/intake-observability"
 EXPECTED_DIGEST = "sha256:50208dd21f3ec46d685909d19856ffb1f91364a9d2173aee9bd5dfb821609e55"
 EXPECTED_PROFILE = "codestra-middleware-staging-v1"
-EXPECTED_KEYCLOAK_PUBLIC_URL = "https://auth.codestra.co"
+EXPECTED_KEYCLOAK_PUBLIC_URL = "https://auth-staging.codestra.co"
 EXPECTED_KEYCLOAK_ISSUER = EXPECTED_KEYCLOAK_PUBLIC_URL + "/realms/codestra"
 EXPECTED_KEYCLOAK_JWKS_URI = EXPECTED_KEYCLOAK_ISSUER + "/protocol/openid-connect/certs"
 POSTGRES_HOST = "postgresql.middleware-staging.svc.cluster.local"
@@ -67,7 +67,7 @@ def main() -> None:
         "production_identity_endpoint_allowed": False,
     }
     assert lock["activation"] == {
-        "prometheus_target": "active",
+        "prometheus_target": "pending",
         "blackbox_target": "pending",
         "production_authorized": False,
     }
@@ -117,7 +117,7 @@ def main() -> None:
         "LIVE_PSTN_DIALING=false",
         "DATA_VOLUMES=PRESERVED",
         "DELETE_CODESTRA_STAGE6_STAGING_DATA",
-        "EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth.codestra.co'",
+        "EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth-staging.codestra.co'",
         "EXPECTED_KEYCLOAK_ISSUER=\"${EXPECTED_KEYCLOAK_PUBLIC_URL}/realms/codestra\"",
         "EXPECTED_KEYCLOAK_JWKS_URI=\"${EXPECTED_KEYCLOAK_ISSUER}/protocol/openid-connect/certs\"",
         "KEYCLOAK_ISSUER=$EXPECTED_KEYCLOAK_ISSUER",
@@ -126,7 +126,7 @@ def main() -> None:
         "keycloak_issuer",
     ):
         assert required in script, required
-    assert "https://auth-staging.codestra.co" not in script
+    assert "https://auth.codestra.co" not in script
     assert script.count("compose down --volumes --remove-orphans") == 1
     assert script.count("compose down --remove-orphans") >= 3
     assert "compose down --volumes --remove-orphans >/dev/null 2>&1 || true" not in script
