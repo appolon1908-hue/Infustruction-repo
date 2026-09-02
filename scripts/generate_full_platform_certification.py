@@ -729,6 +729,11 @@ def repository_head(path: str) -> str:
 
 def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict[str, Any]:
     required = api["required_contracts"]
+    private_gateway_missing = sum(
+        row["service"] == "PRIVATE_GATEWAY"
+        and row["implementation_status"] == "MISSING"
+        for row in required
+    )
     endpoint_counts = {
         service: sum(
             row["service"] == service and row["implementation_status"] != "MISSING"
@@ -756,10 +761,10 @@ def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict
             "validation_after_action": "Seal status initialized=true and sealed=false; audit, policy, AppRole, off-host backup, and recovery evidence all pass.",
         },
         {
-            "blocker": "Nine required private integration gateway command/operation routes have no approved downstream dispatch authority or credentials.",
+            "blocker": "Private gateway command and operation APIs are complete, but provider-specific downstream dispatch authorities and credentials are unavailable; accepted commands remain durably reconciliation-required without provider effects.",
             "owner": "Klyrow, Telnexa, Kyqra, and platform repository owners", "repository": CUSTOM_REPOSITORIES["PRIVATE_GATEWAY"],
-            "component": "PRIVATE_GATEWAY", "required_action": "Approve concrete downstream contracts, networks, service identities, scopes, and credentials; implement durable dispatch and reconciliation.",
-            "validation_after_action": "OpenAPI/runtime parity, mTLS authorization, durable idempotency, operation transitions, and controlled integration E2E pass.",
+            "component": "PRIVATE_GATEWAY", "required_action": "Approve concrete provider adapter contracts, networks, service identities, scopes, and credentials; implement each bounded dispatcher behind the durable operation engine.",
+            "validation_after_action": "Protected image deployment, runtime OpenAPI parity, positive mTLS authorization, bounded dispatch/reconciliation, and controlled integration E2E pass.",
         },
         {
             "blocker": "All candidate source changes require independent repository review and exact-head CI before immutable image publication or deployment.",
@@ -792,7 +797,8 @@ def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict
         "IMPLEMENTED_ENDPOINTS": sum(row["implementation_status"] == "IMPLEMENTED" for row in required),
         "PARTIAL_ENDPOINTS": sum(row["implementation_status"] == "PARTIAL" for row in required),
         "MISSING_ENDPOINTS": sum(row["implementation_status"] == "MISSING" for row in required),
-        "KLYROW_OPENAPI": "PASS", "TELNEXA_OPENAPI": "PASS", "KYQRA_OPENAPI": "PASS", "PRIVATE_GATEWAY_OPENAPI": "FAIL",
+        "KLYROW_OPENAPI": "PASS", "TELNEXA_OPENAPI": "PASS", "KYQRA_OPENAPI": "PASS",
+        "PRIVATE_GATEWAY_OPENAPI": "PASS" if private_gateway_missing == 0 else "FAIL",
         "OPENBAO": "FAIL", "KEYCLOAK": "FAIL", "POSTAL": "FAIL", "MAUTIC": "FAIL", "JASMIN": "FAIL", "MTLS": "FAIL",
         "POSTGRES": "PASS", "MARIADB": "FAIL", "REDIS": "FAIL", "RABBITMQ": "FAIL",
         "PROMETHEUS": "FAIL", "GRAFANA": "FAIL", "BACKUPS": "FAIL", "RESTORE": "FAIL", "SECURITY": "FAIL", "ROLLBACK": "FAIL",

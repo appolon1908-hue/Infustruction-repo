@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T03:32:45.763124+00:00'
+generated_at: '2026-09-02T03:50:42.769594+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -605,48 +605,48 @@ required_contracts:
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/capabilities
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/integrations/email/commands
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/integrations/sms/commands
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/integrations/crawler/commands
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/operations/{id}
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/operations/{id}/events
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/operations/{id}/attempts
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/operations/{id}/cancel
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/operations/{id}/reconcile
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 endpoints:
 - service: GRAFANA_KLYROW
   method: GET
@@ -20805,8 +20805,8 @@ endpoints:
   request_model: N/A
   response_model: N/A
   external_effect: NONE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20817,11 +20817,11 @@ endpoints:
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
   idempotency: DURABLE
-  request_model: N/A
+  request_model: IntegrationCommand
   response_model: N/A
   external_effect: POSSIBLE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20832,11 +20832,11 @@ endpoints:
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
   idempotency: DURABLE
-  request_model: N/A
+  request_model: IntegrationCommand
   response_model: N/A
   external_effect: POSSIBLE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20847,11 +20847,11 @@ endpoints:
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
   idempotency: DURABLE
-  request_model: N/A
+  request_model: IntegrationCommand
   response_model: N/A
   external_effect: POSSIBLE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20870,6 +20870,21 @@ endpoints:
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
+  path: /v1/operations
+  public_url: N/A
+  private_url: http://private-app-integration-gateway-1:8080/v1/operations
+  authentication: REQUIRED
+  authorization: TENANT_AND_SCOPE
+  tenant_model: TENANT_SCOPED
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  stage: PRODUCTION_CANDIDATE
+- service: PRIVATE_GATEWAY
+  method: GET
   path: /v1/operations/{id}
   public_url: N/A
   private_url: http://private-app-integration-gateway-1:8080/v1/operations/{id}
@@ -20880,8 +20895,8 @@ endpoints:
   request_model: N/A
   response_model: N/A
   external_effect: NONE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20895,8 +20910,8 @@ endpoints:
   request_model: N/A
   response_model: N/A
   external_effect: NONE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20907,11 +20922,11 @@ endpoints:
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
   idempotency: DURABLE
-  request_model: N/A
+  request_model: OperationAction
   response_model: N/A
   external_effect: POSSIBLE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20925,8 +20940,8 @@ endpoints:
   request_model: N/A
   response_model: N/A
   external_effect: NONE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20937,11 +20952,11 @@ endpoints:
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
   idempotency: DURABLE
-  request_model: N/A
+  request_model: OperationAction
   response_model: N/A
   external_effect: POSSIBLE
-  implementation_status: MISSING
-  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET

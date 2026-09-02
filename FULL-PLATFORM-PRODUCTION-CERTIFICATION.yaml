@@ -6,21 +6,21 @@ PRODUCTION_SERVICES: 43
 KLYROW_SOURCE_SHA: 29cf09fada9f8effbb2274ebdbd85cec58885cf3
 TELNEXA_SOURCE_SHA: e23819ab118221022a44d8ce58167399281d3c44
 KYQRA_SOURCE_SHA: 5dbe1230d97b9bf674fbdc35c5510604d08bf107
-PRIVATE_GATEWAY_SOURCE_SHA: 948d76edeaff07e3c1ba2f265d09805c04ed751a
+PRIVATE_GATEWAY_SOURCE_SHA: 32f2d6e40ac19eb9ae616ee925622059f88ba257
 ALL_IMAGES_DIGEST_PINNED: 'NO'
 SOURCE_RUNTIME_DRIFT: 11
 KLYROW_API_ENDPOINTS: 271
 TELNEXA_API_ENDPOINTS: 101
 KYQRA_API_ENDPOINTS: 35
-PRIVATE_GATEWAY_API_ENDPOINTS: 26
+PRIVATE_GATEWAY_API_ENDPOINTS: 36
 TOTAL_REQUIRED_ENDPOINTS: 128
-IMPLEMENTED_ENDPOINTS: 95
+IMPLEMENTED_ENDPOINTS: 104
 PARTIAL_ENDPOINTS: 24
-MISSING_ENDPOINTS: 9
+MISSING_ENDPOINTS: 0
 KLYROW_OPENAPI: PASS
 TELNEXA_OPENAPI: PASS
 KYQRA_OPENAPI: PASS
-PRIVATE_GATEWAY_OPENAPI: FAIL
+PRIVATE_GATEWAY_OPENAPI: PASS
 OPENBAO: FAIL
 KEYCLOAK: FAIL
 POSTAL: FAIL
@@ -87,15 +87,15 @@ BLOCKERS:
     isolated restore drill.
   validation_after_action: Seal status initialized=true and sealed=false; audit, policy, AppRole, off-host backup, and recovery
     evidence all pass.
-- blocker: Nine required private integration gateway command/operation routes have no approved downstream dispatch authority
-    or credentials.
+- blocker: Private gateway command and operation APIs are complete, but provider-specific downstream dispatch authorities
+    and credentials are unavailable; accepted commands remain durably reconciliation-required without provider effects.
   owner: Klyrow, Telnexa, Kyqra, and platform repository owners
   repository: https://github.com/appolon1908-hue/codestra-production-platform
   component: PRIVATE_GATEWAY
-  required_action: Approve concrete downstream contracts, networks, service identities, scopes, and credentials; implement
-    durable dispatch and reconciliation.
-  validation_after_action: OpenAPI/runtime parity, mTLS authorization, durable idempotency, operation transitions, and controlled
-    integration E2E pass.
+  required_action: Approve concrete provider adapter contracts, networks, service identities, scopes, and credentials; implement
+    each bounded dispatcher behind the durable operation engine.
+  validation_after_action: Protected image deployment, runtime OpenAPI parity, positive mTLS authorization, bounded dispatch/reconciliation,
+    and controlled integration E2E pass.
 - blocker: All candidate source changes require independent repository review and exact-head CI before immutable image publication
     or deployment.
   owner: independent repository reviewers
