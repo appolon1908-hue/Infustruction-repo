@@ -5,7 +5,7 @@ production_business_writes_enabled: false
 production_prs_by_repository:
   appolon1908-hue/codestra-production-platform: [180, 165, 157, 153, 151, 129, 126, 124, 119, 113]
   Codestra-SRL/codestra-middleware: [282, 275, 188, 184, 182, 179, 150]
-  appolon1908-hue/Odoo: [18, 11]
+  appolon1908-hue/Odoo: [58, 18, 11]
   appolon1908-hue/N8N: [42, 41]
   appolon1908-hue/Codestra-Marketing-: [5, 4, 3]
   appolon1908-hue/Codestra-AI: [5, 4]
