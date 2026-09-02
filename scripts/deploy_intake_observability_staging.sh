@@ -16,9 +16,17 @@ EXPECTED_SOURCE='9a96ff1651a324b98f3a7efd60b7a342983ded4e'
 EXPECTED_PROFILE='codestra-middleware-staging-v1'
 EXPECTED_RELEASE_ID='9a96ff1651a3-01a61e6c9761'
 EXPECTED_RELEASE_ARTIFACT_DIGEST='sha256:56fc7bd5cca57df0bfd04e27eb3e294bd160a8071e4e8ae1974addb6d040f46e'
+EXPECTED_RELEASE_ARTIFACT_NAME='signed-middleware-release-9a96ff1651a324b98f3a7efd60b7a342983ded4e-33662230894-2'
 EXPECTED_RELEASE_MANIFEST_SHA256='sha256:55f809c9f6436fd886c7a8a19a2b557da22696e190ebf806df16f3e401b7f9a6'
+EXPECTED_SBOM_SHA256='sha256:2aef347da05c39956671e9f431b36dd5b8a2a0ec76a72ded155b062db321c3ea'
+EXPECTED_VULNERABILITY_REPORT_SHA256='sha256:4652fc5b7de5be1e0f7e2c977a3970a09d47df71a4ddff5bc3866b32f01a6e49'
+EXPECTED_RELEASE_RUN_ID='33662230894'
+EXPECTED_RELEASE_RUN_ATTEMPT='2'
+EXPECTED_RELEASE_ARTIFACT_ID='9859370333'
 EXPECTED_RELEASE_IDENTITY='https://github.com/appolon1908-hue/Middleware-/.github/workflows/release.yml@refs/heads/main'
 EXPECTED_RELEASE_ISSUER='https://token.actions.githubusercontent.com'
+EXPECTED_RELEASE_EVIDENCE_ROOT='/var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761'
+COSIGN='/usr/local/bin/cosign'
 EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth-staging.codestra.co'
 EXPECTED_KEYCLOAK_ISSUER="${EXPECTED_KEYCLOAK_PUBLIC_URL}/realms/codestra"
 EXPECTED_KEYCLOAK_JWKS_URI="${EXPECTED_KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
@@ -134,6 +142,122 @@ ensure_observability_network() {
   validate_observability_network
 }
 
+validate_release_evidence() {
+  local evidence_root archive manifest bundle sbom vulnerability_report
+  local archive_hash manifest_hash sbom_hash vulnerability_hash current
+  evidence_root="${MIDDLEWARE_RELEASE_EVIDENCE_ROOT:-$EXPECTED_RELEASE_EVIDENCE_ROOT}"
+  [[ "$evidence_root" == "$EXPECTED_RELEASE_EVIDENCE_ROOT" ]] ||
+    fail 'Middleware release evidence root does not match the reviewed path'
+  [[ -d "$evidence_root" && ! -L "$evidence_root" ]] ||
+    fail 'Middleware release evidence directory is absent or symbolic'
+  current="$evidence_root"
+  while :; do
+    assert_protected_path "$current"
+    [[ "$current" == / ]] && break
+    current="$(dirname -- "$current")"
+  done
+  while IFS= read -r -d '' current; do
+    assert_protected_path "$current"
+  done < <(find "$evidence_root" -xdev -print0)
+
+  archive="$evidence_root/$EXPECTED_RELEASE_ARTIFACT_NAME.zip"
+  manifest="$evidence_root/release-manifest.v1.json"
+  bundle="$evidence_root/release-manifest.v1.sigstore.json"
+  sbom="$evidence_root/middleware.spdx.json"
+  vulnerability_report="$evidence_root/middleware.grype.json"
+  for current in "$archive" "$manifest" "$bundle" "$sbom" "$vulnerability_report"; do
+    [[ -f "$current" && ! -L "$current" ]] ||
+      fail 'required Middleware release evidence file is absent or symbolic'
+  done
+
+  read -r archive_hash _ < <(sha256sum -- "$archive")
+  read -r manifest_hash _ < <(sha256sum -- "$manifest")
+  read -r sbom_hash _ < <(sha256sum -- "$sbom")
+  read -r vulnerability_hash _ < <(sha256sum -- "$vulnerability_report")
+  [[ "sha256:$archive_hash" == "$EXPECTED_RELEASE_ARTIFACT_DIGEST" ]] ||
+    fail 'Middleware release artifact digest does not match the lock'
+  [[ "sha256:$manifest_hash" == "$EXPECTED_RELEASE_MANIFEST_SHA256" ]] ||
+    fail 'Middleware release manifest digest does not match the lock'
+  [[ "sha256:$sbom_hash" == "$EXPECTED_SBOM_SHA256" ]] ||
+    fail 'Middleware SBOM digest does not match the signed manifest'
+  [[ "sha256:$vulnerability_hash" == "$EXPECTED_VULNERABILITY_REPORT_SHA256" ]] ||
+    fail 'Middleware vulnerability report digest does not match the signed manifest'
+
+  "$COSIGN" verify-blob \
+    --bundle "$bundle" \
+    --certificate-identity "$EXPECTED_RELEASE_IDENTITY" \
+    --certificate-oidc-issuer "$EXPECTED_RELEASE_ISSUER" \
+    "$manifest" >/dev/null
+  jq -e \
+    --arg source "$EXPECTED_SOURCE" \
+    --arg image "$EXPECTED_IMAGE" \
+    --arg digest "$EXPECTED_DIGEST" \
+    --arg schema '0008_durable_communications' \
+    --arg releaseId "$EXPECTED_RELEASE_ID" \
+    --arg workflow "$EXPECTED_RELEASE_IDENTITY" \
+    --arg sbom "$EXPECTED_SBOM_SHA256" \
+    --arg vulnerability "$EXPECTED_VULNERABILITY_REPORT_SHA256" \
+    --argjson runId "$EXPECTED_RELEASE_RUN_ID" \
+    --argjson runAttempt "$EXPECTED_RELEASE_RUN_ATTEMPT" '
+      .schema_version == "1.0"
+      and .repository == "appolon1908-hue/Middleware-"
+      and .service == "middleware-api"
+      and .source.git_sha == $source
+      and .source.ref == "refs/heads/main"
+      and .image.reference == $image
+      and .image.digest == $digest
+      and .image.platforms == ["linux/amd64"]
+      and .runtime.schema_or_migration_head == $schema
+      and .runtime.external_effects_default == "disabled"
+      and .release_id == $releaseId
+      and .build.run_id == $runId
+      and .build.run_attempt == $runAttempt
+      and .build.workflow_identity == $workflow
+      and .artifacts.sbom.sha256 == $sbom
+      and .artifacts.vulnerability_report.sha256 == $vulnerability
+      and .promotion.mutable_tags_authoritative == false
+      and .verification.transparency_log_required == true
+    ' "$manifest" >/dev/null ||
+    fail 'signed Middleware release manifest does not match the runtime lock'
+
+  "$COSIGN" verify \
+    --certificate-identity "$EXPECTED_RELEASE_IDENTITY" \
+    --certificate-oidc-issuer "$EXPECTED_RELEASE_ISSUER" \
+    "$EXPECTED_IMAGE" --output json >"$STATE_ROOT/state/middleware-image-signature.json"
+  jq -e \
+    --arg source "$EXPECTED_SOURCE" \
+    --arg digest "$EXPECTED_DIGEST" '
+      length == 1
+      and .[0].critical.image["docker-manifest-digest"] == $digest
+      and .[0].optional["codestra.source_sha"] == $source
+      and .[0].optional["codestra.schema_head"] == "0008_durable_communications"
+    ' "$STATE_ROOT/state/middleware-image-signature.json" >/dev/null ||
+    fail 'Middleware image signature annotations do not match the lock'
+
+  "$COSIGN" verify-attestation \
+    --type spdxjson \
+    --certificate-identity "$EXPECTED_RELEASE_IDENTITY" \
+    --certificate-oidc-issuer "$EXPECTED_RELEASE_ISSUER" \
+    "$EXPECTED_IMAGE" --output json >"$STATE_ROOT/state/middleware-spdx-attestation.json"
+  jq -e --arg digest "${EXPECTED_DIGEST#sha256:}" '
+      (.payload | @base64d | fromjson) as $statement
+      | $statement._type == "https://in-toto.io/Statement/v0.1"
+      and $statement.predicateType == "https://spdx.dev/Document"
+      and $statement.subject == [{
+        "name": "ghcr.io/appolon1908-hue/codestra-middleware",
+        "digest": {"sha256": $digest}
+      }]
+    ' "$STATE_ROOT/state/middleware-spdx-attestation.json" >/dev/null ||
+    fail 'Middleware SPDX attestation subject does not match the locked image'
+  /usr/bin/cmp --silent \
+    <(jq -S . "$sbom") \
+    <(jq -S -r '.payload | @base64d | fromjson | .predicate' "$STATE_ROOT/state/middleware-spdx-attestation.json") ||
+    fail 'signed SPDX attestation does not match the locked release SBOM'
+  chmod 600 \
+    "$STATE_ROOT/state/middleware-image-signature.json" \
+    "$STATE_ROOT/state/middleware-spdx-attestation.json"
+}
+
 validate_exact_merged_source() {
   : "${INFRASTRUCTURE_SOURCE_SHA:?INFRASTRUCTURE_SOURCE_SHA is required for deployment}"
   [[ "$INFRASTRUCTURE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || fail 'infrastructure source SHA is malformed'
@@ -147,7 +271,7 @@ validate_exact_merged_source() {
     fail 'infrastructure source SHA is not merged into canonical main'
 }
 
-for command in docker python3 jq sha256sum openssl git stat find cosign; do require "$command"; done
+for command in docker python3 jq sha256sum openssl git stat find; do require "$command"; done
 if [[ "$ACTION" != render ]]; then
   validate_protected_checkout
 fi
@@ -169,8 +293,13 @@ case "$ACTION" in
       --arg source "$EXPECTED_SOURCE" \
       --arg profile "$EXPECTED_PROFILE" \
       --arg releaseId "$EXPECTED_RELEASE_ID" \
+      --argjson releaseArtifactId "$EXPECTED_RELEASE_ARTIFACT_ID" \
+      --arg releaseArtifactName "$EXPECTED_RELEASE_ARTIFACT_NAME" \
       --arg releaseArtifactDigest "$EXPECTED_RELEASE_ARTIFACT_DIGEST" \
       --arg releaseManifestSha "$EXPECTED_RELEASE_MANIFEST_SHA256" \
+      --arg sbomSha "$EXPECTED_SBOM_SHA256" \
+      --arg vulnerabilitySha "$EXPECTED_VULNERABILITY_REPORT_SHA256" \
+      --arg evidenceRoot "$EXPECTED_RELEASE_EVIDENCE_ROOT" \
       --arg releaseIdentity "$EXPECTED_RELEASE_IDENTITY" \
       --arg releaseIssuer "$EXPECTED_RELEASE_ISSUER" \
       --arg publicUrl "$EXPECTED_KEYCLOAK_PUBLIC_URL" \
@@ -183,8 +312,13 @@ case "$ACTION" in
         and .middleware.source_sha == $source
         and .middleware.runtime_profile_id == $profile
         and .middleware.release_id == $releaseId
+        and .middleware.release_artifact_id == $releaseArtifactId
+        and .middleware.release_artifact_name == $releaseArtifactName
         and .middleware.release_artifact_digest == $releaseArtifactDigest
         and .middleware.release_manifest_sha256 == $releaseManifestSha
+        and .middleware.sbom_sha256 == $sbomSha
+        and .middleware.vulnerability_report_sha256 == $vulnerabilitySha
+        and .middleware.release_evidence_root == $evidenceRoot
         and .middleware.release_workflow_identity == $releaseIdentity
         and .middleware.release_oidc_issuer == $releaseIssuer
         and .identity.public_url == $publicUrl
@@ -256,21 +390,16 @@ esac
 [[ "${KEYCLOAK_PUBLIC_URL%/}" == "$EXPECTED_KEYCLOAK_PUBLIC_URL" ]] || fail "staging runtime requires canonical Keycloak URL $EXPECTED_KEYCLOAK_PUBLIC_URL"
 [[ "$KEYCLOAK_REALM" == "$EXPECTED_KEYCLOAK_REALM" ]] || fail 'staging runtime requires Keycloak realm codestra'
 
+[[ -x "$COSIGN" ]] || fail "missing trusted cosign executable: $COSIGN"
+require unzip
+validate_release_evidence
+
 ensure_secret "$STATE_ROOT/secrets/postgres_password"
 ensure_secret "$STATE_ROOT/secrets/redis_password"
 for producer in "${WEBHOOK_PRODUCERS[@]}"; do
   ensure_secret "$STATE_ROOT/secrets/webhook_${producer,,}"
 done
 
-cosign verify \
-  --certificate-identity "$EXPECTED_RELEASE_IDENTITY" \
-  --certificate-oidc-issuer "$EXPECTED_RELEASE_ISSUER" \
-  "$EXPECTED_IMAGE" >/dev/null
-cosign verify-attestation \
-  --type spdxjson \
-  --certificate-identity "$EXPECTED_RELEASE_IDENTITY" \
-  --certificate-oidc-issuer "$EXPECTED_RELEASE_ISSUER" \
-  "$EXPECTED_IMAGE" >/dev/null
 for image in "$EXPECTED_IMAGE" "$POSTGRES_IMAGE" "$REDIS_IMAGE"; do
   docker pull "$image" >/dev/null
 done

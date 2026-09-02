@@ -12,9 +12,13 @@
     "release_id": "9a96ff1651a3-01a61e6c9761",
     "release_run_url": "https://github.com/appolon1908-hue/Middleware-/actions/runs/33662230894",
     "release_run_attempt": 2,
+    "release_artifact_id": 9859370333,
     "release_artifact_name": "signed-middleware-release-9a96ff1651a324b98f3a7efd60b7a342983ded4e-33662230894-2",
     "release_artifact_digest": "sha256:56fc7bd5cca57df0bfd04e27eb3e294bd160a8071e4e8ae1974addb6d040f46e",
     "release_manifest_sha256": "sha256:55f809c9f6436fd886c7a8a19a2b557da22696e190ebf806df16f3e401b7f9a6",
+    "sbom_sha256": "sha256:2aef347da05c39956671e9f431b36dd5b8a2a0ec76a72ded155b062db321c3ea",
+    "vulnerability_report_sha256": "sha256:4652fc5b7de5be1e0f7e2c977a3970a09d47df71a4ddff5bc3866b32f01a6e49",
+    "release_evidence_root": "/var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761",
     "release_workflow_identity": "https://github.com/appolon1908-hue/Middleware-/.github/workflows/release.yml@refs/heads/main",
     "release_oidc_issuer": "https://token.actions.githubusercontent.com"
   },

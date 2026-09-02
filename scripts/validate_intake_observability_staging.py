@@ -19,6 +19,12 @@ EXPECTED_RELEASE_ARTIFACT_DIGEST = (
 EXPECTED_RELEASE_MANIFEST_SHA256 = (
     "sha256:55f809c9f6436fd886c7a8a19a2b557da22696e190ebf806df16f3e401b7f9a6"
 )
+EXPECTED_SBOM_SHA256 = (
+    "sha256:2aef347da05c39956671e9f431b36dd5b8a2a0ec76a72ded155b062db321c3ea"
+)
+EXPECTED_VULNERABILITY_REPORT_SHA256 = (
+    "sha256:4652fc5b7de5be1e0f7e2c977a3970a09d47df71a4ddff5bc3866b32f01a6e49"
+)
 EXPECTED_RELEASE_IDENTITY = (
     "https://github.com/appolon1908-hue/Middleware-/.github/workflows/"
     "release.yml@refs/heads/main"
@@ -62,6 +68,7 @@ def main() -> None:
     assert lock["middleware"]["schema_head"] == EXPECTED_SCHEMA
     assert lock["middleware"]["runtime_profile_id"] == EXPECTED_PROFILE
     assert lock["middleware"]["release_id"] == EXPECTED_RELEASE_ID
+    assert lock["middleware"]["release_artifact_id"] == 9859370333
     assert (
         lock["middleware"]["release_artifact_digest"]
         == EXPECTED_RELEASE_ARTIFACT_DIGEST
@@ -69,6 +76,14 @@ def main() -> None:
     assert (
         lock["middleware"]["release_manifest_sha256"]
         == EXPECTED_RELEASE_MANIFEST_SHA256
+    )
+    assert lock["middleware"]["sbom_sha256"] == EXPECTED_SBOM_SHA256
+    assert (
+        lock["middleware"]["vulnerability_report_sha256"]
+        == EXPECTED_VULNERABILITY_REPORT_SHA256
+    )
+    assert lock["middleware"]["release_evidence_root"] == (
+        "/var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761"
     )
     assert (
         lock["middleware"]["release_workflow_identity"]
@@ -160,8 +175,8 @@ def main() -> None:
     script = (ROOT / "scripts/deploy_intake_observability_staging.sh").read_text()
     for required in (
         "docker pull \"$image\"",
-        "cosign verify \\",
-        "cosign verify-attestation \\",
+        "\"$COSIGN\" verify \\",
+        "\"$COSIGN\" verify-attestation \\",
         "host ports are prohibited",
         "STAGING_DEPLOYMENT=PASS",
         "RUNTIME_PROFILE_ID=$EXPECTED_PROFILE",
@@ -199,6 +214,15 @@ def main() -> None:
         "PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'",
         "unset BASH_ENV ENV CDPATH",
         '.schema_version == "1.4"',
+        "validate_release_evidence",
+        "EXPECTED_RELEASE_ARTIFACT_NAME=",
+        "EXPECTED_RELEASE_ARTIFACT_ID='9859370333'",
+        "EXPECTED_RELEASE_EVIDENCE_ROOT=",
+        "EXPECTED_SBOM_SHA256=",
+        "EXPECTED_VULNERABILITY_REPORT_SHA256=",
+        '"codestra.source_sha"',
+        "verify-blob",
+        "middleware-spdx-attestation.json",
     ):
         assert required in script, required
     assert "https://auth.codestra.co" not in script
@@ -214,6 +238,8 @@ def main() -> None:
     assert "/var/lib/codestra/staging/intake-observability" in deployment_readme
     assert "/usr/bin/env -i" in deployment_readme
     assert "codestra-observability" in deployment_readme
+    assert "actions/artifacts/9859370333/zip" in deployment_readme
+    assert "signed manifest" in deployment_readme
     print("INFRASTRUCTURE_STAGING_INTAKE_OBSERVABILITY=PASS")
 
 

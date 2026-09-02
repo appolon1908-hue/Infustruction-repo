@@ -16,6 +16,19 @@ chown -R root:root /opt/codestra-observability/infrastructure-authority
 chmod -R go-w /opt/codestra-observability/infrastructure-authority
 ~~~
 
+Prepare the public, signed Middleware release evidence in its exact protected
+path. The deployment verifies the GitHub artifact ZIP digest, signed manifest,
+source SHA, image digest, schema head, release run, SBOM, vulnerability report,
+image annotations, and the OCI SPDX predicate before pulling:
+
+~~~bash
+install -d -o root -g root -m 0700 /var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761
+/usr/bin/gh api repos/appolon1908-hue/Middleware-/actions/artifacts/9859370333/zip > /var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761/signed-middleware-release-9a96ff1651a324b98f3a7efd60b7a342983ded4e-33662230894-2.zip
+/usr/bin/unzip -q /var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761/signed-middleware-release-9a96ff1651a324b98f3a7efd60b7a342983ded4e-33662230894-2.zip -d /var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761
+chown -R root:root /var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761
+chmod -R go-w /var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761
+~~~
+
 Use an explicit state path rather than an implicit home-directory default. The
 deployment entrypoint verifies the exact merged Infrastructure SHA and the
 protected source closure before it pulls or starts a container:
