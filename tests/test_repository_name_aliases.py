@@ -82,6 +82,15 @@ class RepositoryNameAliasTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertTrue(AUTHORITY.is_operational_source(path))
 
+    def test_historical_lock_is_not_active_operational_source(self) -> None:
+        self.assertFalse(
+            AUTHORITY.is_operational_source(AUTHORITY.HISTORICAL_STAGE6_LOCK)
+        )
+
+    def test_caddy_fragment_is_discovered_as_operational_source(self) -> None:
+        fragment = ROOT / "operations" / "caddy" / "postgres-exporter.caddy"
+        self.assertTrue(AUTHORITY.is_operational_source(fragment))
+
     def test_governed_repository_id_requires_current_name(self) -> None:
         fake_path = ROOT / "release" / "synthetic-source-lock.json"
         payload = (

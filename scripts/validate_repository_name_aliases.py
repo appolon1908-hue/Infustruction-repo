@@ -70,6 +70,7 @@ REPOSITORY_FIELDS = {
 
 TEXT_SUFFIXES = {
     ".bash",
+    ".caddy",
     ".cfg",
     ".conf",
     ".env",
@@ -239,6 +240,10 @@ def is_operational_source(path: Path) -> bool:
     except ValueError:
         return False
 
+    if path.resolve() == HISTORICAL_STAGE6_LOCK.resolve():
+        # This fixed-digest evidence intentionally records a pre-cutover slug.
+        # It is validated separately and cannot control a current deployment.
+        return False
     if path.resolve() in {MANIFEST.resolve(), RUNBOOK.resolve(), VALIDATOR}:
         return False
     if any(part in EXCLUDED_ROOTS for part in relative.parts):
