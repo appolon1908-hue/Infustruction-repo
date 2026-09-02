@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T11:17:00.182601+00:00'
+generated_at: '2026-09-02T11:31:54.854600+00:00'
 phase: SERVER_37_PRODUCTION_REMEDIATION_AND_CERTIFICATION
 server: 37.27.128.39
 scope: THIS_SERVER_ONLY
@@ -34,9 +34,9 @@ classification_definitions:
 live_runtime_classification_counts:
   LEGACY_COMPATIBILITY: 26
   OPTIONAL_LIVE: 266
+  REQUIRED_LIVE: 33
   UPSTREAM_PRODUCT_API: 1163
   INTERNAL_ONLY: 777
-  REQUIRED_LIVE: 33
 live_runtime_groups:
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX
@@ -1223,7 +1223,7 @@ candidate_source_authority:
     review: PR_65_REVIEW_REQUIRED
   TELNEXA:
     repository: https://github.com/appolon1908-hue/telnexa
-    source_sha: 2e486b0dadc8d02ead6e59dbaa2e507c9f70ac5d
+    source_sha: 2c20af8cbd6103b7d25fcb841a94b3c4d8f32450
     review: PR_25_REVIEW_REQUIRED
   KYQRA:
     repository: https://github.com/appolon1908-hue/kyqra-crawler

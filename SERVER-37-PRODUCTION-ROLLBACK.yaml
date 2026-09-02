@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T11:17:00.182601+00:00'
+generated_at: '2026-09-02T11:31:54.854600+00:00'
 phase: SERVER_37_PRODUCTION_REMEDIATION_AND_CERTIFICATION
 server: 37.27.128.39
 production_changed: false
@@ -48,8 +48,8 @@ candidate_promotions:
 - service: TELNEXA_BILLING_API_AND_WORKER
   before_source_sha: 4dbd67190ccc0fb2be52ec700882178e29c6ff27
   before_image_digest: sha256:e92ec02857ac67c15030b26ca464ac07966b8bd0162c9dbd424844e42683012c
-  after_source_sha: 2e486b0dadc8d02ead6e59dbaa2e507c9f70ac5d
-  after_image_digest: sha256:39614be543298096cc73c17ba1e5d7db72153a651fd1201a0916a170044da51e
+  after_source_sha: 2c20af8cbd6103b7d25fcb841a94b3c4d8f32450
+  after_image_digest: sha256:277422e6b6f46d46f35c896ec695e959228de24bd0524606f87fc293a347d3fb
   database_migration: REVIEWED_FORWARD_AND_BACKWARD_MIGRATION_REQUIRED
   rollback_procedure: Stop intake, drain workers, restore the recorded before digest, and restore the isolated pre-migration
     billing snapshot when schema compatibility requires it.
@@ -57,8 +57,8 @@ candidate_promotions:
 - service: TELNEXA_KEYCLOAK
   before_source_sha: UNATTRIBUTED_TELNEXA_WRAPPER
   before_image_digest: sha256:03f6ec1f3754e4a448d1a5008bc6521d08b26bbf27407f0acf5b0a99180adfaa
-  after_source_sha: 2e486b0dadc8d02ead6e59dbaa2e507c9f70ac5d
-  after_image_digest: sha256:333d84ac006cb1d9a9e0c368a8811dea86d46dcdce7893c362984200dd52b462
+  after_source_sha: 2c20af8cbd6103b7d25fcb841a94b3c4d8f32450
+  after_image_digest: sha256:9b3c0b4fd754509474dd7f3954f9fc5bc47a889ab9014a2376883db8c6d01cbf
   database_migration: KEYCLOAK_SCHEMA_UPGRADE_REQUIRES_ISOLATED_RESTORE_PROOF
   rollback_procedure: Restore the isolated pre-upgrade Keycloak database and recorded before digest as one atomic rollback
     unit.
@@ -66,24 +66,24 @@ candidate_promotions:
 - service: TELNEXA_JASMIN
   before_source_sha: WRAPPER_TAG_4b4e5c73463d
   before_image_digest: sha256:16585e89840fdd972d9483c0e45d5fad694df28922562f74fb05d540a6893cf4
-  after_source_sha: 2e486b0dadc8d02ead6e59dbaa2e507c9f70ac5d
-  after_image_digest: sha256:9e779b156ed2748b4a9886b1ae5ea33ff79928cea1f656b641f846244e922693
+  after_source_sha: 2c20af8cbd6103b7d25fcb841a94b3c4d8f32450
+  after_image_digest: sha256:9dbc21562c1c5c8b3cb8fb244a9784baad9a91fcf2ecc4e7c6935c0e7a0b82be
   database_migration: JASMIN_TOPOLOGY_MIGRATION_REQUIRES_ISOLATED_ROUNDTRIP
   rollback_procedure: Quiesce submission, snapshot broker/Jasmin state, restore the before digest and topology snapshot, then
     prove no-effect SMPP and DLR handling.
   status: NOT_DEPLOYED_REVIEW_REQUIRED
 - service: TELNEXA_WEBHOOK_RELAY
   before_source_sha: NOT_RUNNING
-  after_source_sha: 2e486b0dadc8d02ead6e59dbaa2e507c9f70ac5d
-  after_image_digest: sha256:81c4439ebc37d817563b1fdf76e898126654097eceff587e3d663b34f9f7bee6
+  after_source_sha: 2c20af8cbd6103b7d25fcb841a94b3c4d8f32450
+  after_image_digest: sha256:fa31f8645c9d9f44a58182685bd0403e1366c36402130ac7cd8ce0eeafbdf03d
   database_migration: NONE
   rollback_procedure: Remove the candidate relay from the reviewed Compose graph and restore the prior direct private event
     path.
   status: NOT_DEPLOYED_REVIEW_REQUIRED
 - service: TELNEXA_CONTAINER_NGINX
   before_source_sha: HOST_NGINX_AUTHORITY
-  after_source_sha: 2e486b0dadc8d02ead6e59dbaa2e507c9f70ac5d
-  after_image_digest: sha256:bba546ebf7d1a3b69045f029244c523394814c9fe5b307f04dd2aa1b70e1c82a
+  after_source_sha: 2c20af8cbd6103b7d25fcb841a94b3c4d8f32450
+  after_image_digest: sha256:33ccbbfdd717d3cb1ad8bd36056efd13c2b340411956ec1af4614d8a81ba511e
   database_migration: NONE
   rollback_procedure: Restore the reviewed host-Nginx route snapshot and remove the container edge from the upstream graph.
   status: NOT_DEPLOYED_REVIEW_REQUIRED
