@@ -228,6 +228,7 @@ def main() -> None:
         "COMPOSE_BIN='/usr/libexec/docker/cli-plugins/docker-compose'",
         'docker() { /usr/bin/docker "$@"; }',
         '/usr/bin/git "$@"',
+        'STATE_ROOT="${CODESTRA_STAGING_ROOT:-/root/.local/share/codestra/staging/intake-observability}"',
         '.schema_version == "1.4"',
         "validate_release_evidence",
         "EXPECTED_RELEASE_ARTIFACT_NAME=",
