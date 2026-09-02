@@ -275,10 +275,12 @@ Required bounded dimensions are:
 
 The following must not be metric labels or Loki stream labels:
 
-- customer, tenant, account, user, email, phone, message, order, request, correlation, trace, container, or pod identifiers;
+- customer, tenant, account, user, email, phone, message, order, request, correlation, or trace identifiers; raw runtime container IDs; pod UIDs or names; and arbitrary runtime-generated instance identifiers;
 - raw URLs, query strings, SQL statements, exception text, request/response bodies, credentials, tokens, cookies, authorization headers, private keys, DSNs, broker credentials, financial payloads, communication payloads, or personal data.
 
 Trace and correlation IDs may be protected log fields and trace search attributes when operationally required, but not unbounded metric/log-stream labels. Redaction must occur before export. Tests must inject representative secrets and personal-data patterns and prove they do not reach exported metrics, log streams, spans, dashboards, or Superset datasets.
+
+Container metrics may use one deployment-controlled `workload_instance` label only when it is derived from a bounded replica slot in the reviewed deployment manifest, cannot contain a raw container/pod identifier or caller value, and is covered by a cardinality-limit test. Otherwise aggregate replica metrics before ingestion so distinct containers cannot produce duplicate Prometheus series.
 
 Grafana, Prometheus, Loki, Tempo, Alertmanager, OpenTelemetry, Alloy, exporters, and Superset must not have authority to execute business writes, Odoo mutations, n8n workflows, provider delivery, PSTN dialing, social publishing, lending/financial actions, or trading orders.
 
@@ -378,6 +380,7 @@ Grafana, Prometheus, Loki, Tempo, Alertmanager, OpenTelemetry, Alloy, exporters,
 - Minimize mounts, capabilities, devices, and runtime privileges; document any unavoidable exception.
 - Disable storage drivers and features not used by Codestra.
 - Apply container-label allowlisting/relabeling to prevent cardinality and secret leakage.
+- Preserve series uniqueness through either the bounded deployment-controlled `workload_instance` label defined in section 10 or a tested pre-ingestion aggregation rule; never retain raw container IDs, names, pod UIDs, or arbitrary labels.
 - Test health, metrics, container discovery, and prohibited label removal.
 
 ### 11.10 PostgreSQL Exporter
@@ -507,7 +510,8 @@ Webhook requirements:
 - stable idempotency identity derived from `groupKey`, alert fingerprint, alert status, and `startsAt`;
 - one transaction for incident create/update, event timeline, audit entry, and notification outbox intent;
 - durable unique constraints so retries do not create duplicate incidents or notifications;
-- resolved, reopened, acknowledged, inhibited, and silenced state handling;
+- firing, resolved, reopened, and acknowledged state handling from webhook/operator events;
+- inhibited and silenced state remains authoritative in Alertmanager because webhook v4 suppresses those notifications; Middleware may record it only from a separately authenticated, read-only Alertmanager status reconciliation source with stable group/fingerprint mapping, and must not infer it from a missing webhook;
 - correlation ID and source deployment metadata;
 - no synchronous provider call inside the ingestion transaction;
 - no automatic business-system mutation.
