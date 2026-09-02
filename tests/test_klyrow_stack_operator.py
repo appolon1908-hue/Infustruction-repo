@@ -47,6 +47,35 @@ def test_safety_failure_is_blocked():
         op.verify_safe({"safe_mode": False}, op.TARGET_SHA)
 
 
+def test_readback_combines_health_and_version_without_environment(monkeypatch):
+    op = load_operator()
+    payloads = iter(
+        [
+            {"safe_mode": True, "production_gate_approved": False, "production_gate_open": False, "outbox_active": 0},
+            {"revision": op.TARGET_SHA},
+        ]
+    )
+
+    class Response:
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(op.urllib.request, "urlopen", lambda *args, **kwargs: Response())
+    monkeypatch.setattr(op.json, "load", lambda response: next(payloads))
+    state = op.readback()
+    assert state == {
+        "live_email_delivery": False,
+        "outbox_active": 0,
+        "production_gate_approved": False,
+        "production_gate_open": False,
+        "revision": op.TARGET_SHA,
+        "safe_mode": True,
+    }
+    op.verify_safe(state, op.TARGET_SHA)
+
+
 def test_sudoers_has_no_generic_authority():
     text = (ROOT / "operators/klyrow-stack.sudoers").read_text()
     assert "NOPASSWD: ALL" not in text

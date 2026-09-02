@@ -173,8 +173,20 @@ def make_plan():
 def readback():
     with urllib.request.urlopen("http://127.0.0.1:18000/v1/health", timeout=8) as response:
         health = json.load(response)
-    allowed = {"safe_mode", "production_gate_approved", "production_gate_open", "live_email_delivery", "outbox_active", "revision"}
-    return {key: health.get(key) for key in sorted(allowed)}
+    with urllib.request.urlopen("http://127.0.0.1:18000/version", timeout=8) as response:
+        version = json.load(response)
+    # At the exact reviewed target, safe_mode_enabled() is defined as the
+    # inverse of live_email_delivery_enabled(). Keep this derivation local and
+    # expose no environment or credential data.
+    safe_mode = health.get("safe_mode")
+    return {
+        "live_email_delivery": None if not isinstance(safe_mode, bool) else not safe_mode,
+        "outbox_active": health.get("outbox_active"),
+        "production_gate_approved": health.get("production_gate_approved"),
+        "production_gate_open": health.get("production_gate_open"),
+        "revision": version.get("revision"),
+        "safe_mode": safe_mode,
+    }
 
 
 def verify_safe(state, revision):
