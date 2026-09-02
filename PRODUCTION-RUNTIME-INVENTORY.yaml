@@ -1,5 +1,6 @@
 schema_version: 1
-generated_at: '2026-09-02T03:27:52.554533+00:00'
+generated_at: '2026-09-02T03:32:45.763124+00:00'
+server_scope: CURRENT_SERVER_ONLY
 server: Ubuntu-jammy-latest-amd64-base.zst
 public_ipv4: 37.27.128.39
 private_ip: 10.40.0.4
@@ -524,7 +525,8 @@ workloads:
   private_url: tcp://klyrow-web-candidate:8080
   networks:
   - klyrow_frontend
-  volumes: []
+  volumes:
+  - N/A
   databases: klyrow-postgres-1/PostgreSQL
   health: HEALTHY
   stage: PRODUCTION_CANDIDATE
@@ -569,7 +571,8 @@ workloads:
   networks:
   - kyqra-crawler_backend
   - kyqra-crawler_frontend
-  volumes: []
+  volumes:
+  - N/A
   databases: kyqra-crawler-postgres-1/PostgreSQL
   health: HEALTHY
   stage: PRODUCTION
@@ -589,7 +592,8 @@ workloads:
   networks:
   - kyqra-crawler_backend
   - kyqra-crawler_frontend
-  volumes: []
+  volumes:
+  - N/A
   databases: kyqra-crawler-postgres-1/PostgreSQL
   health: RUNNING
   stage: PRODUCTION
@@ -609,7 +613,8 @@ workloads:
   networks:
   - kyqra-crawler_backend
   - kyqra-crawler_frontend
-  volumes: []
+  volumes:
+  - N/A
   databases: kyqra-crawler-postgres-1/PostgreSQL
   health: RUNNING
   stage: PRODUCTION
@@ -629,7 +634,8 @@ workloads:
   networks:
   - kyqra-crawler_backend
   - kyqra-crawler_frontend
-  volumes: []
+  volumes:
+  - N/A
   databases: kyqra-crawler-postgres-1/PostgreSQL
   health: RUNNING
   stage: PRODUCTION

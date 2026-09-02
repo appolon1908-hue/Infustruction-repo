@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T03:27:52.554533+00:00'
+generated_at: '2026-09-02T03:32:45.763124+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -13396,66 +13396,6 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: PARTIAL
-  runtime_verification: LIVE_ROUTER_EXTRACTED
-  stage: PRODUCTION
-- service: MAUTIC
-  method: GET
-  path: /api/v2/validation_errors/{id}
-  public_url: N/A
-  private_url: http://mautic/api/v2/validation_errors/{id}
-  authentication: REQUIRED
-  authorization: SERVICE_POLICY
-  tenant_model: N/A
-  idempotency: N/A
-  request_model: N/A
-  response_model: N/A
-  external_effect: NONE
-  implementation_status: IMPLEMENTED
-  runtime_verification: LIVE_ROUTER_EXTRACTED
-  stage: PRODUCTION
-- service: MAUTIC
-  method: GET
-  path: /api/v2/validation_errors/{id}
-  public_url: N/A
-  private_url: http://mautic/api/v2/validation_errors/{id}
-  authentication: REQUIRED
-  authorization: SERVICE_POLICY
-  tenant_model: N/A
-  idempotency: N/A
-  request_model: N/A
-  response_model: N/A
-  external_effect: NONE
-  implementation_status: IMPLEMENTED
-  runtime_verification: LIVE_ROUTER_EXTRACTED
-  stage: PRODUCTION
-- service: MAUTIC
-  method: GET
-  path: /api/v2/validation_errors/{id}
-  public_url: N/A
-  private_url: http://mautic/api/v2/validation_errors/{id}
-  authentication: REQUIRED
-  authorization: SERVICE_POLICY
-  tenant_model: N/A
-  idempotency: N/A
-  request_model: N/A
-  response_model: N/A
-  external_effect: NONE
-  implementation_status: IMPLEMENTED
-  runtime_verification: LIVE_ROUTER_EXTRACTED
-  stage: PRODUCTION
-- service: MAUTIC
-  method: GET
-  path: /api/v2/validation_errors/{id}
-  public_url: N/A
-  private_url: http://mautic/api/v2/validation_errors/{id}
-  authentication: REQUIRED
-  authorization: SERVICE_POLICY
-  tenant_model: N/A
-  idempotency: N/A
-  request_model: N/A
-  response_model: N/A
-  external_effect: NONE
-  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_ROUTER_EXTRACTED
   stage: PRODUCTION
 - service: MAUTIC

@@ -447,7 +447,14 @@ def api_matrix() -> dict[str, Any]:
             )
             if state == "MISSING":
                 records.append(endpoint_record(service, method, path, {}, runtime_ops, status="MISSING", verification="ABSENT_FROM_SOURCE_AND_RUNTIME"))
-    records.sort(key=lambda item: (item["service"], item["path"], item["method"]))
+    deduplicated: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for record in records:
+        key = (record["service"], record["method"], record["path"])
+        existing = deduplicated.get(key)
+        if existing is not None and existing != record:
+            raise RuntimeError(f"conflicting duplicate API endpoint: {key}")
+        deduplicated[key] = record
+    records = sorted(deduplicated.values(), key=lambda item: (item["service"], item["path"], item["method"]))
     value = {
         "schema_version": 1,
         "generated_at": GENERATED_AT,
@@ -560,8 +567,8 @@ def runtime_inventory() -> dict[str, Any]:
                 "ports": ports,
                 "public_url": public_url,
                 "private_url": private_url,
-                "networks": sorted(item["NetworkSettings"]["Networks"]),
-                "volumes": sorted(set(volumes)),
+                "networks": sorted(item["NetworkSettings"]["Networks"]) or ["N/A"],
+                "volumes": sorted(set(volumes)) or ["N/A"],
                 "databases": database,
                 "health": health.upper(),
                 "stage": stages[name],
@@ -570,6 +577,7 @@ def runtime_inventory() -> dict[str, Any]:
     value = {
         "schema_version": 1,
         "generated_at": GENERATED_AT,
+        "server_scope": "CURRENT_SERVER_ONLY",
         "server": command("hostname").strip(),
         "public_ipv4": "37.27.128.39",
         "private_ip": "10.40.0.4",

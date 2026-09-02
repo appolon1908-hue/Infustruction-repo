@@ -4,8 +4,8 @@ STAGE6-SOURCE-LOCK.yaml:generic-api-key:18
 # Non-secret internal container ports in the generated API inventory.
 PRODUCTION-API-MATRIX.yaml:generic-api-key:5155
 PRODUCTION-API-MATRIX.yaml:generic-api-key:5290
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21565
+PRODUCTION-API-MATRIX.yaml:generic-api-key:21505
+PRODUCTION-API-MATRIX.yaml:generic-api-key:21535
+PRODUCTION-API-MATRIX.yaml:generic-api-key:21580
 PRODUCTION-API-MATRIX.yaml:generic-api-key:21595
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21640
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21655
-PRODUCTION-API-MATRIX.yaml:generic-api-key:21880
+PRODUCTION-API-MATRIX.yaml:generic-api-key:21820
