@@ -1,0 +1,54 @@
+logging {
+  level  = "info"
+  format = "json"
+}
+
+local.file_match "docker_logs" {
+  path_targets = [
+    {
+      "__path__" = "/var/lib/docker/containers/*/*.log",
+      "job"      = "docker",
+      "host"     = "37.27.128.39",
+      "environment" = "production",
+    },
+  ]
+  sync_period = "10s"
+}
+
+loki.source.file "docker_logs" {
+  targets    = local.file_match.docker_logs.targets
+  forward_to = [loki.process.docker_logs.receiver]
+}
+
+loki.process "docker_logs" {
+  stage.docker {}
+
+  stage.drop {
+    source     = "output"
+    expression = "(?i)(authorization:|bearer |private key|password=|secret=)"
+    drop_counter_reason = "sensitive_content"
+  }
+
+  stage.static_labels {
+    values = {
+      "codestra_business" = "platform",
+      "owner"             = "appolon",
+    }
+  }
+
+  forward_to = [loki.write.codestra.receiver]
+}
+
+loki.write "codestra" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+    headers = {
+      "X-Scope-OrgID" = "codestra",
+    }
+  }
+
+  external_labels = {
+    "host"        = "37.27.128.39",
+    "environment" = "production",
+  }
+}
