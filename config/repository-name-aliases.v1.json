@@ -12,7 +12,8 @@
     "repository_id": 1350724865,
     "current_repository": "appolon1908-hue/Infustruction-repo",
     "target_repository_after_cutover": "appolon1908-hue/Codestra-Infrastructure",
-    "status": "PREPARED_NOT_RENAMED"
+    "status": "PREPARED_NOT_RENAMED",
+    "runtime_state": "REQUIRES_PRE_CUTOVER_DISCOVERY"
   },
   "postgres_exporter_authority": {
     "repository_id": 1350839865,
@@ -75,7 +76,11 @@
     "historical_evidence_immutable": true,
     "one_repository_per_cutover": true,
     "same_repository_id_required_after_rename": true,
-    "runtime_digest_must_remain_unchanged": true,
+    "all_inventoried_integrations_require_post_rename_readback": true,
+    "runtime_digest_must_remain_unchanged_when_deployed": true,
+    "absent_runtime_digest_must_be_recorded_as_not_applicable": true,
+    "success_path_must_restore_freeze_state": true,
+    "rollback_path_must_restore_freeze_state": true,
     "rename_authorizes_deployment": false
   }
 }
