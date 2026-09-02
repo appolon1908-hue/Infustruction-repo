@@ -3,7 +3,7 @@
   "captured_at": "2026-09-02T15:20:00Z",
   "denominator": 15,
   "production_business_writes_enabled": false,
-  "counts": {"health": 1, "ready": 0, "version": 0, "capabilities": 0},
+  "counts": {"health": 0, "ready": 0, "version": 0, "capabilities": 0},
   "workloads": [
     {"name":"public-api-edge","health":"PASS_UNATTRIBUTED","ready":"FAIL","version":"FAIL","capabilities":"FAIL"},
     {"name":"middleware","health":"UNKNOWN","ready":"UNKNOWN","version":"UNKNOWN","capabilities":"UNKNOWN"},

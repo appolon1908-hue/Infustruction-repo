@@ -24,6 +24,8 @@ for item in workloads:
 for item in matrix["workloads"]:
     assert f"| {item['name']} | {item['health']} | {item['ready']} | {item['version']} | {item['capabilities']} |" in markdown
 for key, label in (("health", "HEALTH_ENDPOINTS"), ("ready", "READINESS_ENDPOINTS"), ("version", "VERSION_ENDPOINTS"), ("capabilities", "CAPABILITY_ENDPOINTS")):
+    certified = sum(1 for item in matrix["workloads"] if item[key] == "PASS")
+    assert matrix["counts"][key] == certified
     assert f"`{label}={matrix['counts'][key]}/15`" in markdown
 assert bom["production_business_writes_enabled"] is False
 assert matrix["production_business_writes_enabled"] is False
