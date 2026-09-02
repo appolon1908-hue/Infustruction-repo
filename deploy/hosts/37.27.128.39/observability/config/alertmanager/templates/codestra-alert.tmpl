@@ -1,0 +1,30 @@
+{{ define "codestra.alert.subject" -}}
+[CODESTRA][{{ .Status | toUpper }}][{{ .CommonLabels.severity | toUpper }}] {{ .CommonLabels.alertname }} — {{ .CommonLabels.service }}
+{{- end }}
+
+{{ define "codestra.alert.text" -}}
+Codestra operational alert
+
+State: {{ .Status | toUpper }}
+Severity: {{ .CommonLabels.severity }}
+Environment: {{ .CommonLabels.environment }}
+Service: {{ .CommonLabels.service }}
+Host: {{ .CommonLabels.host }}
+Owner: appolon
+Recipient policy: appolon@codestra.co
+
+{{ range .Alerts -}}
+Alert: {{ .Labels.alertname }}
+Summary: {{ .Annotations.summary }}
+Description: {{ .Annotations.description }}
+Started: {{ .StartsAt }}
+{{ if ne .EndsAt.String "0001-01-01 00:00:00 +0000 UTC" }}Ended: {{ .EndsAt }}{{ end }}
+Fingerprint: {{ .Fingerprint }}
+Dashboard: {{ .Annotations.dashboard_url }}
+Runbook: {{ .Annotations.runbook_url }}
+{{ end }}
+
+This message contains operational metadata only. It must not contain secrets,
+authorization headers, private keys, customer message bodies, or database
+connection strings.
+{{- end }}
