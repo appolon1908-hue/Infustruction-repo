@@ -1,6 +1,6 @@
 # Protected merge matrix — 2026-09-02
 
-Captured at `2026-09-02T17:03:00Z` from GitHub. All eight heads are current
+Captured at `2026-09-02T23:24:00Z` from GitHub. All eight heads are current
 with their protected base (`behind=0`). Repository auto-merge is disabled for
 all eight repositories, so no auto-merge request can be queued. No commit in
 the PR set has a GitHub signature object; current rules do not report signature
@@ -14,12 +14,20 @@ failure as a merge-state blocker.
 | `appolon1908-hue/Codestra-Communication-CC` | 5 | `ec56638cbf543f02ad960c3647e74481d5a5bbb1` | `0ee0dcbd3d4a9405ffc7d14019bf4a1105f91113` | MERGED `cceb1fd7462f765e6ac36db154086d56a88ba712` | 2 pass | gates satisfied | 0 | NONE |
 | `appolon1908-hue/Codestra-Marketing-` | 5 | `4a7c0277d831e658ed3ed77ef9bf331171c0b819` | `460ff98f64ef9f0724fe4d2afc51a1a6c5b053dd` | MERGED `3f78cbdeccbdd69f1dfa7f4d31232b43e798047a` | 2 pass | gates satisfied | 0 | NONE |
 | `appolon1908-hue/Codesrea-Social-` | 5 | `9479a3bc59bd8f809e052c191fe138f72da4531c` | `7bc0dd9ee8a13abbd1463ca106629ad63d957145` | MERGED `1323a7335e1724a00406aeadd1fec4c8e8af5f1a` | 2 pass | findings fixed | 0 | NONE |
-| `appolon1908-hue/klyrow.com` | 66 | `f46b92cb279f0299a8d8e7a9bdbecb6ad077e04d` | `27c920957e116ae7fe998395393adc3c3dfdb6be` | BLOCKED | 4 pass | `kazan555` requested; no exact-head approval | 0 | CODEOWNER_APPROVAL_PENDING |
+| `appolon1908-hue/klyrow.com` | 66 | `ac6d9dea634f88d6321735d63b18f5632861d9b7` | `f67b1529acea52ea37976f9e6defbe5a5430d6b4` | BLOCKED | frontend/test/secrets pass; image running | prior approval stale after required base reconciliation; `kazan555` re-requested | 0 | CHECKS_PENDING |
 | `appolon1908-hue/Infustruction-repo` | 60 | `de0f3c3c5f67f7de537db33a83452ad9ef039564` | `cae843886a6ece21025b730de458dd14a47a9f51` | BLOCKED | 2 pass | `kazan555` requested; no exact-head approval | 0 | CODEOWNER_APPROVAL_PENDING |
 
 The Odoo head changed after the starting evidence SHA through two externally
 authored commits that address the valid deployed-gate review finding. This
 matrix records the live GitHub head and does not overwrite or rewrite it.
+
+Klyrow `main` advanced after the exact-head approval, and GitHub changed the PR
+to `CONFLICTING`. The feature branch was reconciled with current protected main
+without rewriting history. Only the two conflicting Dockerfiles required manual
+resolution; targeted reproducibility/readiness tests passed 30/30. The resulting
+head is `ac6d9dea634f88d6321735d63b18f5632861d9b7`; the prior approval is correctly
+treated as stale, exact-head CI run `33694564916` is active, and fresh review was
+requested.
 
 ## Protected-merge build evidence
 
