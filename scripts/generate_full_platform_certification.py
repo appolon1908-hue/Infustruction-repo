@@ -1184,10 +1184,10 @@ def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict
             "validation_after_action": "Protected image deployment, runtime OpenAPI parity, positive mTLS authorization, bounded dispatch/reconciliation, and controlled integration E2E pass.",
         },
         {
-            "blocker": "All candidate source changes require independent repository review and exact-head CI before immutable image publication or deployment.",
-            "owner": "independent repository reviewers", "repository": "multiple repositories",
-            "component": "RELEASE_PROCESS", "required_action": "Review and approve the Klyrow, Telnexa, Kyqra, private-gateway, and infrastructure pull requests.",
-            "validation_after_action": "Merge-result CI passes; signed immutable digests are published, deployed via Git authority, and runtime SHA/digest readback matches.",
+            "blocker": "This regenerated infrastructure evidence requires independent review and exact-head CI before merge.",
+            "owner": "independent infrastructure repository reviewer", "repository": "https://github.com/appolon1908-hue/Infustruction-repo",
+            "component": "RELEASE_PROCESS", "required_action": "Review and approve infrastructure pull request 57 at its exact head after the protected application sources are recorded.",
+            "validation_after_action": "Exact-head and merge-result CI pass, the evidence pull request is approved and merged normally, and its protected destination SHA is recorded.",
         },
         {
             "blocker": "No approved provider test mailbox, SMS sandbox number, positive mTLS client certificate, Mautic API credential, or off-host backup target is available.",

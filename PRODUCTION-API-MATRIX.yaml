@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T14:16:14.479626+00:00'
+generated_at: '2026-09-02T19:25:39.245669+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -9,16 +9,16 @@ source_repositories:
 source_authority:
   KLYROW:
     repository: https://github.com/appolon1908-hue/klyrow.com
-    source_sha: 020d3c384a6bb96fd579be52b1a2fb020f84e32d
+    source_sha: 021d47e3cb25226f757d61995b3252aacaa0c462
   TELNEXA:
     repository: https://github.com/appolon1908-hue/telnexa
-    source_sha: dfdfe77431e1e19f2a221ba97192a75e0a0ac40c
+    source_sha: 11efe887df98ed1859969e559afe61d1de95a7ae
   KYQRA:
     repository: https://github.com/appolon1908-hue/kyqra-crawler
-    source_sha: 11842f32673af8a581b96bde92e7c3f15c3d683f
+    source_sha: 111de7e70f85b9d3ce6fbba4dfa9d8eba3fb17a6
   PRIVATE_GATEWAY:
     repository: https://github.com/appolon1908-hue/codestra-production-platform
-    source_sha: ca6ea3465430f6675beefb7b7c3aa540966a26aa
+    source_sha: 585dd6c714c155b4eee5738a29fb56648dedcc38
 required_contracts:
 - service: KLYROW
   method: GET
@@ -843,6 +843,51 @@ endpoints:
   stage: PRODUCTION
 - service: KLYROW
   method: GET
+  path: /capabilities
+  public_url: https://api.klyrow.com/capabilities
+  private_url: http://klyrow-gateway-1:8000/capabilities
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /dependencies
+  public_url: https://api.klyrow.com/dependencies
+  private_url: http://klyrow-gateway-1:8000/dependencies
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /health
+  public_url: https://api.klyrow.com/health
+  private_url: http://klyrow-gateway-1:8000/health
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
   path: /health/live
   public_url: https://api.klyrow.com/health/live
   private_url: http://klyrow-gateway-1:8000/health/live
@@ -900,6 +945,21 @@ endpoints:
   external_effect: NONE
   implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /readiness
+  public_url: https://api.klyrow.com/readiness
+  private_url: http://klyrow-gateway-1:8000/readiness
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4875,6 +4935,21 @@ endpoints:
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /v1/webhooks/postal-inbound
+  public_url: https://api.klyrow.com/v1/webhooks/postal-inbound
+  private_url: http://klyrow-gateway-1:8000/v1/webhooks/postal-inbound
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -17128,8 +17203,8 @@ endpoints:
   request_model: N/A
   response_model: N/A
   external_effect: ROUTE_DEPENDENT
-  implementation_status: PARTIAL
-  runtime_verification: LIVE_HTTPS_503
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_HTTPS_308
   stage: PRODUCTION
 - service: NGINX
   method: ANY
@@ -17188,8 +17263,8 @@ endpoints:
   request_model: N/A
   response_model: N/A
   external_effect: ROUTE_DEPENDENT
-  implementation_status: PARTIAL
-  runtime_verification: LIVE_HTTPS_503
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_HTTPS_308
   stage: PRODUCTION
 - service: OPENBAO
   method: GET
