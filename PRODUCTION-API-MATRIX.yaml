@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T04:14:11.814823+00:00'
+generated_at: '2026-09-02T10:14:55.874898+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -30,7 +30,7 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/auth/logout
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
@@ -50,12 +50,12 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/organizations/{id}/members
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: PATCH
   path: /v1/organizations/{id}/members/{member_id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: GET
@@ -65,7 +65,7 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/domains
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
@@ -75,12 +75,12 @@ required_contracts:
 - service: KLYROW
   method: PATCH
   path: /v1/domains/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: DELETE
   path: /v1/domains/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: GET
@@ -95,7 +95,7 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/domains/{id}/verify
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
@@ -135,7 +135,7 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/templates
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
@@ -145,12 +145,12 @@ required_contracts:
 - service: KLYROW
   method: PATCH
   path: /v1/templates/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: DELETE
   path: /v1/templates/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: GET
@@ -160,7 +160,7 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/contacts
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
@@ -170,12 +170,12 @@ required_contracts:
 - service: KLYROW
   method: PATCH
   path: /v1/contacts/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: DELETE
   path: /v1/contacts/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: GET
@@ -185,7 +185,7 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/lists
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: GET
@@ -195,12 +195,12 @@ required_contracts:
 - service: KLYROW
   method: PATCH
   path: /v1/lists/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: DELETE
   path: /v1/lists/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: GET
@@ -210,7 +210,7 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/campaigns
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
@@ -220,17 +220,17 @@ required_contracts:
 - service: KLYROW
   method: PATCH
   path: /v1/campaigns/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: POST
   path: /v1/campaigns/{id}/schedule
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: POST
   path: /v1/campaigns/{id}/cancel
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: GET
@@ -245,12 +245,12 @@ required_contracts:
 - service: KLYROW
   method: POST
   path: /v1/suppressions
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: DELETE
   path: /v1/suppressions/{id}
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
 - service: KLYROW
   method: GET
@@ -610,8 +610,8 @@ required_contracts:
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/integrations/email/commands
-  implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  implementation_status: MISSING
+  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/integrations/sms/commands
@@ -620,8 +620,8 @@ required_contracts:
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/integrations/crawler/commands
-  implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  implementation_status: MISSING
+  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/operations/{id}
@@ -1376,11 +1376,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: N/A
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2051,11 +2051,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: apps__gateway__app__main__CampaignIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2066,11 +2066,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: CampaignPatch
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2081,11 +2081,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: N/A
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2096,11 +2096,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: CampaignSchedule
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2186,11 +2186,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: ContactIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2201,11 +2201,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: N/A
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2231,11 +2231,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: ContactPatch
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2471,11 +2471,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: apps__gateway__app__main__DomainIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2546,11 +2546,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: N/A
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2561,11 +2561,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: N/A
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2591,11 +2591,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: DomainPatch
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -2921,11 +2921,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: MailIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -3551,11 +3551,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: ListIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -3566,11 +3566,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: N/A
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -3596,11 +3596,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: ListPatch
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -3911,11 +3911,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: MemberIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -3926,11 +3926,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: RoleIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -4376,11 +4376,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: SuppressionIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -4391,11 +4391,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: N/A
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -4541,11 +4541,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: TemplateIn
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -4616,11 +4616,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: N/A
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -4646,11 +4646,11 @@ endpoints:
   authentication: REQUIRED
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
+  idempotency: DURABLE
   request_model: TemplateUpdate
   response_model: HTTPValidationError
   external_effect: POSSIBLE
-  implementation_status: PARTIAL
+  implementation_status: IMPLEMENTED
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
@@ -20434,81 +20434,6 @@ endpoints:
   runtime_verification: LIVE_RAILS_ROUTER_EXTRACTED
   stage: PRODUCTION
 - service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/klyrow/bounces
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/klyrow/bounces
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/klyrow/campaigns
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/klyrow/campaigns
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/klyrow/complaints
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/klyrow/complaints
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/klyrow/contacts
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/klyrow/contacts
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/klyrow/events
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/klyrow/events
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
   method: GET
   path: /api/v1/klyrow/health
   public_url: N/A
@@ -20521,36 +20446,6 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/klyrow/unsubscribes
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/klyrow/unsubscribes
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/kyqra/failures
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/kyqra/failures
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
@@ -20569,81 +20464,6 @@ endpoints:
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/kyqra/jobs
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/kyqra/jobs
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: DURABLE
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/kyqra/progress
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/kyqra/progress
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/kyqra/results
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/kyqra/results
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/telnexa/dlr
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/telnexa/dlr
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/telnexa/failure
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/telnexa/failure
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
   method: GET
   path: /api/v1/telnexa/health
   public_url: N/A
@@ -20656,36 +20476,6 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/telnexa/inbound
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/telnexa/inbound
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
-  stage: PRODUCTION_CANDIDATE
-- service: PRIVATE_GATEWAY
-  method: POST
-  path: /api/v1/telnexa/provider-status
-  public_url: N/A
-  private_url: http://private-app-integration-gateway-1:8080/api/v1/telnexa/provider-status
-  authentication: REQUIRED
-  authorization: TENANT_AND_SCOPE
-  tenant_model: TENANT_SCOPED
-  idempotency: NOT_IMPLEMENTED
-  request_model: N/A
-  response_model: N/A
-  external_effect: POSSIBLE
-  implementation_status: PARTIAL
   runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
@@ -20817,11 +20607,11 @@ endpoints:
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
   idempotency: DURABLE
-  request_model: IntegrationCommand
+  request_model: N/A
   response_model: N/A
   external_effect: POSSIBLE
-  implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  implementation_status: MISSING
+  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20832,11 +20622,11 @@ endpoints:
   authorization: TENANT_AND_SCOPE
   tenant_model: TENANT_SCOPED
   idempotency: DURABLE
-  request_model: IntegrationCommand
+  request_model: N/A
   response_model: N/A
   external_effect: POSSIBLE
-  implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  implementation_status: MISSING
+  runtime_verification: ABSENT_FROM_SOURCE_AND_RUNTIME
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST

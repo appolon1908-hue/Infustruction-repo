@@ -162,6 +162,18 @@ def validate_api(api: dict[str, Any]) -> tuple[int, dict[str, int]]:
         )
         assert endpoint["idempotency"] == "DURABLE", f"{key}: idempotency not durable"
         assert endpoint["implementation_status"] == "IMPLEMENTED", f"{key}: incomplete"
+    incomplete_custom_contracts = [
+        (row["service"], row["method"], row["path"], row["implementation_status"])
+        for row in required
+        if row["service"] in {"KLYROW", "TELNEXA", "KYQRA"}
+        and row["implementation_status"] != "IMPLEMENTED"
+    ]
+    assert incomplete_custom_contracts == [], (
+        f"incomplete application contracts: {incomplete_custom_contracts}"
+    )
+    assert not any(row["implementation_status"] == "PARTIAL" for row in required), (
+        "required API contracts must be implemented or explicitly missing"
+    )
     counts = {
         status: sum(row["implementation_status"] == status for row in required)
         for status in ("IMPLEMENTED", "PARTIAL", "MISSING")

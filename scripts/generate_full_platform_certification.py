@@ -48,7 +48,7 @@ def source_openapi() -> dict[str, dict[str, Any]]:
             Path("/root/full-platform-private-gateway-20260902"),
             "/root/.venv-middleware-umbrella-20260902/bin/python",
             "import runpy,json; value=runpy.run_path('services/private-integration-gateway/gateway.py'); "
-            "print(json.dumps(value['openapi_document']()))",
+            "print(json.dumps(value['openapi_document']('shared')))",
         ),
     }
     documents: dict[str, dict[str, Any]] = {}
