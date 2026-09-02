@@ -20,6 +20,7 @@ for item in workloads:
     assert len(item["source_sha"]) == 40
     assert item["digest"] == "UNKNOWN" or item["digest"].startswith("sha256:")
     assert item["business_writes"] is False
+    assert item["repository"] in bom["production_prs_by_repository"]
 for item in matrix["workloads"]:
     assert f"| {item['name']} | {item['health']} | {item['ready']} | {item['version']} | {item['capabilities']} |" in markdown
 for key, label in (("health", "HEALTH_ENDPOINTS"), ("ready", "READINESS_ENDPOINTS"), ("version", "VERSION_ENDPOINTS"), ("capabilities", "CAPABILITY_ENDPOINTS")):

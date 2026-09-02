@@ -2,6 +2,19 @@ schema: codestra.platform-workload-bom.v1
 captured_at: '2026-09-02T15:20:00Z'
 denominator_authority: production-green-evidence/HEALTH_READINESS_RUNTIME_MATRIX_20260902.md
 production_business_writes_enabled: false
+production_prs_by_repository:
+  appolon1908-hue/codestra-production-platform: [180, 165, 157, 153, 151, 129, 126, 124, 119, 113]
+  Codestra-SRL/codestra-middleware: [275, 188, 184, 182, 179, 150]
+  appolon1908-hue/Odoo: [18, 11]
+  appolon1908-hue/N8N: [42, 41]
+  appolon1908-hue/Codestra-Marketing-: [5, 4, 3]
+  appolon1908-hue/Codestra-AI: [5, 4]
+  appolon1908-hue/Codestra-Communication-CC: [5, 4]
+  appolon1908-hue/Codesrea-Social-: [5, 4, 3]
+  appolon1908-hue/social.codestra.co: [37, 36, 35, 34, 25]
+  appolon1908-hue/Keycloak: [39, 27, 18, 17]
+  appolon1908-hue/Kong: [18]
+  appolon1908-hue/codestra-production-runtime-authority: [3]
 workloads:
   - {name: public-api-edge, repository: appolon1908-hue/codestra-production-platform, branch: release/production-activation, source_sha: 5aec485814149434750f2313370ae0ae39db5bd8, runtime_target: '65.109.65.169/api.codestra.co', image: UNKNOWN, digest: UNKNOWN, runtime_revision: UNKNOWN, api_base: '/', gateway: Caddy/Kong, auth: gateway-policy, state: none, migration: N/A, backup: config-backup, rollback: UNKNOWN, business_writes: false, external_provider: false, certification: HEALTH_ONLY_UNATTRIBUTED}
   - {name: middleware, repository: Codestra-SRL/codestra-middleware, branch: main, source_sha: 61e5948f9c800f4dd587cce75a332b617f418a0c, runtime_target: '65.109.65.169/internal', image: codestra/middleware, digest: UNKNOWN, runtime_revision: UNKNOWN, api_base: '/v1', gateway: Kong, auth: Keycloak-service-account, state: PostgreSQL/Redis/NATS, migration: UNKNOWN, backup: PostgreSQL-plus-config, rollback: UNKNOWN, business_writes: false, external_provider: true, certification: SOURCE_ONLY}
