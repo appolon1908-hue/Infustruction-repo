@@ -15,6 +15,7 @@ on:
       - "scripts/generate_server37_api_matrix.py"
       - "scripts/validate_full_platform_certification.py"
       - "scripts/validate_server37_api_matrix.py"
+      - "scripts/test_full_platform_certification_helpers.py"
       - ".gitleaksignore"
       - ".gitleaks.toml"
       - ".github/workflows/full-platform-certification.yml"
@@ -45,6 +46,7 @@ jobs:
       - name: Validate evidence and generator syntax
         run: |
           python -m py_compile scripts/generate_full_platform_certification.py scripts/generate_server37_api_matrix.py scripts/validate_full_platform_certification.py scripts/validate_server37_api_matrix.py
+          python scripts/test_full_platform_certification_helpers.py
           python scripts/validate_full_platform_certification.py
           python scripts/validate_server37_api_matrix.py
       - name: Scan exact tracked source for secrets
@@ -83,5 +85,6 @@ jobs:
       - name: Validate merge-result evidence and generator syntax
         run: |
           python -m py_compile scripts/generate_full_platform_certification.py scripts/generate_server37_api_matrix.py scripts/validate_full_platform_certification.py scripts/validate_server37_api_matrix.py
+          python scripts/test_full_platform_certification_helpers.py
           python scripts/validate_full_platform_certification.py
           python scripts/validate_server37_api_matrix.py

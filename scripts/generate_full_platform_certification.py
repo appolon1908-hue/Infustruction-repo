@@ -58,6 +58,8 @@ SOURCE_DIRECTORIES = {
     "KYQRA": Path("/root/kyqra-production-hardening-20260902"),
     "PRIVATE_GATEWAY": Path("/root/full-platform-private-gateway-20260902"),
 }
+EXPECTED_PUBLIC_IPV4 = "37.27.128.39"
+EXPECTED_PRIVATE_IPV4 = "10.40.0.4"
 
 
 def command(*arguments: str, check: bool = True) -> str:
@@ -76,6 +78,35 @@ def repository_head(path: str | Path) -> str:
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise RuntimeError(f"source revision is not an exact Git SHA: {directory}")
     return revision
+
+
+def verified_host_identity() -> dict[str, str]:
+    """Fail closed unless this is the exact Server 37 network identity."""
+    document = json.loads(command("ip", "-json", "-4", "address", "show", "up"))
+    addresses = {
+        str(address.get("local"))
+        for interface in document
+        for address in interface.get("addr_info", [])
+        if address.get("family") == "inet" and address.get("local")
+    }
+    missing = {EXPECTED_PUBLIC_IPV4, EXPECTED_PRIVATE_IPV4} - addresses
+    if missing:
+        raise RuntimeError(
+            "host identity mismatch; missing expected address(es): "
+            + ", ".join(sorted(missing))
+        )
+    hostname = command("hostname").strip()
+    if not hostname:
+        raise RuntimeError("host identity mismatch; hostname is empty")
+    return {
+        "hostname": hostname,
+        "public_ipv4": EXPECTED_PUBLIC_IPV4,
+        "private_ipv4": EXPECTED_PRIVATE_IPV4,
+    }
+
+
+def live_https_without_server_error(verification: str) -> bool:
+    return re.fullmatch(r"LIVE_HTTPS_([1-4][0-9]{2})", verification) is not None
 
 
 def source_openapi() -> dict[str, dict[str, Any]]:
@@ -707,6 +738,7 @@ def api_matrix() -> dict[str, Any]:
 
 
 def runtime_inventory() -> dict[str, Any]:
+    host_identity = verified_host_identity()
     container_ids = command("docker", "ps", "-aq").split()
     if not container_ids:
         raise RuntimeError("Docker inventory is empty")
@@ -825,9 +857,9 @@ def runtime_inventory() -> dict[str, Any]:
         "schema_version": 1,
         "generated_at": GENERATED_AT,
         "server_scope": "CURRENT_SERVER_ONLY",
-        "server": command("hostname").strip(),
-        "public_ipv4": "37.27.128.39",
-        "private_ip": "10.40.0.4",
+        "server": host_identity["hostname"],
+        "public_ipv4": host_identity["public_ipv4"],
+        "private_ip": host_identity["private_ipv4"],
         "workloads": sorted(workloads, key=lambda row: row["container_or_service"]),
         "host_services": [
             {
@@ -1058,8 +1090,7 @@ def certification_report(inventory: dict[str, Any], api: dict[str, Any]) -> dict
         if row["service"] == "NGINX" and row["implementation_status"] != "N/A"
     ]
     tls = "PASS" if active_edge and all(
-        row["runtime_verification"].startswith("LIVE_HTTPS_")
-        and row["runtime_verification"] != "LIVE_HTTPS_UNREACHABLE"
+        live_https_without_server_error(row["runtime_verification"])
         for row in active_edge
     ) else "FAIL"
     dns = tls

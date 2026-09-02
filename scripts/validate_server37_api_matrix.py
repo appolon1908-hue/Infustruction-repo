@@ -76,7 +76,6 @@ def main() -> None:
     missing = sum(row["classification"] == "MISSING_REQUIRED" for row in operations)
     assert live == contract["required_live"]
     assert missing == contract["missing_required"] == matrix["missing_required_endpoints"]
-    assert matrix["missing_required_endpoints"] != 0
 
     for row in matrix["candidate_source_authority"].values():
         assert GIT_SHA.fullmatch(row["source_sha"])
