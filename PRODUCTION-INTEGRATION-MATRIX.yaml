@@ -1,0 +1,191 @@
+schema_version: 1
+generated_at: '2026-09-02T02:27:47.753921+00:00'
+server_scope: CURRENT_SERVER_ONLY
+edges:
+- source: KLYROW
+  target: POSTAL
+  protocol: HTTP/SMTP
+  authentication: BEARER_OR_SMTP
+  authorization: TENANT_PROVIDER_POLICY
+  network: klyrow_backend
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: DURABLE_OUTBOX
+  health: provider health
+  failure_mode: AMBIGUOUS_RECONCILIATION
+- source: KLYROW
+  target: MAUTIC
+  protocol: HTTP
+  authentication: BEARER
+  authorization: COMMAND_ALLOWLIST
+  network: klyrow_backend
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: DURABLE_OUTBOX
+  health: adapter circuit state
+  failure_mode: DEAD_LETTER
+- source: KLYROW
+  target: OPENBAO
+  protocol: HTTPS
+  authentication: APPROLE_PLANNED
+  authorization: LEAST_PRIVILEGE_PLANNED
+  network: loopback edge
+  timeout_seconds: 5
+  retry: BOUNDED
+  idempotency: N/A
+  health: seal status
+  failure_mode: FAIL_CLOSED
+- source: KLYROW
+  target: PRIVATE_GATEWAY
+  protocol: HTTPS
+  authentication: MTLS_AND_BEARER
+  authorization: TENANT_AND_SCOPE
+  network: private edge
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: DURABLE
+  health: health/ready
+  failure_mode: FAIL_CLOSED
+- source: TELNEXA
+  target: KEYCLOAK
+  protocol: OIDC
+  authentication: JWT_JWKS
+  authorization: AUDIENCE_SCOPE_ROLE
+  network: telnexa_identity
+  timeout_seconds: 5
+  retry: BOUNDED
+  idempotency: N/A
+  health: OIDC discovery
+  failure_mode: FAIL_CLOSED
+- source: TELNEXA
+  target: JASMIN
+  protocol: HTTP/SMPP
+  authentication: FILE_SECRET
+  authorization: PROVIDER_POLICY
+  network: telnexa_backend
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: DURABLE_DATABASE
+  health: Jasmin health
+  failure_mode: AMBIGUOUS_RECONCILIATION
+- source: TELNEXA
+  target: RABBITMQ
+  protocol: AMQP
+  authentication: PASSWORD
+  authorization: VHOST
+  network: telnexa_backend
+  timeout_seconds: 5
+  retry: BOUNDED
+  idempotency: MESSAGE_ID
+  health: broker health
+  failure_mode: RETRY_OR_RECONCILE
+- source: TELNEXA
+  target: REDIS
+  protocol: RESP
+  authentication: PASSWORD
+  authorization: PRIVATE_NETWORK
+  network: telnexa_backend
+  timeout_seconds: 3
+  retry: BOUNDED
+  idempotency: N/A
+  health: PING
+  failure_mode: FAIL_CLOSED
+- source: TELNEXA
+  target: OPENBAO
+  protocol: HTTPS
+  authentication: APPROLE_PLANNED
+  authorization: LEAST_PRIVILEGE_PLANNED
+  network: loopback edge
+  timeout_seconds: 5
+  retry: BOUNDED
+  idempotency: N/A
+  health: seal status
+  failure_mode: FAIL_CLOSED
+- source: TELNEXA
+  target: PRIVATE_GATEWAY
+  protocol: HTTPS
+  authentication: MTLS_AND_BEARER
+  authorization: TENANT_AND_SCOPE
+  network: private edge
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: DURABLE
+  health: health/ready
+  failure_mode: FAIL_CLOSED
+- source: KYQRA
+  target: REDIS
+  protocol: RESP
+  authentication: PASSWORD_IN_CANDIDATE
+  authorization: PRIVATE_NETWORK
+  network: kyqra_backend
+  timeout_seconds: 3
+  retry: BOUNDED
+  idempotency: JOB_ID
+  health: PING
+  failure_mode: RETRY
+- source: KYQRA
+  target: POSTGRESQL
+  protocol: POSTGRES
+  authentication: PASSWORD
+  authorization: TENANT_FILTER
+  network: kyqra_backend
+  timeout_seconds: 5
+  retry: BOUNDED
+  idempotency: UNIQUE_CONSTRAINT
+  health: SELECT 1
+  failure_mode: FAIL_CLOSED
+- source: KYQRA
+  target: OPENBAO
+  protocol: HTTPS
+  authentication: APPROLE_PLANNED
+  authorization: LEAST_PRIVILEGE_PLANNED
+  network: loopback edge
+  timeout_seconds: 5
+  retry: BOUNDED
+  idempotency: N/A
+  health: seal status
+  failure_mode: FAIL_CLOSED
+- source: KYQRA
+  target: PRIVATE_GATEWAY
+  protocol: HTTPS
+  authentication: MTLS_AND_BEARER
+  authorization: TENANT_AND_SCOPE
+  network: private edge
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: DURABLE
+  health: health/ready
+  failure_mode: FAIL_CLOSED
+- source: PROMETHEUS_KLYROW
+  target: APPROVED_KLYROW_TARGETS
+  protocol: HTTP
+  authentication: BEARER_WHERE_SUPPORTED
+  authorization: METRICS_ONLY
+  network: monitoring
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: N/A
+  health: targets API
+  failure_mode: TARGET_DOWN_ALERT
+- source: PROMETHEUS_TELNEXA
+  target: APPROVED_TELNEXA_TARGETS
+  protocol: HTTP
+  authentication: BEARER_WHERE_SUPPORTED
+  authorization: METRICS_ONLY
+  network: monitoring
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: N/A
+  health: targets API
+  failure_mode: TARGET_DOWN_ALERT
+- source: GRAFANA_KLYROW
+  target: PROMETHEUS_KLYROW
+  protocol: HTTP
+  authentication: SERVICE_CREDENTIAL
+  authorization: DATASOURCE_READ
+  network: monitoring
+  timeout_seconds: 10
+  retry: BOUNDED
+  idempotency: N/A
+  health: datasource health
+  failure_mode: DASHBOARD_DEGRADED

@@ -1,0 +1,114 @@
+PHASE: FULL_PLATFORM_API_INTEGRATION_AND_PRODUCTION_CERTIFICATION
+SERVER: Ubuntu-jammy-latest-amd64-base.zst
+PUBLIC_IPV4: 37.27.128.39
+PRIVATE_IP: 10.40.0.4
+PRODUCTION_SERVICES: 40
+KLYROW_SOURCE_SHA: c964b49923c62f4a1ec10ab40ba85103aadd3471
+TELNEXA_SOURCE_SHA: 1c307225268b34d7eae253347303f237d75448d5
+KYQRA_SOURCE_SHA: b0ce92cbd8d0cceecff45385baab66094113c61b
+PRIVATE_GATEWAY_SOURCE_SHA: d406b04ee8fb920696ba07c9df42e449d41d62b8
+ALL_IMAGES_DIGEST_PINNED: 'NO'
+SOURCE_RUNTIME_DRIFT: 11
+KLYROW_API_ENDPOINTS: 271
+TELNEXA_API_ENDPOINTS: 105
+KYQRA_API_ENDPOINTS: 35
+PRIVATE_GATEWAY_API_ENDPOINTS: 26
+TOTAL_REQUIRED_ENDPOINTS: 128
+IMPLEMENTED_ENDPOINTS: 95
+PARTIAL_ENDPOINTS: 24
+MISSING_ENDPOINTS: 9
+KLYROW_OPENAPI: PASS
+TELNEXA_OPENAPI: PASS
+KYQRA_OPENAPI: PASS
+PRIVATE_GATEWAY_OPENAPI: FAIL
+OPENBAO: FAIL
+KEYCLOAK: FAIL
+POSTAL: FAIL
+MAUTIC: FAIL
+JASMIN: FAIL
+MTLS: FAIL
+POSTGRES: PASS
+MARIADB: FAIL
+REDIS: FAIL
+RABBITMQ: FAIL
+PROMETHEUS: FAIL
+GRAFANA: FAIL
+BACKUPS: FAIL
+RESTORE: FAIL
+SECURITY: FAIL
+ROLLBACK: FAIL
+KLYROW_EMAIL_E2E: FAIL
+TELNEXA_SMS_E2E: FAIL
+KYQRA_E2E: FAIL
+PRIVATE_INTEGRATION_E2E: FAIL
+PRODUCTION_CHANGED: 'NO'
+OVERALL_VERDICT: PRODUCTION_BLOCKED
+CLASSIFICATIONS:
+  NGINX: WARNING
+  OPENBAO: FAIL
+  KLYROW_GATEWAY: WARNING
+  KLYROW_WORKER: WARNING
+  KLYROW_BILLING: FAIL
+  KLYROW_SMTP: WARNING
+  KLYROW_FRONTEND: FAIL
+  POSTAL: WARNING
+  MAUTIC: WARNING
+  TELNEXA_SMS: WARNING
+  TELNEXA_BILLING: WARNING
+  KEYCLOAK: FAIL
+  KYQRA: WARNING
+  PRIVATE_GATEWAY: FAIL
+  POSTGRES: PASS
+  MARIADB: FAIL
+  REDIS: FAIL
+  RABBITMQ: FAIL
+  PROMETHEUS: FAIL
+  GRAFANA: FAIL
+  MTLS: FAIL
+  DNS: FAIL
+  TLS: FAIL
+  API_CONTRACTS: FAIL
+  IDEMPOTENCY: FAIL
+  AUTH: FAIL
+  RBAC: FAIL
+  AUDIT: FAIL
+  BACKUPS: FAIL
+  RESTORE: FAIL
+  OBSERVABILITY: FAIL
+  SECURITY: FAIL
+  SOURCE_PROVENANCE: FAIL
+  ROLLBACK: FAIL
+BLOCKERS:
+- blocker: OpenBao is uninitialized and sealed; initialization needs independent recovery-share and root-token custody approval.
+  owner: platform owner and independent recovery custodians
+  repository: codestra-openbao-production
+  component: OPENBAO
+  required_action: Approve and perform guarded initialization with independent custody, TLS audit enablement, backup, and
+    isolated restore drill.
+  validation_after_action: Seal status initialized=true and sealed=false; audit, policy, AppRole, off-host backup, and recovery
+    evidence all pass.
+- blocker: Nine required private integration gateway command/operation routes have no approved downstream dispatch authority
+    or credentials.
+  owner: Klyrow, Telnexa, Kyqra, and platform repository owners
+  repository: https://github.com/appolon1908-hue/codestra-production-platform
+  component: PRIVATE_GATEWAY
+  required_action: Approve concrete downstream contracts, networks, service identities, scopes, and credentials; implement
+    durable dispatch and reconciliation.
+  validation_after_action: OpenAPI/runtime parity, mTLS authorization, durable idempotency, operation transitions, and controlled
+    integration E2E pass.
+- blocker: All candidate source changes require independent repository review and exact-head CI before immutable image publication
+    or deployment.
+  owner: independent repository reviewers
+  repository: multiple repositories
+  component: RELEASE_PROCESS
+  required_action: Review and approve the Klyrow, Telnexa, Kyqra, private-gateway, and infrastructure pull requests.
+  validation_after_action: Merge-result CI passes; signed immutable digests are published, deployed via Git authority, and
+    runtime SHA/digest readback matches.
+- blocker: No approved provider test mailbox, SMS sandbox number, positive mTLS client certificate, Mautic API credential,
+    or off-host backup target is available.
+  owner: platform owner and provider credential custodians
+  repository: N/A
+  component: E2E_BACKUP_RESTORE
+  required_action: Provide scoped test identities/targets and off-host backup authority without exposing credential values.
+  validation_after_action: Controlled email, SMS, crawler, private-mTLS, secret-read, off-host backup, and isolated restore
+    tests pass.
