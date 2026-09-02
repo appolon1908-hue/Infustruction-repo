@@ -98,6 +98,13 @@ def normalized(path: str) -> str:
     return re.sub(r"\{[^}]+\}|:[A-Za-z_][A-Za-z0-9_]*", "{}", path.replace("(.:format)", ""))
 
 
+def contract_normalized(service: str, path: str) -> str:
+    value = normalized(path)
+    if service == "TELNEXA" and value.startswith("/api/v1"):
+        return value.removeprefix("/api")
+    return value
+
+
 def operations(document: dict[str, Any]) -> set[tuple[str, str]]:
     return {
         (method.upper(), normalized(path))
@@ -412,10 +419,16 @@ def api_matrix() -> dict[str, Any]:
     contracts = required_contracts()
     required: list[dict[str, str]] = []
     for service, entries in contracts.items():
-        source_ops = operations(source[service])
-        runtime_ops = operations(live[service])
+        source_ops = {
+            (method, contract_normalized(service, path))
+            for method, path in operations(source[service])
+        }
+        runtime_ops = {
+            (method, contract_normalized(service, path))
+            for method, path in operations(live[service])
+        }
         for _, method, path in entries:
-            key = (method, normalized(path))
+            key = (method, contract_normalized(service, path))
             mutating = method in {"POST", "PUT", "PATCH", "DELETE"}
             known_idempotent = any(token in path for token in ("/messages", "/jobs", "/commands", "/webhooks", "/operations", "/callbacks"))
             state = (
