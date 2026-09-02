@@ -14,26 +14,32 @@ EXPECTED = {
     1221155447: (
         "appolon1908-hue/Frontend-Resturant-",
         "appolon1908-hue/restaurant-frontend",
+        True,
     ),
     1343761049: (
         "appolon1908-hue/transportaion-Frontend",
         "appolon1908-hue/freight-platform-frontend",
+        True,
     ),
     1343962199: (
         "appolon1908-hue/LARIM-A-Fornt-end",
         "appolon1908-hue/LARIM-A-Frontend",
+        True,
     ),
     1351353723: (
         "appolon1908-hue/Codesrea-Social-",
         "appolon1908-hue/Codestra-Social-Control-Plane",
+        False,
     ),
     1350724356: (
         "appolon1908-hue/documentaions",
         "appolon1908-hue/Codestra-Documentation",
+        False,
     ),
     1350724865: (
         "appolon1908-hue/Infustruction-repo",
         "appolon1908-hue/Codestra-Infrastructure",
+        True,
     ),
 }
 
@@ -51,6 +57,46 @@ def load() -> dict[str, Any]:
     if not isinstance(data, dict):
         fail("manifest root must be an object")
     return data
+
+
+def operational_sources() -> list[Path]:
+    paths: set[Path] = set()
+    for pattern in (
+        "PRODUCTION-*.yaml",
+        "PRODUCTION-*.json",
+        "STAGE6-SOURCE-LOCK.yaml",
+        "release/**/*.yaml",
+        "release/**/*.yml",
+        "release/**/*.json",
+        "releases/**/*.yaml",
+        "releases/**/*.yml",
+        "releases/**/*.json",
+        "deploy/**/*.yaml",
+        "deploy/**/*.yml",
+        "deploy/**/*.json",
+        "operations/**/*.yaml",
+        "operations/**/*.yml",
+        "config/**/*.yaml",
+        "config/**/*.yml",
+        "config/**/*.json",
+    ):
+        paths.update(path for path in ROOT.glob(pattern) if path.is_file())
+    paths.discard(MANIFEST)
+    return sorted(paths)
+
+
+def validate_planned_targets_absent(
+    paths: list[Path],
+    planned_targets: set[str],
+) -> None:
+    for path in paths:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for target in planned_targets:
+            if target in text:
+                fail(
+                    "planned repository target appears in active operational "
+                    f"source before cutover: {target} in {path.relative_to(ROOT)}"
+                )
 
 
 def validate() -> None:
@@ -97,6 +143,13 @@ def validate() -> None:
         fail("retired public hostname must remain explicitly forbidden")
     if postgres.get("exposure") != "PRIVATE_INTERNAL_ONLY":
         fail("PostgreSQL Exporter must remain private/internal only")
+    for field in (
+        "caddy_publication_allowed",
+        "kong_publication_allowed",
+        "host_public_port_allowed",
+    ):
+        if postgres.get(field) is not False:
+            fail(f"PostgreSQL Exporter {field} must remain false")
 
     mappings = data.get("mappings")
     if not isinstance(mappings, list) or len(mappings) != len(EXPECTED):
@@ -105,7 +158,7 @@ def validate() -> None:
     seen_ids: set[int] = set()
     seen_current: set[str] = set()
     seen_target: set[str] = set()
-    actual: dict[int, tuple[str, str]] = {}
+    actual: dict[int, tuple[str, str, bool]] = {}
 
     for item in mappings:
         if not isinstance(item, dict):
@@ -114,6 +167,7 @@ def validate() -> None:
         current = item.get("current_repository")
         target = item.get("target_repository_after_cutover")
         status = item.get("status")
+        runtime_critical = item.get("runtime_critical")
 
         if not isinstance(repository_id, int) or repository_id <= 0:
             fail("mapping contains an invalid repository ID")
@@ -129,11 +183,13 @@ def validate() -> None:
             fail("duplicate current or target repository name")
         if status != "PREPARED_NOT_RENAMED":
             fail(f"mapping changed state without cutover: {current}")
+        if not isinstance(runtime_critical, bool):
+            fail(f"mapping runtime_critical must be boolean: {current}")
 
         seen_ids.add(repository_id)
         seen_current.add(current)
         seen_target.add(target)
-        actual[repository_id] = (current, target)
+        actual[repository_id] = (current, target, runtime_critical)
 
     if actual != EXPECTED:
         fail("repository mappings do not exactly match the approved migration set")
@@ -152,6 +208,11 @@ def validate() -> None:
             fail(f"required fail-closed policy is not true: {key}")
     if policy.get("rename_authorizes_deployment") is not False:
         fail("repository rename must not authorize deployment")
+
+    validate_planned_targets_absent(
+        operational_sources(),
+        {mapping[1] for mapping in EXPECTED.values()},
+    )
 
 
 def main() -> None:

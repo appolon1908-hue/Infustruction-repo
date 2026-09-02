@@ -20,7 +20,10 @@
     "public_hostname": null,
     "private_service_identity": "postgres-exporter:9187",
     "forbidden_public_hostname": "pgex.codestra.media",
-    "exposure": "PRIVATE_INTERNAL_ONLY"
+    "exposure": "PRIVATE_INTERNAL_ONLY",
+    "caddy_publication_allowed": false,
+    "kong_publication_allowed": false,
+    "host_public_port_allowed": false
   },
   "mappings": [
     {
