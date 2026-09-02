@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import json
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -40,9 +41,35 @@ class RepositoryNameAliasTests(unittest.TestCase):
                     {target},
                 )
 
-    def test_operational_scan_includes_workflows_infra_scripts_and_submodules(self) -> None:
+    def test_renamed_mapping_resolves_the_target_slug(self) -> None:
+        data = AUTHORITY.load()
+        changed = copy.deepcopy(data)
+        changed["status"] = "PARTIALLY_RENAMED_VERIFIED"
+        social = next(
+            item
+            for item in changed["mappings"]
+            if item["repository_id"] == 1351353723
+        )
+        social["status"] = "RENAMED_VERIFIED"
+
+        expected = "appolon1908-hue/Codestra-Social-Control-Plane"
+        self.assertEqual(
+            AUTHORITY.operational_repository_for_mapping(social),
+            expected,
+        )
+        self.assertEqual(
+            AUTHORITY.operational_repository_map(changed)[1351353723],
+            expected,
+        )
+        self.assertNotIn(
+            expected,
+            AUTHORITY.forbidden_pre_cutover_targets(changed),
+        )
+
+    def test_operational_scan_includes_all_repository_consumers(self) -> None:
         expected = (
             ROOT / ".github" / "workflows" / "release.yml",
+            ROOT / ".github" / "actions" / "checkout-source" / "action.yml",
             ROOT / "infra" / "modules" / "source.tf",
             ROOT / "scripts" / "checkout-release.sh",
             ROOT / ".gitmodules",
@@ -56,6 +83,26 @@ class RepositoryNameAliasTests(unittest.TestCase):
         payload = (
             '{"repository_id":1351353723,'
             '"repository":"appolon1908-hue/unapproved-social-fork"}'
+        )
+        with patch.object(Path, "read_text", return_value=payload):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
+
+    def test_repository_id_pairing_is_scoped_to_each_json_record(self) -> None:
+        fake_path = ROOT / "release" / "synthetic-multi-entry-lock.json"
+        payload = json.dumps(
+            {
+                "entries": [
+                    {
+                        "repository_id": 1351353723,
+                        "repository": "appolon1908-hue/Codesrea-Social-",
+                    },
+                    {
+                        "repository_id": 1351353723,
+                        "repository": "appolon1908-hue/unapproved-social-fork",
+                    },
+                ]
+            }
         )
         with patch.object(Path, "read_text", return_value=payload):
             with self.assertRaises(SystemExit):
@@ -104,6 +151,24 @@ class RepositoryNameAliasTests(unittest.TestCase):
     def test_exporter_gateway_route_is_denied(self) -> None:
         fake_path = ROOT / "operations" / "caddy" / "postgres-exporter.caddy"
         payload = "metrics.example.test { reverse_proxy postgres-exporter:9187 }\n"
+        with patch.object(Path, "read_text", return_value=payload):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_postgres_exporter_privacy([fake_path])
+
+    def test_exporter_kubernetes_httproute_is_denied(self) -> None:
+        fake_path = ROOT / "k8s" / "metrics-route.yaml"
+        payload = """apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: postgres-exporter-public
+spec:
+  parentRefs:
+    - name: public-gateway
+  rules:
+    - backendRefs:
+        - name: postgres-exporter
+          port: 9187
+"""
         with patch.object(Path, "read_text", return_value=payload):
             with self.assertRaises(SystemExit):
                 AUTHORITY.validate_postgres_exporter_privacy([fake_path])
