@@ -2,8 +2,11 @@
 set -Eeuo pipefail
 umask 077
 PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-export PATH
-unset BASH_ENV ENV CDPATH
+HOME='/nonexistent'
+DOCKER_CONFIG='/nonexistent'
+XDG_CONFIG_HOME='/nonexistent'
+export PATH HOME DOCKER_CONFIG XDG_CONFIG_HOME
+unset BASH_ENV ENV CDPATH GIT_CONFIG_GLOBAL GIT_CONFIG_SYSTEM GIT_CONFIG_COUNT
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="$ROOT_DIR/deploy/staging/intake-observability/compose.yaml"
@@ -27,6 +30,7 @@ EXPECTED_RELEASE_IDENTITY='https://github.com/appolon1908-hue/Middleware-/.githu
 EXPECTED_RELEASE_ISSUER='https://token.actions.githubusercontent.com'
 EXPECTED_RELEASE_EVIDENCE_ROOT='/var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761'
 COSIGN='/usr/local/bin/cosign'
+COMPOSE_BIN='/usr/libexec/docker/cli-plugins/docker-compose'
 EXPECTED_KEYCLOAK_PUBLIC_URL='https://auth-staging.codestra.co'
 EXPECTED_KEYCLOAK_ISSUER="${EXPECTED_KEYCLOAK_PUBLIC_URL}/realms/codestra"
 EXPECTED_KEYCLOAK_JWKS_URI="${EXPECTED_KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
@@ -54,7 +58,19 @@ WEBHOOK_PRODUCERS=(
 
 fail() { printf 'STAGING_DEPLOYMENT=FAIL %s\n' "$*" >&2; exit 1; }
 require() { command -v "$1" >/dev/null 2>&1 || fail "missing command: $1"; }
-compose() { docker compose --project-name "$PROJECT" --env-file "$STATE_ROOT/deployment.env" -f "$COMPOSE_FILE" "$@"; }
+docker() { /usr/bin/docker "$@"; }
+git() {
+  /usr/bin/env -i \
+    PATH=/usr/bin:/bin \
+    HOME=/nonexistent \
+    XDG_CONFIG_HOME=/nonexistent \
+    GIT_CONFIG_NOSYSTEM=1 \
+    GIT_CONFIG_GLOBAL=/dev/null \
+    GIT_TERMINAL_PROMPT=0 \
+    LC_ALL=C \
+    /usr/bin/git "$@"
+}
+compose() { "$COMPOSE_BIN" --project-name "$PROJECT" --env-file "$STATE_ROOT/deployment.env" -f "$COMPOSE_FILE" "$@"; }
 new_secret() { python3 - <<'PY'
 import secrets
 print(secrets.token_hex(32))
@@ -101,8 +117,10 @@ validate_protected_checkout() {
 }
 
 validate_observability_network() {
-  docker network inspect "$OBSERVABILITY_NETWORK" |
-    jq -e \
+  local network_json container_id port_bindings
+  network_json="$(docker network inspect "$OBSERVABILITY_NETWORK")" ||
+    fail 'shared observability network is absent'
+  jq -e \
       --arg name "$OBSERVABILITY_NETWORK" \
       --arg contract "$OBSERVABILITY_NETWORK_CONTRACT" \
       --arg subnet "$OBSERVABILITY_NETWORK_SUBNET" \
@@ -125,8 +143,16 @@ validate_observability_network() {
           .value.Name == "codestra-prometheus-staging"
           or .value.Name == "codestra-grafana-staging"
         ))
-      ' >/dev/null ||
+      ' <<<"$network_json" >/dev/null ||
     fail 'shared observability network does not match its reviewed contract'
+  while IFS= read -r container_id; do
+    [[ "$container_id" =~ ^[0-9a-f]{64}$ ]] ||
+      fail 'shared observability network returned a malformed container ID'
+    port_bindings="$(docker container inspect "$container_id" --format '{{json .HostConfig.PortBindings}}')" ||
+      fail 'shared observability member could not be inspected'
+    [[ "$port_bindings" == '{}' ]] ||
+      fail 'shared observability member publishes a host port'
+  done < <(jq -r '.[0].Containers | keys[]' <<<"$network_json")
 }
 
 ensure_observability_network() {
@@ -276,13 +302,15 @@ validate_exact_merged_source() {
 }
 
 for command in docker python3 jq sha256sum openssl git stat find; do require "$command"; done
+[[ -x /usr/bin/docker && -x /usr/bin/git && -x "$COMPOSE_BIN" ]] ||
+  fail 'trusted Docker, Compose, or Git executable is absent'
 if [[ "$ACTION" != render ]]; then
   validate_protected_checkout
 fi
 if [[ "$ACTION" == deploy ]]; then
   validate_exact_merged_source
 fi
-docker compose version >/dev/null
+"$COMPOSE_BIN" version >/dev/null
 [[ "$STATE_ROOT" == /* ]] || fail 'CODESTRA_STAGING_ROOT must be an absolute path'
 [[ "$STATE_ROOT" != / && "$STATE_ROOT" != /etc && "$STATE_ROOT" != /opt && "$STATE_ROOT" != /srv ]] || fail 'unsafe staging root'
 

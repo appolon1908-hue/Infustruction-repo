@@ -31,7 +31,9 @@ chmod -R go-w /var/lib/codestra/releases/middleware/9a96ff1651a3-01a61e6c9761
 
 Use an explicit state path rather than an implicit home-directory default. The
 deployment entrypoint verifies the exact merged Infrastructure SHA and the
-protected source closure before it pulls or starts a container:
+protected source closure before it pulls or starts a container. It clears
+inherited Docker/Git configuration, invokes the root-owned system Compose
+plugin directly, and disables global/system Git configuration:
 
 ~~~bash
 /usr/bin/env -i \
