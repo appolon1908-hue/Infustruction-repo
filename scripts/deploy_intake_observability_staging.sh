@@ -117,7 +117,7 @@ validate_protected_checkout() {
 }
 
 validate_observability_network() {
-  local network_json container_id port_bindings
+  local network_json container_id container_json
   network_json="$(docker network inspect "$OBSERVABILITY_NETWORK")" ||
     fail 'shared observability network is absent'
   jq -e \
@@ -148,9 +148,18 @@ validate_observability_network() {
   while IFS= read -r container_id; do
     [[ "$container_id" =~ ^[0-9a-f]{64}$ ]] ||
       fail 'shared observability network returned a malformed container ID'
-    port_bindings="$(docker container inspect "$container_id" --format '{{json .HostConfig.PortBindings}}')" ||
+    container_json="$(docker container inspect "$container_id")" ||
       fail 'shared observability member could not be inspected'
-    [[ "$port_bindings" == '{}' ]] ||
+    jq -e \
+      --arg id "$container_id" \
+      --arg network "$OBSERVABILITY_NETWORK" '
+        length == 1
+        and .[0].Id == $id
+        and .[0].HostConfig.PublishAllPorts == false
+        and (.[0].HostConfig.PortBindings // {}) == {}
+        and ((.[0].NetworkSettings.Ports // {}) | to_entries | all(.value == null))
+        and .[0].NetworkSettings.Networks[$network] != null
+      ' <<<"$container_json" >/dev/null ||
       fail 'shared observability member publishes a host port'
   done < <(jq -r '.[0].Containers | keys[]' <<<"$network_json")
 }
