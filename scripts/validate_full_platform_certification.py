@@ -152,15 +152,16 @@ def validate_integrations(integration: dict[str, Any]) -> None:
     assert integration["server_scope"] == "CURRENT_SERVER_ONLY"
     required_fields = {
         "source",
-        "target",
+        "destination",
         "protocol",
-        "authentication",
+        "auth",
         "authorization",
         "network",
         "timeout_seconds",
         "retry",
         "idempotency",
         "health",
+        "external_effect",
         "failure_mode",
     }
     expected_edges = {
@@ -178,6 +179,8 @@ def validate_integrations(integration: dict[str, Any]) -> None:
         ("KYQRA", "POSTGRESQL"),
         ("KYQRA", "OPENBAO"),
         ("KYQRA", "PRIVATE_GATEWAY"),
+        ("PRIVATE_GATEWAY", "TELNEXA"),
+        ("PRIVATE_GATEWAY", "KYQRA"),
         ("PROMETHEUS_KLYROW", "APPROVED_KLYROW_TARGETS"),
         ("PROMETHEUS_TELNEXA", "APPROVED_TELNEXA_TARGETS"),
         ("GRAFANA_KLYROW", "PROMETHEUS_KLYROW"),
@@ -186,7 +189,7 @@ def validate_integrations(integration: dict[str, Any]) -> None:
     for row in integration["edges"]:
         missing = required_fields - row.keys()
         assert not missing, f"integration edge missing fields: {sorted(missing)}"
-        key = (row["source"], row["target"])
+        key = (row["source"], row["destination"])
         assert key not in actual_edges, f"duplicate integration edge: {key}"
         actual_edges.add(key)
         assert isinstance(row["timeout_seconds"], int) and row["timeout_seconds"] > 0

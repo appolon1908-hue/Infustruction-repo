@@ -697,25 +697,27 @@ def runtime_inventory() -> dict[str, Any]:
 
 def integration_matrix() -> dict[str, Any]:
     edges = [
-        ("KLYROW", "POSTAL", "HTTP/SMTP", "BEARER_OR_SMTP", "TENANT_PROVIDER_POLICY", "klyrow_backend", 10, "BOUNDED", "DURABLE_OUTBOX", "provider health", "AMBIGUOUS_RECONCILIATION"),
-        ("KLYROW", "MAUTIC", "HTTP", "BEARER", "COMMAND_ALLOWLIST", "klyrow_backend", 10, "BOUNDED", "DURABLE_OUTBOX", "adapter circuit state", "DEAD_LETTER"),
-        ("KLYROW", "OPENBAO", "HTTPS", "APPROLE_PLANNED", "LEAST_PRIVILEGE_PLANNED", "loopback edge", 5, "BOUNDED", "N/A", "seal status", "FAIL_CLOSED"),
-        ("KLYROW", "PRIVATE_GATEWAY", "HTTPS", "MTLS_AND_BEARER", "TENANT_AND_SCOPE", "private edge", 10, "BOUNDED", "DURABLE", "health/ready", "FAIL_CLOSED"),
-        ("TELNEXA", "KEYCLOAK", "OIDC", "JWT_JWKS", "AUDIENCE_SCOPE_ROLE", "telnexa_identity", 5, "BOUNDED", "N/A", "OIDC discovery", "FAIL_CLOSED"),
-        ("TELNEXA", "JASMIN", "HTTP/SMPP", "FILE_SECRET", "PROVIDER_POLICY", "telnexa_backend", 10, "BOUNDED", "DURABLE_DATABASE", "Jasmin health", "AMBIGUOUS_RECONCILIATION"),
-        ("TELNEXA", "RABBITMQ", "AMQP", "PASSWORD", "VHOST", "telnexa_backend", 5, "BOUNDED", "MESSAGE_ID", "broker health", "RETRY_OR_RECONCILE"),
-        ("TELNEXA", "REDIS", "RESP", "PASSWORD", "PRIVATE_NETWORK", "telnexa_backend", 3, "BOUNDED", "N/A", "PING", "FAIL_CLOSED"),
-        ("TELNEXA", "OPENBAO", "HTTPS", "APPROLE_PLANNED", "LEAST_PRIVILEGE_PLANNED", "loopback edge", 5, "BOUNDED", "N/A", "seal status", "FAIL_CLOSED"),
-        ("TELNEXA", "PRIVATE_GATEWAY", "HTTPS", "MTLS_AND_BEARER", "TENANT_AND_SCOPE", "private edge", 10, "BOUNDED", "DURABLE", "health/ready", "FAIL_CLOSED"),
-        ("KYQRA", "REDIS", "RESP", "PASSWORD_IN_CANDIDATE", "PRIVATE_NETWORK", "kyqra_backend", 3, "BOUNDED", "JOB_ID", "PING", "RETRY"),
-        ("KYQRA", "POSTGRESQL", "POSTGRES", "PASSWORD", "TENANT_FILTER", "kyqra_backend", 5, "BOUNDED", "UNIQUE_CONSTRAINT", "SELECT 1", "FAIL_CLOSED"),
-        ("KYQRA", "OPENBAO", "HTTPS", "APPROLE_PLANNED", "LEAST_PRIVILEGE_PLANNED", "loopback edge", 5, "BOUNDED", "N/A", "seal status", "FAIL_CLOSED"),
-        ("KYQRA", "PRIVATE_GATEWAY", "HTTPS", "MTLS_AND_BEARER", "TENANT_AND_SCOPE", "private edge", 10, "BOUNDED", "DURABLE", "health/ready", "FAIL_CLOSED"),
-        ("PROMETHEUS_KLYROW", "APPROVED_KLYROW_TARGETS", "HTTP", "BEARER_WHERE_SUPPORTED", "METRICS_ONLY", "monitoring", 10, "BOUNDED", "N/A", "targets API", "TARGET_DOWN_ALERT"),
-        ("PROMETHEUS_TELNEXA", "APPROVED_TELNEXA_TARGETS", "HTTP", "BEARER_WHERE_SUPPORTED", "METRICS_ONLY", "monitoring", 10, "BOUNDED", "N/A", "targets API", "TARGET_DOWN_ALERT"),
-        ("GRAFANA_KLYROW", "PROMETHEUS_KLYROW", "HTTP", "SERVICE_CREDENTIAL", "DATASOURCE_READ", "monitoring", 10, "BOUNDED", "N/A", "datasource health", "DASHBOARD_DEGRADED"),
+        ("KLYROW", "POSTAL", "HTTP/SMTP", "BEARER_OR_SMTP", "TENANT_PROVIDER_POLICY", "klyrow_backend", 10, "BOUNDED", "DURABLE_OUTBOX", "provider health", "EMAIL_DELIVERY", "AMBIGUOUS_RECONCILIATION"),
+        ("KLYROW", "MAUTIC", "HTTP", "OAUTH2_CLIENT_CREDENTIALS", "DEDICATED_ROLE_AND_COMMAND_ALLOWLIST", "klyrow_backend", 10, "BOUNDED", "DURABLE_OUTBOX", "adapter circuit state", "CONTACT_CAMPAIGN_STATE", "DEAD_LETTER"),
+        ("KLYROW", "OPENBAO", "HTTPS", "APPROLE_PLANNED", "LEAST_PRIVILEGE_PLANNED", "loopback edge", 5, "BOUNDED", "N/A", "seal status", "SECRET_READ", "FAIL_CLOSED"),
+        ("KLYROW", "PRIVATE_GATEWAY", "HTTPS", "MTLS_AND_BEARER", "TENANT_AND_SCOPE", "private edge", 10, "BOUNDED", "DURABLE", "health/ready", "CROSS_SERVICE_COMMAND", "FAIL_CLOSED"),
+        ("TELNEXA", "KEYCLOAK", "OIDC", "JWT_JWKS", "AUDIENCE_SCOPE_ROLE", "telnexa_identity", 5, "BOUNDED", "N/A", "OIDC discovery", "TOKEN_VALIDATION_OR_ISSUANCE", "FAIL_CLOSED"),
+        ("TELNEXA", "JASMIN", "HTTP/SMPP", "FILE_SECRET", "PROVIDER_POLICY", "telnexa_backend", 10, "BOUNDED", "DURABLE_DATABASE", "Jasmin health", "SMS_DELIVERY", "AMBIGUOUS_RECONCILIATION"),
+        ("TELNEXA", "RABBITMQ", "AMQP", "PASSWORD", "VHOST", "telnexa_backend", 5, "BOUNDED", "MESSAGE_ID", "broker health", "DURABLE_MESSAGE", "RETRY_OR_RECONCILE"),
+        ("TELNEXA", "REDIS", "RESP", "PASSWORD", "PRIVATE_NETWORK", "telnexa_backend", 3, "BOUNDED", "N/A", "PING", "RATE_LIMIT_OR_CACHE_STATE", "FAIL_CLOSED"),
+        ("TELNEXA", "OPENBAO", "HTTPS", "APPROLE_PLANNED", "LEAST_PRIVILEGE_PLANNED", "loopback edge", 5, "BOUNDED", "N/A", "seal status", "SECRET_READ", "FAIL_CLOSED"),
+        ("TELNEXA", "PRIVATE_GATEWAY", "HTTPS", "MTLS_AND_BEARER", "TENANT_AND_SCOPE", "private edge", 10, "BOUNDED", "DURABLE", "health/ready", "DLR_OR_PROVIDER_EVENT", "FAIL_CLOSED"),
+        ("KYQRA", "REDIS", "RESP", "PASSWORD_IN_CANDIDATE", "PRIVATE_NETWORK", "kyqra_backend", 3, "BOUNDED", "JOB_ID", "PING", "JOB_STATE", "RETRY"),
+        ("KYQRA", "POSTGRESQL", "POSTGRES", "PASSWORD", "TENANT_FILTER", "kyqra_backend", 5, "BOUNDED", "UNIQUE_CONSTRAINT", "SELECT 1", "DURABLE_JOB_STATE", "FAIL_CLOSED"),
+        ("KYQRA", "OPENBAO", "HTTPS", "APPROLE_PLANNED", "LEAST_PRIVILEGE_PLANNED", "loopback edge", 5, "BOUNDED", "N/A", "seal status", "SECRET_READ", "FAIL_CLOSED"),
+        ("KYQRA", "PRIVATE_GATEWAY", "HTTPS", "MTLS_AND_BEARER", "TENANT_AND_SCOPE", "private edge", 10, "BOUNDED", "DURABLE", "health/ready", "JOB_CALLBACK_OR_COMMAND", "FAIL_CLOSED"),
+        ("PRIVATE_GATEWAY", "TELNEXA", "HTTPS", "MTLS_AND_BEARER", "SERVICE_TENANT_AND_EVENT_SCOPE", "private edge", 10, "BOUNDED", "DURABLE", "telnexa health", "INBOUND_SMS_OR_DLR_STATE", "FAIL_CLOSED"),
+        ("PRIVATE_GATEWAY", "KYQRA", "HTTPS", "MTLS_AND_BEARER", "SERVICE_TENANT_AND_EVENT_SCOPE", "private edge", 10, "BOUNDED", "DURABLE", "kyqra health", "JOB_PROGRESS_OR_RESULT_STATE", "FAIL_CLOSED"),
+        ("PROMETHEUS_KLYROW", "APPROVED_KLYROW_TARGETS", "HTTP", "BEARER_WHERE_SUPPORTED", "METRICS_ONLY", "monitoring", 10, "BOUNDED", "N/A", "targets API", "NONE", "TARGET_DOWN_ALERT"),
+        ("PROMETHEUS_TELNEXA", "APPROVED_TELNEXA_TARGETS", "HTTP", "BEARER_WHERE_SUPPORTED", "METRICS_ONLY", "monitoring", 10, "BOUNDED", "N/A", "targets API", "NONE", "TARGET_DOWN_ALERT"),
+        ("GRAFANA_KLYROW", "PROMETHEUS_KLYROW", "HTTP", "SERVICE_CREDENTIAL", "DATASOURCE_READ", "monitoring", 10, "BOUNDED", "N/A", "datasource health", "NONE", "DASHBOARD_DEGRADED"),
     ]
-    names = ["source", "target", "protocol", "authentication", "authorization", "network", "timeout_seconds", "retry", "idempotency", "health", "failure_mode"]
+    names = ["source", "destination", "protocol", "auth", "authorization", "network", "timeout_seconds", "retry", "idempotency", "health", "external_effect", "failure_mode"]
     value = {"schema_version": 1, "generated_at": GENERATED_AT, "server_scope": "CURRENT_SERVER_ONLY", "edges": [dict(zip(names, row)) for row in edges]}
     (ROOT / "PRODUCTION-INTEGRATION-MATRIX.yaml").write_text(yaml.safe_dump(value, sort_keys=False, width=120))
     return value
