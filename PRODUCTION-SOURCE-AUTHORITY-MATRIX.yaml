@@ -17,6 +17,11 @@ defaults:
   protected_branch: UNKNOWN
   source_sha: UNKNOWN
   confidence: low
+api_completion_candidates:
+  codestra-ai: {repository: appolon1908-hue/Codestra-AI, pr: 5, head: 710e6e1327013f5633c1ee2a9cdf933d118f3653, runtime: NOT_DEPLOYED}
+  codestra-communication: {repository: appolon1908-hue/Codestra-Communication-CC, pr: 5, head: 341e253ccc28f92dc8c2f769328a9996b450d540, runtime: NOT_DEPLOYED}
+  codestra-marketing: {repository: appolon1908-hue/Codestra-Marketing-, pr: 5, head: cb0343fb78176dea66ab3e1ee95853127ed66b2d, runtime: NOT_DEPLOYED}
+  codestra-social: {repository: appolon1908-hue/Codesrea-Social-, pr: 5, head: f1337324b8000c7908c074ab037dd6e312b9de95, runtime: NOT_DEPLOYED}
 workloads:
   codestra-middleware-1:
     runtime_image: codestra/middleware:health-contract-b3ca9aa
