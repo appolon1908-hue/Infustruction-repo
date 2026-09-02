@@ -1,0 +1,21 @@
+{
+  "bound_audiences": [
+    "codestra-openbao"
+  ],
+  "allowed_redirect_uris": [
+    "https://bao.codestra.media/ui/vault/auth/oidc/oidc/callback",
+    "https://bao.codestra.media/oidc/callback"
+  ],
+  "user_claim": "preferred_username",
+  "groups_claim": "groups",
+  "bound_claims": {
+    "groups": [
+      "codestra-observability-admins"
+    ]
+  },
+  "policies": [
+    "observability-admin"
+  ],
+  "ttl": "30m",
+  "max_ttl": "2h"
+}
