@@ -41,8 +41,7 @@ def require(source: str, token: str) -> None:
         raise ValueError(f"mission authority missing: {token}")
 
 
-def main() -> None:
-    source = MISSION.read_text(encoding="utf-8")
+def validate(source: str) -> None:
     require(source, "**Mission ID:** `CODESTRA_OBSERVABILITY_REPO_FIRST_2026-09-02`")
     require(source, "**Execution mode:** repository, CI, release-registry, and artifact work only")
     require(source, "This is a repository-only mission.")
@@ -69,11 +68,16 @@ def main() -> None:
         "PRODUCTION_HOST_CONTACTED=YES",
         "PRODUCTION_CHANGED=YES",
         "deployment_enabled=true",
-        "SERVER_INSTALL_AUTHORIZED=YES\n",
+        "SERVER_INSTALL_AUTHORIZED=YES",
     )
     present = [token for token in forbidden if token in source]
     if present:
         raise ValueError(f"repository-only mission contains activation claim: {present}")
+
+
+def main() -> None:
+    source = MISSION.read_text(encoding="utf-8")
+    validate(source)
 
     print("CODESTRA_OBSERVABILITY_REPOSITORY_FIRST_MISSION=PASS")
     print("COMPONENT_AUTHORITIES=14")

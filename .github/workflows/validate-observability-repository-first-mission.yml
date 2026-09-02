@@ -5,20 +5,15 @@ on:
     paths:
       - CODESTRA_OBSERVABILITY_REPO_FIRST_CODEX_MISSION_2026-09-02.md
       - scripts/validate_observability_repository_first_mission.py
+      - tests/test_observability_repository_first_mission.py
       - .github/workflows/validate-observability-repository-first-mission.yml
-  push:
-    branches: [main]
-    paths:
-      - CODESTRA_OBSERVABILITY_REPO_FIRST_CODEX_MISSION_2026-09-02.md
-      - scripts/validate_observability_repository_first_mission.py
-      - .github/workflows/validate-observability-repository-first-mission.yml
+      - .github/workflows/validate-observability-repository-first-mission-protected.yml
 
 permissions:
   contents: read
 
 jobs:
   validate-mission-source:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
@@ -31,6 +26,7 @@ jobs:
           python-version: '3.13'
       - run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
       - run: python3 scripts/validate_observability_repository_first_mission.py
+      - run: python3 -m unittest discover -s tests -p 'test_observability_repository_first_mission.py'
       - run: git diff --check "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
 
   validate-mission-result:
@@ -45,3 +41,4 @@ jobs:
           python-version: '3.13'
       - run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
       - run: python3 scripts/validate_observability_repository_first_mission.py
+      - run: python3 -m unittest discover -s tests -p 'test_observability_repository_first_mission.py'
