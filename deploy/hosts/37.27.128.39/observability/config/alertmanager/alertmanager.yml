@@ -1,0 +1,129 @@
+global:
+  resolve_timeout: 5m
+
+templates:
+  - /etc/alertmanager/templates/*.tmpl
+
+route:
+  receiver: middleware-default
+  group_by:
+    - alertname
+    - service
+    - environment
+    - host
+    - cluster
+    - severity
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - receiver: middleware-watchdog
+      matchers:
+        - alertname = "CodestraWatchdog"
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 5m
+
+    - receiver: middleware-critical
+      matchers:
+        - severity = "critical"
+      group_wait: 10s
+      group_interval: 2m
+      repeat_interval: 15m
+
+    - receiver: middleware-warning
+      matchers:
+        - severity = "warning"
+      group_wait: 2m
+      group_interval: 10m
+      repeat_interval: 2h
+
+    - receiver: middleware-informational
+      matchers:
+        - severity = "informational"
+      group_wait: 5m
+      group_interval: 15m
+      repeat_interval: 12h
+
+inhibit_rules:
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity =~ "warning|informational"
+    equal:
+      - service
+      - environment
+      - host
+
+  - source_matchers:
+      - severity = "warning"
+    target_matchers:
+      - severity = "informational"
+    equal:
+      - service
+      - environment
+      - host
+
+  - source_matchers:
+      - alertname = "CodestraDeploymentInProgress"
+    target_matchers:
+      - severity =~ "warning|informational"
+    equal:
+      - service
+      - environment
+
+receivers:
+  - name: middleware-default
+    webhook_configs:
+      - send_resolved: true
+        url_file: /run/secrets/middleware_alert_webhook_url
+        max_alerts: 100
+        timeout: 10s
+        http_config:
+          authorization:
+            type: Bearer
+            credentials_file: /run/secrets/middleware_alert_webhook_token
+
+  - name: middleware-watchdog
+    webhook_configs:
+      - send_resolved: true
+        url_file: /run/secrets/middleware_alert_webhook_url
+        max_alerts: 10
+        timeout: 10s
+        http_config:
+          authorization:
+            type: Bearer
+            credentials_file: /run/secrets/middleware_alert_webhook_token
+
+  - name: middleware-critical
+    webhook_configs:
+      - send_resolved: true
+        url_file: /run/secrets/middleware_alert_webhook_url
+        max_alerts: 100
+        timeout: 10s
+        http_config:
+          authorization:
+            type: Bearer
+            credentials_file: /run/secrets/middleware_alert_webhook_token
+
+  - name: middleware-warning
+    webhook_configs:
+      - send_resolved: true
+        url_file: /run/secrets/middleware_alert_webhook_url
+        max_alerts: 100
+        timeout: 10s
+        http_config:
+          authorization:
+            type: Bearer
+            credentials_file: /run/secrets/middleware_alert_webhook_token
+
+  - name: middleware-informational
+    webhook_configs:
+      - send_resolved: true
+        url_file: /run/secrets/middleware_alert_webhook_url
+        max_alerts: 100
+        timeout: 10s
+        http_config:
+          authorization:
+            type: Bearer
+            credentials_file: /run/secrets/middleware_alert_webhook_token
