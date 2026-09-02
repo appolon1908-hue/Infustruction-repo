@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T11:39:36.884074+00:00'
+generated_at: '2026-09-02T11:48:25.177024+00:00'
 phase: SERVER_37_PRODUCTION_REMEDIATION_AND_CERTIFICATION
 server: 37.27.128.39
 scope: THIS_SERVER_ONLY
@@ -32,11 +32,11 @@ classification_definitions:
   N/A: Explicitly not required by the approved architecture.
   MISSING_REQUIRED: Required canonical operation or integration capability is not live.
 live_runtime_classification_counts:
-  INTERNAL_ONLY: 777
-  REQUIRED_LIVE: 33
+  LEGACY_COMPATIBILITY: 26
   OPTIONAL_LIVE: 266
   UPSTREAM_PRODUCT_API: 1163
-  LEGACY_COMPATIBILITY: 26
+  REQUIRED_LIVE: 33
+  INTERNAL_ONLY: 777
 live_runtime_groups:
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX

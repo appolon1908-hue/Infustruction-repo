@@ -78,8 +78,20 @@ def main() -> None:
         assert GIT_SHA.fullmatch(row["source_sha"])
         assert "REVIEW_REQUIRED" in row["review"]
 
-    assert rollback["production_changed"] is False
+    assert rollback["production_changed"] is True
     assert rollback["rollback_gate"] == "FAIL"
+    configuration_changes = rollback["production_configuration_changes"]
+    assert len(configuration_changes) == 1
+    configuration_change = configuration_changes[0]
+    assert configuration_change["service"] == "MAUTIC_API"
+    assert configuration_change["before_state"] == "GLOBAL_API_DISABLED"
+    assert (
+        configuration_change["temporary_state"]
+        == "OAUTH2_API_ENABLED_FOR_BOUNDED_VALIDATION"
+    )
+    assert configuration_change["after_state"] == "GLOBAL_API_DISABLED"
+    assert configuration_change["rollback_procedure"]
+    assert configuration_change["rollback_status"] == "PASS"
     assert rollback["candidate_promotions"]
     for row in rollback["candidate_promotions"]:
         digests = []

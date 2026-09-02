@@ -471,9 +471,19 @@ def main() -> None:
         "generated_at": matrix["generated_at"],
         "phase": matrix["phase"],
         "server": matrix["server"],
-        "production_changed": False,
+        "production_changed": True,
         "rollback_gate": "FAIL",
-        "reason": "No reviewed candidate was promoted; isolated rollback rehearsal remains required after approval.",
+        "reason": "Mautic API was temporarily enabled for bounded OAuth validation and restored fail-closed because the reviewed public-route denial is not deployed; no candidate image was promoted and isolated deployment rollback rehearsal remains required after approval.",
+        "production_configuration_changes": [
+            {
+                "service": "MAUTIC_API",
+                "before_state": "GLOBAL_API_DISABLED",
+                "temporary_state": "OAUTH2_API_ENABLED_FOR_BOUNDED_VALIDATION",
+                "after_state": "GLOBAL_API_DISABLED",
+                "rollback_procedure": "Restore api_enabled=false, clear and warm the production cache without restarting services, and verify public API requests fail closed while application health remains green.",
+                "rollback_status": "PASS",
+            }
+        ],
         "candidate_promotions": [
             {
                 "service": "KLYROW_GATEWAY_AND_WORKER",
