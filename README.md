@@ -110,3 +110,7 @@ After repository bootstrap, use:
 - `fix/*` — corrective changes
 
 Never perform production activation merely by merging documentation or infrastructure source. Deployment is a separate, explicitly approved action.
+
+## Server 37 production evidence
+
+`SERVER-37-PRODUCTION-API-MATRIX.yaml` classifies the completed runtime inventory and the bounded custom API contract without counting product-native APIs as custom implementation work. `SERVER-37-PRODUCTION-ROLLBACK.yaml` records before/candidate identities and remains fail-closed until reviewed promotion and isolated rollback rehearsal are complete.

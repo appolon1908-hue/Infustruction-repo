@@ -1,0 +1,58 @@
+schema_version: 1
+generated_at: '2026-09-02T11:02:17.959208+00:00'
+phase: SERVER_37_PRODUCTION_REMEDIATION_AND_CERTIFICATION
+server: 37.27.128.39
+production_changed: false
+rollback_gate: FAIL
+reason: No reviewed candidate was promoted; isolated rollback rehearsal remains required after approval.
+candidate_promotions:
+- service: KLYROW_GATEWAY_AND_WORKER
+  before_source_sha: UNVERIFIED_RUNTIME_DRIFT
+  before_image_digest: sha256:7cb3769eceb3339dbbd4392580fceaa4ff285dbec3721fbb4dd2763a00e27d7f
+  after_source_sha: 41df73dec9f11a76e23de918cbbedba67c7b957c
+  after_image_digest: sha256:0bb27f9d2dbf90b8e95de542c6b68be72ba047abc590db1d8cc0f6927c6df0b6
+  database_migration: REVIEW_MIGRATION_HEAD_BEFORE_PROMOTION
+  rollback_procedure: Redeploy the recorded before digest and run only the reviewed backward-compatible migration procedure.
+  status: NOT_DEPLOYED_REVIEW_REQUIRED
+- service: KLYROW_WEB
+  before_source_sha: UNVERIFIED_RUNTIME_DRIFT
+  before_image_digest: sha256:dd4a20b1c80f206ffb471bffaff5024f426e03f47ba9787e060933d65fb27019
+  after_source_sha: 41df73dec9f11a76e23de918cbbedba67c7b957c
+  after_image_digest: sha256:8b5650d08ded35c3a19efe4d0e4320055ac3624ba8a3c78ce507529b19e21bfc
+  database_migration: NONE
+  rollback_procedure: Restore the recorded before digest at the same Nginx route, then execute browser and authentication
+    smoke tests.
+  status: NOT_DEPLOYED_REVIEW_REQUIRED
+- service: POSTAL_PROVISIONER
+  before_source_sha: UNKNOWN
+  before_image_digest: sha256:2bd3c7123f26da553729d288c4e238076cbbfb4894295521d0e47cdf05a08798
+  after_source_sha: 41df73dec9f11a76e23de918cbbedba67c7b957c
+  after_image_digest: sha256:876e547dd238adf2a00452fbc1ad90b7968b6d485fccb918beb5dafbb027fce8
+  database_migration: NONE
+  rollback_procedure: Restore the recorded before digest and verify idempotent read-only provisioner health before allowing
+    reconciliation.
+  status: NOT_DEPLOYED_REVIEW_REQUIRED
+- service: KYQRA_API_AND_WORKERS
+  before_source_sha: DIRTY_WORKTREE_AT_45b388fed2f9424c296ca74e19404b383cafeee4
+  before_image_digests:
+  - sha256:4921a6e4540288f54ef414bdac5a131bcb39192179bd7449f11ed37f2a563f75
+  - sha256:f1c8f7baef701e2f6b36122a5ad788f1afc7dc3aed872cacaf00bfbc1fa7adb5
+  - sha256:b60792f7c6791b4b7c912d17c3c7151310c5c7cbc252b5c04e92ccfeb56b9d4f
+  - sha256:369bf4c01a1fe87ae3f03c8d5be1728c022304ccbc0dcc5c50e85ea2ad5fdfbc
+  after_source_sha: 37cb0bfc1b5366629eefdfbfcf822520bdf2617b
+  after_image_digest: sha256:e384651f9b5539b972ffb85e037e0f00fc63d77e442339dba8d46dde4acdc45d
+  database_migration: REVIEWED_FORWARD_AND_BACKWARD_MIGRATION_REQUIRED
+  rollback_procedure: Restore all four recorded before digests together and restore the isolated pre-migration database snapshot
+    if compatibility checks fail.
+  status: NOT_DEPLOYED_REVIEW_REQUIRED
+- service: PRIVATE_INTEGRATION_GATEWAY
+  before_source_sha: UNKNOWN
+  before_image_digest: sha256:457971045f964ea80dadcfcd75069adf4d092cf6f075b2410055163b8fbc4981
+  after_source_sha: 783ea785fd8373e53819878c38818fd71ec9361f
+  after_image_digest: sha256:63e7bd7bc86652d49df521ebd2e868597902b26b79edb912057b5942c232e655
+  database_migration: SQLITE_SCHEMA_MIGRATION_REQUIRES_ISOLATED_ROUNDTRIP
+  rollback_procedure: Stop intake, drain or reconcile durable operations, restore the recorded data snapshot and before digest,
+    then prove positive mTLS read-only access.
+  status: NOT_DEPLOYED_REVIEW_REQUIRED
+required_next_action: Independent reviewers approve exact heads; release owner publishes signed digests and performs isolated
+  rollback rehearsals before production promotion.

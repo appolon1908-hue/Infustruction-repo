@@ -4,12 +4,16 @@ on:
   pull_request:
     paths:
       - "PRODUCTION-API-MATRIX.yaml"
+      - "SERVER-37-PRODUCTION-API-MATRIX.yaml"
+      - "SERVER-37-PRODUCTION-ROLLBACK.yaml"
       - "PRODUCTION-INTEGRATION-MATRIX.yaml"
       - "PRODUCTION-RUNTIME-INVENTORY.yaml"
       - "FULL-PLATFORM-CERTIFICATION-SUMMARY.yaml"
       - "FULL-PLATFORM-PRODUCTION-CERTIFICATION.yaml"
       - "scripts/generate_full_platform_certification.py"
+      - "scripts/generate_server37_api_matrix.py"
       - "scripts/validate_full_platform_certification.py"
+      - "scripts/validate_server37_api_matrix.py"
       - ".gitleaksignore"
       - ".github/workflows/full-platform-certification.yml"
 
@@ -38,8 +42,9 @@ jobs:
       - run: python -m pip install --disable-pip-version-check --no-cache-dir PyYAML==6.0.3
       - name: Validate evidence and generator syntax
         run: |
-          python -m py_compile scripts/generate_full_platform_certification.py scripts/validate_full_platform_certification.py
+          python -m py_compile scripts/generate_full_platform_certification.py scripts/generate_server37_api_matrix.py scripts/validate_full_platform_certification.py scripts/validate_server37_api_matrix.py
           python scripts/validate_full_platform_certification.py
+          python scripts/validate_server37_api_matrix.py
       - name: Scan exact tracked source for secrets
         env:
           GITLEAKS_VERSION: "8.30.1"
@@ -75,5 +80,6 @@ jobs:
       - run: python -m pip install --disable-pip-version-check --no-cache-dir PyYAML==6.0.3
       - name: Validate merge-result evidence and generator syntax
         run: |
-          python -m py_compile scripts/generate_full_platform_certification.py scripts/validate_full_platform_certification.py
+          python -m py_compile scripts/generate_full_platform_certification.py scripts/generate_server37_api_matrix.py scripts/validate_full_platform_certification.py scripts/validate_server37_api_matrix.py
           python scripts/validate_full_platform_certification.py
+          python scripts/validate_server37_api_matrix.py

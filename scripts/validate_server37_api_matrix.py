@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+"""Validate the fail-closed Server 37 API and rollback evidence."""
+
+from __future__ import annotations
+
+import re
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+
+ROOT = Path(__file__).resolve().parents[1]
+MATRIX_PATH = ROOT / "SERVER-37-PRODUCTION-API-MATRIX.yaml"
+ROLLBACK_PATH = ROOT / "SERVER-37-PRODUCTION-ROLLBACK.yaml"
+ALLOWED_CLASSIFICATIONS = {
+    "REQUIRED_LIVE",
+    "OPTIONAL_LIVE",
+    "INTERNAL_ONLY",
+    "LEGACY_COMPATIBILITY",
+    "UPSTREAM_PRODUCT_API",
+    "DISABLED_BY_DESIGN",
+    "N/A",
+    "MISSING_REQUIRED",
+}
+GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
+IMAGE_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+
+def load(path: Path) -> dict[str, Any]:
+    value = yaml.safe_load(path.read_text())
+    assert isinstance(value, dict), f"{path.name}: expected a mapping"
+    return value
+
+
+def main() -> None:
+    matrix = load(MATRIX_PATH)
+    rollback = load(ROLLBACK_PATH)
+    assert matrix["server"] == rollback["server"] == "37.27.128.39"
+    assert matrix["scope"] == "THIS_SERVER_ONLY"
+    baseline = matrix["authoritative_baseline"]
+    assert baseline["total_running_services"] == 72
+    assert baseline["total_live_api_endpoints"] == 2265
+    assert baseline["total_internal_api_endpoints"] == 793
+    assert baseline["total_source_implemented_not_deployed"] == 581
+    assert baseline["api_inventory_complete"] is True
+
+    classifications = matrix["live_runtime_classification_counts"]
+    assert set(classifications) <= ALLOWED_CLASSIFICATIONS
+    assert sum(classifications.values()) == 2265
+    internal_count = sum(
+        row["operation_count"]
+        for row in matrix["live_runtime_groups"]
+        if row["classification"] == "INTERNAL_ONLY"
+        or row["service"] == "POSTAL_LEGACY_API"
+    )
+    assert internal_count == 793
+    assert sum(
+        row["operation_count"]
+        for row in matrix["baseline_source_implemented_not_deployed_groups"]
+    ) == 581
+    assert sum(
+        row["operation_count"] for row in matrix["documented_not_implemented"]
+    ) == 4
+
+    contract = matrix["canonical_custom_contract"]
+    operations = contract["operations"]
+    keys = {(row["service"], row["method"], row["path"]) for row in operations}
+    assert len(keys) == len(operations) == contract["total_operations"] == 142
+    assert all(row["classification"] in ALLOWED_CLASSIFICATIONS for row in operations)
+    live = sum(row["classification"] == "REQUIRED_LIVE" for row in operations)
+    missing = sum(row["classification"] == "MISSING_REQUIRED" for row in operations)
+    assert live == contract["required_live"] == 31
+    assert missing == contract["missing_required"] == matrix["missing_required_endpoints"] == 111
+    assert matrix["missing_required_endpoints"] != 0
+
+    for row in matrix["candidate_source_authority"].values():
+        assert GIT_SHA.fullmatch(row["source_sha"])
+        assert "REVIEW_REQUIRED" in row["review"]
+
+    assert rollback["production_changed"] is False
+    assert rollback["rollback_gate"] == "FAIL"
+    assert rollback["candidate_promotions"]
+    for row in rollback["candidate_promotions"]:
+        digests = []
+        if "before_image_digest" in row:
+            digests.append(row["before_image_digest"])
+        digests.extend(row.get("before_image_digests", []))
+        digests.append(row["after_image_digest"])
+        assert all(IMAGE_DIGEST.fullmatch(value) for value in digests)
+        assert row["status"] == "NOT_DEPLOYED_REVIEW_REQUIRED"
+        assert row["rollback_procedure"]
+
+    print(
+        "server37_api_matrix=PASS "
+        f"live={sum(classifications.values())} required={len(operations)} missing={missing}"
+    )
+
+
+if __name__ == "__main__":
+    main()
