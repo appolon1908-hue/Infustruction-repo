@@ -28,3 +28,5 @@ jobs:
         run: git diff --exit-code -- hosts/37.27.128.39/observability
       - name: Validate fail-closed authority
         run: python3 hosts/37.27.128.39/observability/validate.py
+      - name: Validate with Python assertions disabled
+        run: python3 -O hosts/37.27.128.39/observability/validate.py
