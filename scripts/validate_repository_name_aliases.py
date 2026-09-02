@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import re
 import sys
@@ -147,6 +148,12 @@ STAGE9_BASE_EXPECTED_REPOS = {
     "Keycloak",
     "social.codestra.co",
 }
+HISTORICAL_STAGE6_LOCK = (
+    ROOT / "releases" / "STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json"
+)
+HISTORICAL_STAGE6_LOCK_SHA256 = (
+    "46f0b40e8c07828d3299306d707ff5b9f859ea1a56536b262de82ef36f0741af"
+)
 
 
 def fail(message: str) -> None:
@@ -203,17 +210,25 @@ def operational_repository_map(data: dict[str, Any]) -> dict[int, str]:
     }
 
 
-def forbidden_pre_cutover_targets(data: dict[str, Any]) -> set[str]:
-    """Return future targets still forbidden in active operational sources."""
+def forbidden_non_operational_names(data: dict[str, Any]) -> set[str]:
+    """Return the inactive side of every governed repository rename."""
 
     forbidden: set[str] = set()
     for mapping in mapping_index(data).values():
-        if mapping.get("status") != "RENAMED_VERIFIED":
-            target = mapping.get("target_repository_after_cutover")
-            if not isinstance(target, str):
-                fail("planned target repository is invalid")
-            forbidden.add(target)
+        if mapping.get("status") == "RENAMED_VERIFIED":
+            inactive = mapping.get("current_repository")
+        else:
+            inactive = mapping.get("target_repository_after_cutover")
+        if not isinstance(inactive, str):
+            fail("inactive repository name is invalid")
+        forbidden.add(inactive)
     return forbidden
+
+
+def forbidden_pre_cutover_targets(data: dict[str, Any]) -> set[str]:
+    """Compatibility alias for callers enforcing inactive repository names."""
+
+    return forbidden_non_operational_names(data)
 
 
 def is_operational_source(path: Path) -> bool:
@@ -354,10 +369,15 @@ def textual_record(lines: list[str], index: int) -> str:
     """Return one local YAML/TOML/HCL-style record around an explicit ID."""
 
     current_indent = line_indent(lines[index])
+    toml_table = re.compile(r"^\s*\[\[?[^\]]+\]\]?\s*(?:#.*)?$")
     start = index
     for cursor in range(index - 1, -1, -1):
         line = lines[cursor]
-        if not line.strip() or generic_id_pattern().search(line):
+        if (
+            not line.strip()
+            or generic_id_pattern().search(line)
+            or toml_table.match(line)
+        ):
             break
         indent = line_indent(line)
         if re.match(r"^\s*-\s+", line) and indent <= current_indent:
@@ -371,7 +391,11 @@ def textual_record(lines: list[str], index: int) -> str:
     end = index + 1
     for cursor in range(index + 1, len(lines)):
         line = lines[cursor]
-        if not line.strip() or generic_id_pattern().search(line):
+        if (
+            not line.strip()
+            or generic_id_pattern().search(line)
+            or toml_table.match(line)
+        ):
             break
         indent = line_indent(line)
         if re.match(r"^\s*-\s+", line) and indent <= current_indent:
@@ -529,11 +553,11 @@ def validate_known_operational_bindings(
             "the active alias status"
         )
 
-    historical = json.loads(
-        require_file(
-            ROOT / "releases" / "STAGE6-STAGING-EXACT-SOURCE-LOCK-2026-08-30.json"
-        )
-    )
+    historical_text = require_file(HISTORICAL_STAGE6_LOCK)
+    historical_digest = hashlib.sha256(historical_text.encode("utf-8")).hexdigest()
+    if historical_digest != HISTORICAL_STAGE6_LOCK_SHA256:
+        fail("historical Stage 6 source lock content changed")
+    historical = json.loads(historical_text)
     historical_social = (
         historical.get("repositories", {}).get("social_control", {}).get("repo")
     )
@@ -569,12 +593,15 @@ def compose_ports_blocks(text: str) -> list[str]:
     lines = text.splitlines()
     blocks: list[str] = []
     for index, line in enumerate(lines):
-        match = re.match(r"^(\s*)ports\s*:\s*(?:#.*)?$", line, re.IGNORECASE)
+        match = re.match(r"^(\s*)ports\s*:(.*)$", line, re.IGNORECASE)
         if match is None:
             continue
 
         indent = len(match.group(1))
         selected = [line]
+        if match.group(2).strip() and not match.group(2).lstrip().startswith("#"):
+            blocks.append(line)
+            continue
         for following in lines[index + 1 :]:
             if not following.strip() or following.lstrip().startswith("#"):
                 selected.append(following)
@@ -827,7 +854,7 @@ def validate() -> None:
 
     sources = operational_sources()
     operational_by_id = operational_repository_map(data)
-    validate_planned_targets_absent(sources, forbidden_pre_cutover_targets(data))
+    validate_planned_targets_absent(sources, forbidden_non_operational_names(data))
     validate_repository_id_current_name_pairing(sources, operational_by_id)
     validate_known_operational_bindings(data)
     validate_postgres_exporter_privacy(sources)

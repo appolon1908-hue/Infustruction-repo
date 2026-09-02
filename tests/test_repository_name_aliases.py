@@ -63,7 +63,11 @@ class RepositoryNameAliasTests(unittest.TestCase):
         )
         self.assertNotIn(
             expected,
-            AUTHORITY.forbidden_pre_cutover_targets(changed),
+            AUTHORITY.forbidden_non_operational_names(changed),
+        )
+        self.assertIn(
+            "appolon1908-hue/Codesrea-Social-",
+            AUTHORITY.forbidden_non_operational_names(changed),
         )
 
     def test_operational_scan_includes_all_repository_consumers(self) -> None:
@@ -108,6 +112,26 @@ class RepositoryNameAliasTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
 
+    def test_repository_id_pairing_is_scoped_to_toml_table(self) -> None:
+        fake_path = ROOT / "release" / "synthetic-source-lock.toml"
+        payload = (
+            "[approved]\n"
+            "repository_id = 1351353723\n"
+            'repository = "appolon1908-hue/Codesrea-Social-"\n'
+            "[unapproved]\n"
+            'repository = "appolon1908-hue/unapproved-social-fork"\n'
+        )
+        with patch.object(Path, "read_text", return_value=payload):
+            AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
+
+        changed = payload.replace(
+            'repository = "appolon1908-hue/Codesrea-Social-"',
+            'repository = "appolon1908-hue/unapproved-social-fork"',
+        )
+        with patch.object(Path, "read_text", return_value=changed):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
+
     def test_known_release_binding_rejects_unapproved_repository(self) -> None:
         release_matrix = ROOT / "release" / "stage6-8-release-matrix.yaml"
         originals = {
@@ -147,6 +171,29 @@ class RepositoryNameAliasTests(unittest.TestCase):
         with patch.object(Path, "read_text", return_value=payload):
             with self.assertRaises(SystemExit):
                 AUTHORITY.validate_postgres_exporter_privacy([fake_path])
+
+    def test_exporter_inline_host_port_publication_is_denied(self) -> None:
+        fake_path = ROOT / "deploy" / "compose.yaml"
+        payload = (
+            "services:\n"
+            "  postgres-exporter:\n"
+            '    ports: ["0.0.0.0:9187:9187"]\n'
+        )
+        with patch.object(Path, "read_text", return_value=payload):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_postgres_exporter_privacy([fake_path])
+
+    def test_historical_source_lock_digest_is_complete(self) -> None:
+        original = AUTHORITY.HISTORICAL_STAGE6_LOCK.read_text(encoding="utf-8")
+
+        def fake_require(path: Path) -> str:
+            if path == AUTHORITY.HISTORICAL_STAGE6_LOCK:
+                return original.replace('"environment": "staging"', '"environment": "test"')
+            return path.read_text(encoding="utf-8")
+
+        with patch.object(AUTHORITY, "require_file", side_effect=fake_require):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_known_operational_bindings()
 
     def test_exporter_gateway_route_is_denied(self) -> None:
         fake_path = ROOT / "operations" / "caddy" / "postgres-exporter.caddy"
