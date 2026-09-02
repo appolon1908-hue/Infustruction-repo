@@ -9,7 +9,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / "deploy/staging/intake-observability"
-EXPECTED_DIGEST = "sha256:50208dd21f3ec46d685909d19856ffb1f91364a9d2173aee9bd5dfb821609e55"
+EXPECTED_DIGEST = "sha256:0e00d04d8e898463d4c59341d5ccaae02052914fb9ad69aefd0952e0f7f3ed5b"
 EXPECTED_PROFILE = "codestra-middleware-staging-v1"
 EXPECTED_KEYCLOAK_PUBLIC_URL = "https://auth-staging.codestra.co"
 EXPECTED_KEYCLOAK_ISSUER = EXPECTED_KEYCLOAK_PUBLIC_URL + "/realms/codestra"
