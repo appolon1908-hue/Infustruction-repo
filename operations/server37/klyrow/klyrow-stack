@@ -44,7 +44,7 @@ cleanup_temp(){
   fi
 }
 finish(){ rc=$?; docker rm -f klyrow-operator-restore-test >/dev/null 2>&1 || true; cleanup_temp; [[ $rc -eq 0 ]] && result=PASS; printf '{"timestamp":"%s","host":"%s","caller":"%s","operator":"%s","action":"%s","scope":"%s","result":"%s","artifact":"%s"}\n' "$started" "$(hostname)" "${SUDO_USER:-root}" "$OPERATOR" "$ACTION" "$SCOPE" "$result" "$artifact" >>"$ROOT/evidence/operations.jsonl"; chmod 0600 "$ROOT/evidence/operations.jsonl"; exit "$rc"; }; trap finish EXIT
-latest_dir(){ find "$BACKUPS" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | tail -1; }
+latest_dir(){ find "$BACKUPS" -mindepth 2 -maxdepth 2 -type f -name backup.tar.gpg -printf '%h\n' | sed 's#.*/##' | sort | tail -1; }
 create_runtime_recovery_archive(){
   local output="$1" path
   for path in "${RUNTIME_RECOVERY_PATHS[@]}"; do
