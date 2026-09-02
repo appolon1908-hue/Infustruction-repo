@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T19:25:39.245669+00:00'
+generated_at: '2026-09-02T23:11:44.868655+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -9,332 +9,332 @@ source_repositories:
 source_authority:
   KLYROW:
     repository: https://github.com/appolon1908-hue/klyrow.com
-    source_sha: 021d47e3cb25226f757d61995b3252aacaa0c462
+    source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
   TELNEXA:
     repository: https://github.com/appolon1908-hue/telnexa
-    source_sha: 11efe887df98ed1859969e559afe61d1de95a7ae
+    source_sha: 8c18c069103b485ead76446ec979034eb62c748a
   KYQRA:
     repository: https://github.com/appolon1908-hue/kyqra-crawler
-    source_sha: 111de7e70f85b9d3ce6fbba4dfa9d8eba3fb17a6
+    source_sha: 58aceb3d1464c6ffd8f9a9b48ee6ef67d5490c29
   PRIVATE_GATEWAY:
     repository: https://github.com/appolon1908-hue/codestra-production-platform
-    source_sha: 585dd6c714c155b4eee5738a29fb56648dedcc38
+    source_sha: 8aefb5953e4ca6d46b3dd547749c53dbb4371858
 required_contracts:
 - service: KLYROW
   method: GET
   path: /v1/me
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/me/permissions
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/me/capabilities
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/me/sessions
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/auth/logout
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/organizations
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/organizations/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/organizations/{id}/members
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/organizations/{id}/members
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: PATCH
   path: /v1/organizations/{id}/members/{member_id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/domains
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/domains
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/domains/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: PATCH
   path: /v1/domains/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: DELETE
   path: /v1/domains/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/domains/{id}/dns
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/domains/{id}/verification
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/domains/{id}/verify
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/messages
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/messages
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/messages/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/messages/{id}/cancel
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/tracking/events
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/tracking/events/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/templates
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/templates
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/templates/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: PATCH
   path: /v1/templates/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: DELETE
   path: /v1/templates/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/contacts
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/contacts
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/contacts/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: PATCH
   path: /v1/contacts/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: DELETE
   path: /v1/contacts/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/lists
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/lists
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/lists/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: PATCH
   path: /v1/lists/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: DELETE
   path: /v1/lists/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/campaigns
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/campaigns
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/campaigns/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: PATCH
   path: /v1/campaigns/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/campaigns/{id}/schedule
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/campaigns/{id}/cancel
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/tracking/messages/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/suppressions
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/suppressions
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: DELETE
   path: /v1/suppressions/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/bounces
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/complaints
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/billing/account
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/billing/usage
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/billing/invoices
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/billing/plans
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/operations
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/operations/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/operations/{id}/events
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/operations/{id}/attempts
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/operations/{id}/cancel
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/operations/{id}/reconcile
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /health/live
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /health/ready
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /metrics
@@ -344,42 +344,42 @@ required_contracts:
   method: GET
   path: /v1/system/capabilities
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/system/readiness
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/providers/postal/health
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/providers/postal/status
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/integrations/mautic/commands
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/integrations/mautic/operations
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: GET
   path: /v1/integrations/mautic/operations/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: KLYROW
   method: POST
   path: /v1/integrations/mautic/operations/{id}/reconcile
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: TELNEXA
   method: POST
   path: /v1/sms/messages
@@ -584,42 +584,42 @@ required_contracts:
   method: GET
   path: /health
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /health/live
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /health/ready
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /metrics
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/capabilities
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/integrations/sms/commands
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /api/v1/kyqra/health
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /api/v1/telnexa/health
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: POST
   path: /api/v1/kyqra/jobs
@@ -664,32 +664,32 @@ required_contracts:
   method: GET
   path: /v1/operations
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/operations/{id}
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/operations/{id}/events
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: GET
   path: /v1/operations/{id}/attempts
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/operations/{id}/cancel
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 - service: PRIVATE_GATEWAY
   method: POST
   path: /v1/operations/{id}/reconcile
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
 endpoints:
 - service: GRAFANA_KLYROW
   method: GET
@@ -843,6 +843,741 @@ endpoints:
   stage: PRODUCTION
 - service: KLYROW
   method: GET
+  path: /app/api/admin/dashboard
+  public_url: https://api.klyrow.com/app/api/admin/dashboard
+  private_url: http://klyrow-gateway-1:8000/app/api/admin/dashboard
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/admin/provisioning/postal
+  public_url: https://api.klyrow.com/app/api/admin/provisioning/postal
+  private_url: http://klyrow-gateway-1:8000/app/api/admin/provisioning/postal
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/admin/provisioning/postal/{tenant_id}/retry
+  public_url: https://api.klyrow.com/app/api/admin/provisioning/postal/{tenant_id}/retry
+  private_url: http://klyrow-gateway-1:8000/app/api/admin/provisioning/postal/{tenant_id}/retry
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/context
+  public_url: https://api.klyrow.com/app/api/context
+  private_url: http://klyrow-gateway-1:8000/app/api/context
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/dashboard
+  public_url: https://api.klyrow.com/app/api/dashboard
+  private_url: http://klyrow-gateway-1:8000/app/api/dashboard
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/domains
+  public_url: https://api.klyrow.com/app/api/domains
+  private_url: http://klyrow-gateway-1:8000/app/api/domains
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/domains
+  public_url: https://api.klyrow.com/app/api/domains
+  private_url: http://klyrow-gateway-1:8000/app/api/domains
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/domains/{item_id}/verify
+  public_url: https://api.klyrow.com/app/api/domains/{item_id}/verify
+  private_url: http://klyrow-gateway-1:8000/app/api/domains/{item_id}/verify
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/email/send
+  public_url: https://api.klyrow.com/app/api/email/send
+  private_url: http://klyrow-gateway-1:8000/app/api/email/send
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/mailboxes
+  public_url: https://api.klyrow.com/app/api/mailboxes
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/mailboxes/inbound/activate
+  public_url: https://api.klyrow.com/app/api/mailboxes/inbound/activate
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/inbound/activate
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/mailboxes/sync
+  public_url: https://api.klyrow.com/app/api/mailboxes/sync
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/sync
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/mailboxes/{mailbox_id}/access
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/access
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/access
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/mailboxes/{mailbox_id}/access
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/access
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/access
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: DELETE
+  path: /app/api/mailboxes/{mailbox_id}/access/{user_id}
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/access/{user_id}
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/access/{user_id}
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/mailboxes/{mailbox_id}/drafts
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/drafts
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/drafts
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: PUT
+  path: /app/api/mailboxes/{mailbox_id}/drafts/{message_id}
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/drafts/{message_id}
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/drafts/{message_id}
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/mailboxes/{mailbox_id}/messages
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/messages
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/messages
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: DELETE
+  path: /app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: PATCH
+  path: /app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/messages/{message_id}
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/mailboxes/{mailbox_id}/messages/{message_id}/attachments/{attachment_id}
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/messages/{message_id}/attachments/{attachment_id}
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/messages/{message_id}/attachments/{attachment_id}
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/mailboxes/{mailbox_id}/send
+  public_url: https://api.klyrow.com/app/api/mailboxes/{mailbox_id}/send
+  private_url: http://klyrow-gateway-1:8000/app/api/mailboxes/{mailbox_id}/send
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/messages
+  public_url: https://api.klyrow.com/app/api/messages
+  private_url: http://klyrow-gateway-1:8000/app/api/messages
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/onboarding
+  public_url: https://api.klyrow.com/app/api/onboarding
+  private_url: http://klyrow-gateway-1:8000/app/api/onboarding
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: PATCH
+  path: /app/api/onboarding
+  public_url: https://api.klyrow.com/app/api/onboarding
+  private_url: http://klyrow-gateway-1:8000/app/api/onboarding
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/onboarding/complete
+  public_url: https://api.klyrow.com/app/api/onboarding/complete
+  private_url: http://klyrow-gateway-1:8000/app/api/onboarding/complete
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/organizations/{tenant_id}/switch
+  public_url: https://api.klyrow.com/app/api/organizations/{tenant_id}/switch
+  private_url: http://klyrow-gateway-1:8000/app/api/organizations/{tenant_id}/switch
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/provisioning/postal
+  public_url: https://api.klyrow.com/app/api/provisioning/postal
+  private_url: http://klyrow-gateway-1:8000/app/api/provisioning/postal
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/provisioning/postal
+  public_url: https://api.klyrow.com/app/api/provisioning/postal
+  private_url: http://klyrow-gateway-1:8000/app/api/provisioning/postal
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/provisioning/postal/retry
+  public_url: https://api.klyrow.com/app/api/provisioning/postal/retry
+  private_url: http://klyrow-gateway-1:8000/app/api/provisioning/postal/retry
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/senders
+  public_url: https://api.klyrow.com/app/api/senders
+  private_url: http://klyrow-gateway-1:8000/app/api/senders
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/senders
+  public_url: https://api.klyrow.com/app/api/senders
+  private_url: http://klyrow-gateway-1:8000/app/api/senders
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /app/api/team
+  public_url: https://api.klyrow.com/app/api/team
+  private_url: http://klyrow-gateway-1:8000/app/api/team
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /app/api/team/invitations
+  public_url: https://api.klyrow.com/app/api/team/invitations
+  private_url: http://klyrow-gateway-1:8000/app/api/team/invitations
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /auth/actions/invitation
+  public_url: https://api.klyrow.com/auth/actions/invitation
+  private_url: http://klyrow-gateway-1:8000/auth/actions/invitation
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /auth/actions/recover
+  public_url: https://api.klyrow.com/auth/actions/recover
+  private_url: http://klyrow-gateway-1:8000/auth/actions/recover
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /auth/actions/update-password
+  public_url: https://api.klyrow.com/auth/actions/update-password
+  private_url: http://klyrow-gateway-1:8000/auth/actions/update-password
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /auth/actions/verify-email
+  public_url: https://api.klyrow.com/auth/actions/verify-email
+  private_url: http://klyrow-gateway-1:8000/auth/actions/verify-email
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /auth/callback
+  public_url: https://api.klyrow.com/auth/callback
+  private_url: http://klyrow-gateway-1:8000/auth/callback
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /auth/google
+  public_url: https://api.klyrow.com/auth/google
+  private_url: http://klyrow-gateway-1:8000/auth/google
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /auth/login
+  public_url: https://api.klyrow.com/auth/login
+  private_url: http://klyrow-gateway-1:8000/auth/login
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /auth/logout
+  public_url: https://api.klyrow.com/auth/logout
+  private_url: http://klyrow-gateway-1:8000/auth/logout
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /auth/logout-all
+  public_url: https://api.klyrow.com/auth/logout-all
+  private_url: http://klyrow-gateway-1:8000/auth/logout-all
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: POST
+  path: /auth/refresh
+  public_url: https://api.klyrow.com/auth/refresh
+  private_url: http://klyrow-gateway-1:8000/auth/refresh
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /auth/session
+  public_url: https://api.klyrow.com/auth/session
+  private_url: http://klyrow-gateway-1:8000/auth/session
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /auth/sessions
+  public_url: https://api.klyrow.com/auth/sessions
+  private_url: http://klyrow-gateway-1:8000/auth/sessions
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: DELETE
+  path: /auth/sessions/{session_id}
+  public_url: https://api.klyrow.com/auth/sessions/{session_id}
+  private_url: http://klyrow-gateway-1:8000/auth/sessions/{session_id}
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: NOT_REQUIRED
+  request_model: N/A
+  response_model: N/A
+  external_effect: POSSIBLE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
+  path: /auth/signup
+  public_url: https://api.klyrow.com/auth/signup
+  private_url: http://klyrow-gateway-1:8000/auth/signup
+  authentication: N/A
+  authorization: N/A
+  tenant_model: N/A
+  idempotency: N/A
+  request_model: N/A
+  response_model: N/A
+  external_effect: NONE
+  implementation_status: IMPLEMENTED
+  runtime_verification: LIVE_OPENAPI_MATCH
+  stage: PRODUCTION_CANDIDATE
+- service: KLYROW
+  method: GET
   path: /capabilities
   public_url: https://api.klyrow.com/capabilities
   private_url: http://klyrow-gateway-1:8000/capabilities
@@ -854,7 +1589,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -869,7 +1604,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -884,7 +1619,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -899,7 +1634,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -914,7 +1649,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -959,7 +1694,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1004,7 +1739,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1019,7 +1754,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1034,7 +1769,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1049,7 +1784,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1064,7 +1799,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1079,7 +1814,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1094,7 +1829,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1109,7 +1844,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1124,7 +1859,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1139,7 +1874,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1154,7 +1889,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1169,7 +1904,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1184,7 +1919,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1199,7 +1934,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1214,7 +1949,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1229,7 +1964,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1244,7 +1979,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1259,7 +1994,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1274,7 +2009,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1289,7 +2024,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1304,7 +2039,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1319,7 +2054,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1334,7 +2069,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1349,7 +2084,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1364,7 +2099,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1379,7 +2114,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1394,7 +2129,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1409,7 +2144,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -1424,7 +2159,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1439,7 +2174,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1484,7 +2219,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1499,7 +2234,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1514,7 +2249,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1559,7 +2294,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -1574,7 +2309,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1589,7 +2324,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1604,7 +2339,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1619,7 +2354,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1634,7 +2369,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1649,7 +2384,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1664,7 +2399,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1679,7 +2414,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1694,7 +2429,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1709,7 +2444,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1724,7 +2459,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1739,7 +2474,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1754,7 +2489,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1769,7 +2504,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1784,7 +2519,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1799,7 +2534,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1814,7 +2549,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1829,7 +2564,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1844,7 +2579,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1859,7 +2594,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1874,7 +2609,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1889,7 +2624,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1904,7 +2639,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1919,7 +2654,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1934,7 +2669,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1949,7 +2684,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1964,7 +2699,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -1979,7 +2714,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -1994,7 +2729,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2009,7 +2744,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2024,7 +2759,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2039,7 +2774,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2054,7 +2789,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2069,7 +2804,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2084,7 +2819,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2099,7 +2834,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2114,7 +2849,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2129,7 +2864,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2144,7 +2879,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2159,7 +2894,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PATCH
@@ -2174,7 +2909,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2189,7 +2924,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2204,7 +2939,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2219,7 +2954,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2234,7 +2969,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2249,7 +2984,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2264,7 +2999,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2279,7 +3014,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2294,7 +3029,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -2309,7 +3044,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2324,7 +3059,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PATCH
@@ -2339,7 +3074,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2354,7 +3089,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2369,7 +3104,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2384,7 +3119,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2399,7 +3134,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2414,7 +3149,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2429,7 +3164,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2444,7 +3179,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2459,7 +3194,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -2474,7 +3209,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2504,7 +3239,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2519,7 +3254,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -2534,7 +3269,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2549,7 +3284,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2564,7 +3299,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2579,7 +3314,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2594,7 +3329,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2609,7 +3344,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2624,7 +3359,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2639,7 +3374,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2654,7 +3389,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -2669,7 +3404,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2684,7 +3419,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PATCH
@@ -2699,7 +3434,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2714,7 +3449,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2729,7 +3464,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2744,7 +3479,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2759,7 +3494,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2774,7 +3509,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2789,7 +3524,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2804,7 +3539,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2819,7 +3554,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2834,7 +3569,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2849,7 +3584,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2879,7 +3614,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2894,7 +3629,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2909,7 +3644,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2924,7 +3659,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2939,7 +3674,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2954,7 +3689,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2969,7 +3704,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -2984,7 +3719,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -2999,7 +3734,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3014,7 +3749,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3029,7 +3764,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3044,7 +3779,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3059,7 +3794,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3074,7 +3809,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3089,7 +3824,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3104,7 +3839,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3119,7 +3854,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3134,7 +3869,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3149,7 +3884,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3164,7 +3899,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3179,7 +3914,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3194,7 +3929,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3209,7 +3944,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3224,7 +3959,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3239,7 +3974,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3254,7 +3989,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3269,7 +4004,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3284,7 +4019,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3299,7 +4034,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3314,7 +4049,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3329,7 +4064,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PUT
@@ -3344,7 +4079,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3359,7 +4094,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3374,7 +4109,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3389,7 +4124,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3404,7 +4139,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3419,7 +4154,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3434,7 +4169,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3449,7 +4184,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3464,7 +4199,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3479,7 +4214,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3494,7 +4229,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3509,7 +4244,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3524,7 +4259,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3539,7 +4274,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3554,7 +4289,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3569,7 +4304,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3584,7 +4319,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3599,7 +4334,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3614,7 +4349,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3629,7 +4364,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3644,7 +4379,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3659,7 +4394,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -3674,7 +4409,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3689,7 +4424,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PATCH
@@ -3704,7 +4439,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3719,7 +4454,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3734,7 +4469,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3749,7 +4484,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3764,7 +4499,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3779,7 +4514,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3794,7 +4529,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3809,7 +4544,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3824,7 +4559,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3839,7 +4574,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PUT
@@ -3854,7 +4589,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3869,7 +4604,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3884,7 +4619,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3899,7 +4634,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3914,7 +4649,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3929,7 +4664,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3944,7 +4679,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: PARTIAL
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3959,7 +4694,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -3974,7 +4709,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -3989,7 +4724,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4004,7 +4739,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4019,7 +4754,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PATCH
@@ -4034,7 +4769,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4049,7 +4784,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4064,7 +4799,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4079,7 +4814,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4094,7 +4829,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PUT
@@ -4109,7 +4844,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4124,7 +4859,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4139,7 +4874,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4154,7 +4889,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4169,7 +4904,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4184,7 +4919,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4199,7 +4934,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -4214,7 +4949,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4229,7 +4964,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4244,7 +4979,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4259,7 +4994,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4274,7 +5009,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4289,7 +5024,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4304,7 +5039,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -4319,7 +5054,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4334,7 +5069,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4349,7 +5084,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4364,7 +5099,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PUT
@@ -4379,7 +5114,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4394,7 +5129,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4409,7 +5144,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4424,7 +5159,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4439,7 +5174,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4454,7 +5189,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4469,7 +5204,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4484,7 +5219,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -4499,7 +5234,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4514,7 +5249,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4529,7 +5264,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4544,7 +5279,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4559,7 +5294,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4589,7 +5324,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -4604,7 +5339,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PATCH
@@ -4619,7 +5354,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4634,7 +5369,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4649,7 +5384,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PUT
@@ -4664,7 +5399,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4679,7 +5414,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4694,7 +5429,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4709,7 +5444,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: DELETE
@@ -4724,7 +5459,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4739,7 +5474,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: PATCH
@@ -4754,7 +5489,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4769,7 +5504,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4784,7 +5519,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4799,7 +5534,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4829,7 +5564,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4844,7 +5579,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: GET
@@ -4859,7 +5594,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4874,7 +5609,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4889,7 +5624,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4904,7 +5639,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4919,7 +5654,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -4949,7 +5684,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: KLYROW
   method: POST
@@ -20504,7 +21239,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20549,7 +21284,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20639,7 +21374,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20684,7 +21419,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20699,7 +21434,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20714,7 +21449,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20729,7 +21464,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20744,7 +21479,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20759,7 +21494,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20774,7 +21509,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20789,7 +21524,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20804,7 +21539,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20819,7 +21554,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20834,7 +21569,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20849,7 +21584,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20864,7 +21599,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20879,7 +21614,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20894,7 +21629,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: POST
@@ -20909,7 +21644,7 @@ endpoints:
   response_model: N/A
   external_effect: POSSIBLE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PRIVATE_GATEWAY
   method: GET
@@ -20924,7 +21659,7 @@ endpoints:
   response_model: N/A
   external_effect: NONE
   implementation_status: IMPLEMENTED
-  runtime_verification: SOURCE_ONLY_REVIEW_REQUIRED
+  runtime_verification: LIVE_OPENAPI_MATCH
   stage: PRODUCTION_CANDIDATE
 - service: PROMETHEUS_KLYROW
   method: GET

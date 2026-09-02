@@ -53,7 +53,7 @@ CUSTOM_REPOSITORIES = {
     "PRIVATE_GATEWAY": "https://github.com/appolon1908-hue/codestra-production-platform",
 }
 SOURCE_DIRECTORIES = {
-    "KLYROW": Path("/root/server37-klyrow-remediation"),
+    "KLYROW": Path("/root/klyrow-production-release-da9d85891a4e"),
     "TELNEXA": Path("/root/full-platform-telnexa-20260902"),
     "KYQRA": Path("/root/kyqra-production-hardening-20260902"),
     "PRIVATE_GATEWAY": Path("/root/full-platform-private-gateway-20260902"),
@@ -122,7 +122,7 @@ def source_openapi() -> dict[str, dict[str, Any]]:
         "KLYROW": (
             SOURCE_DIRECTORIES["KLYROW"],
             "/root/.venv-full-platform-klyrow-20260902/bin/python",
-            "from apps.gateway.app.main import app; import json; print(json.dumps(app.openapi()))",
+            "from apps.gateway.app.platform import app; import json; print(json.dumps(app.openapi()))",
         ),
         "TELNEXA": (
             SOURCE_DIRECTORIES["TELNEXA"],

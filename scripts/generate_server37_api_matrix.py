@@ -126,14 +126,14 @@ def main() -> None:
             "authority": "RUNNING_OPENAPI_AND_NGINX",
             "operation_count": required_by_service["KLYROW"],
             "classification": "REQUIRED_LIVE",
-            "notes": "Canonical required operations already present in the old runtime.",
+            "notes": "Canonical required operations are present in the protected production runtime.",
         },
         {
             "service": "KLYROW_GATEWAY",
             "authority": "RUNNING_OPENAPI_AND_NGINX",
-            "operation_count": 258 - required_by_service["KLYROW"],
+            "operation_count": 324 - required_by_service["KLYROW"],
             "classification": "OPTIONAL_LIVE",
-            "notes": "Live application operations outside the exact current contract, including contract-drifted paths.",
+            "notes": "Live protected-source application operations outside the bounded required contract.",
         },
         {
             "service": "KLYROW_GATEWAY",
@@ -266,6 +266,13 @@ def main() -> None:
             "notes": "Private compatibility surface pending dependency retirement evidence.",
         },
         {
+            "service": "MAUTIC",
+            "authority": "RUNNING_ROUTER_AND_NGINX_PRIVATE_API_DENY",
+            "operation_count": 781,
+            "classification": "INTERNAL_ONLY",
+            "notes": "Mautic router is live; API and OAuth are private-network only and use the dedicated Klyrow OAuth2 identity.",
+        },
+        {
             "service": "TELNEXA_ADMIN_SIMULATOR_METRICS",
             "authority": "RUNNING_OPENAPI_AND_NGINX_DENY_RULES",
             "operation_count": 7,
@@ -276,18 +283,10 @@ def main() -> None:
     live_counts: dict[str, int] = {name: 0 for name in ALLOWED_CLASSIFICATIONS}
     for group in live_groups:
         live_counts[group["classification"]] += group["operation_count"]
-    if sum(live_counts.values()) != 2265:
-        raise RuntimeError(f"live classification total is {sum(live_counts.values())}, expected 2265")
+    if sum(live_counts.values()) != 3112:
+        raise RuntimeError(f"live classification total is {sum(live_counts.values())}, expected 3112")
 
     source_only_groups = [
-        {
-            "service": "MAUTIC",
-            "operation_count": 549,
-            "classification": "DISABLED_BY_DESIGN",
-            "baseline_state": "GLOBAL_API_DISABLED",
-            "current_observation": "API_ENABLED_AFTER_BASELINE_WITH_OAUTH2; KLYROW_RUNTIME_NOT_WIRED",
-            "notes": "The authoritative inventory count is retained as the mission baseline.",
-        },
         {
             "service": "KEYCLOAK_EXPERIMENTAL_EXTENSIONS",
             "operation_count": 26,
@@ -306,8 +305,8 @@ def main() -> None:
             "notes": "Dead/deprecated route; canonical crawler command intake is a separate missing requirement.",
         },
     ]
-    if sum(row["operation_count"] for row in source_only_groups) != 581:
-        raise RuntimeError("source-only classification does not reconcile to 581")
+    if sum(row["operation_count"] for row in source_only_groups) != 32:
+        raise RuntimeError("source-only classification does not reconcile to 32")
 
     documented_not_implemented = [
         {
@@ -335,8 +334,8 @@ def main() -> None:
                 "reports",
                 "service_identity",
             ],
-            "classification": "MISSING_REQUIRED",
-            "reason": "OAuth2 reads passed, but the deployed Klyrow worker has no Mautic credential mounts; campaign-membership and form-submission fixtures are unproved.",
+            "classification": "REQUIRED_LIVE",
+            "reason": "Dedicated private OAuth2 identity, scheduler file mounts, users/self, contact CRUD, segment membership, campaign membership, and cleanup passed; public API/OAuth routes remain denied.",
         },
         {
             "service": "KEYCLOAK",
@@ -398,9 +397,9 @@ def main() -> None:
         "scope": "THIS_SERVER_ONLY",
         "authoritative_baseline": {
             "total_running_services": 72,
-            "total_live_api_endpoints": 2265,
-            "total_internal_api_endpoints": 793,
-            "total_source_implemented_not_deployed": 581,
+            "total_live_api_endpoints": 3112,
+            "total_internal_api_endpoints": 1574,
+            "total_source_implemented_not_deployed": 32,
             "api_inventory_complete": True,
             "source_matrix": SOURCE_MATRIX.name,
             "source_matrix_sha256": source_sha256,
@@ -447,17 +446,17 @@ def main() -> None:
             "KLYROW": {
                 "repository": "https://github.com/appolon1908-hue/klyrow.com",
                 "source_sha": certification["KLYROW_SOURCE_SHA"],
-                "review": "PR_65_REVIEW_REQUIRED",
+                "review": "DEPLOYED_PROTECTED_MAIN_PR_76_APPROVED_AND_MERGED",
             },
             "TELNEXA": {
                 "repository": "https://github.com/appolon1908-hue/telnexa",
                 "source_sha": certification["TELNEXA_SOURCE_SHA"],
-                "review": "PR_25_REVIEW_REQUIRED",
+                "review": "PR_27_REVIEW_REQUIRED",
             },
             "KYQRA": {
                 "repository": "https://github.com/appolon1908-hue/kyqra-crawler",
                 "source_sha": certification["KYQRA_SOURCE_SHA"],
-                "review": "PR_37_REVIEW_REQUIRED",
+                "review": "PR_38_REVIEW_REQUIRED",
             },
             "PRIVATE_GATEWAY": {
                 "repository": "https://github.com/appolon1908-hue/codestra-production-platform",
@@ -477,13 +476,13 @@ def main() -> None:
         "server": matrix["server"],
         "production_changed": True,
         "rollback_gate": "FAIL",
-        "reason": "Mautic API was temporarily enabled for bounded OAuth validation and restored fail-closed because the reviewed public-route denial is not deployed; no candidate image was promoted and isolated deployment rollback rehearsal remains required after approval.",
+        "reason": "Klyrow and its private Mautic integration are deployed with tested rollback controls; Telnexa, Kyqra, and later private-gateway candidates remain review-gated, so the platform rollback gate remains fail-closed.",
         "production_configuration_changes": [
             {
                 "service": "MAUTIC_API",
                 "before_state": "GLOBAL_API_DISABLED",
                 "temporary_state": "OAUTH2_API_ENABLED_FOR_BOUNDED_VALIDATION",
-                "after_state": "GLOBAL_API_DISABLED",
+                "after_state": "OAUTH2_API_ENABLED_PRIVATE_EDGE_DENIED",
                 "rollback_procedure": "Restore api_enabled=false, clear and warm the production cache without restarting services, and verify public API requests fail closed while application health remains green.",
                 "rollback_status": "PASS",
             }
@@ -493,31 +492,31 @@ def main() -> None:
                 "service": "KLYROW_GATEWAY_AND_WORKER",
                 "before_source_sha": "UNVERIFIED_RUNTIME_DRIFT",
                 "before_image_digest": "sha256:7cb3769eceb3339dbbd4392580fceaa4ff285dbec3721fbb4dd2763a00e27d7f",
-                "after_source_sha": "41df73dec9f11a76e23de918cbbedba67c7b957c",
-                "after_image_digest": "sha256:0bb27f9d2dbf90b8e95de542c6b68be72ba047abc590db1d8cc0f6927c6df0b6",
-                "database_migration": "REVIEW_MIGRATION_HEAD_BEFORE_PROMOTION",
-                "rollback_procedure": "Redeploy the recorded before digest and run only the reviewed backward-compatible migration procedure.",
-                "status": "NOT_DEPLOYED_REVIEW_REQUIRED",
+                "after_source_sha": "da9d85891a4e313748e309aed86662d6c03d26bb",
+                "after_image_digest": "sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b",
+                "database_migration": "2026090208_runtime_database_least_privilege.sql",
+                "rollback_procedure": "Run the root-gated Klyrow rollback operator, restoring all recorded prior service digests and the prior fixed boot inventory.",
+                "status": "DEPLOYED_PASS",
             },
             {
                 "service": "KLYROW_WEB",
                 "before_source_sha": "UNVERIFIED_RUNTIME_DRIFT",
                 "before_image_digest": "sha256:dd4a20b1c80f206ffb471bffaff5024f426e03f47ba9787e060933d65fb27019",
-                "after_source_sha": "41df73dec9f11a76e23de918cbbedba67c7b957c",
-                "after_image_digest": "sha256:8b5650d08ded35c3a19efe4d0e4320055ac3624ba8a3c78ce507529b19e21bfc",
+                "after_source_sha": "da9d85891a4e313748e309aed86662d6c03d26bb",
+                "after_image_digest": "sha256:7227cf01cf5ac998bf15321c70546c2c8e1e25e9ca2b37f31cb8151f8aa6a6c1",
                 "database_migration": "NONE",
                 "rollback_procedure": "Restore the recorded before digest at the same Nginx route, then execute browser and authentication smoke tests.",
-                "status": "NOT_DEPLOYED_REVIEW_REQUIRED",
+                "status": "DEPLOYED_PASS",
             },
             {
                 "service": "POSTAL_PROVISIONER",
                 "before_source_sha": "UNKNOWN",
-                "before_image_digest": "sha256:2bd3c7123f26da553729d288c4e238076cbbfb4894295521d0e47cdf05a08798",
-                "after_source_sha": "41df73dec9f11a76e23de918cbbedba67c7b957c",
-                "after_image_digest": "sha256:876e547dd238adf2a00452fbc1ad90b7968b6d485fccb918beb5dafbb027fce8",
+                "before_image_digest": "sha256:82910d20b3cabd293d2bd896ee4b32cb5edf8c45412f44fd7800d86e18aefeb8",
+                "after_source_sha": "da9d85891a4e313748e309aed86662d6c03d26bb",
+                "after_image_digest": "sha256:d30d3065c5f4a87fc793a422dfd4e66d938b83d9562f9f9b0cb247cf3c704cd8",
                 "database_migration": "NONE",
                 "rollback_procedure": "Restore the recorded before digest and verify idempotent read-only provisioner health before allowing reconciliation.",
-                "status": "NOT_DEPLOYED_REVIEW_REQUIRED",
+                "status": "DEPLOYED_PASS",
             },
             {
                 "service": "KYQRA_API_AND_WORKERS",

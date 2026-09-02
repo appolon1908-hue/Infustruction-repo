@@ -1,5 +1,5 @@
 schema_version: 1
-observed_at: '2026-09-02T13:06:54+00:00'
+observed_at: '2026-09-02T23:10:45+00:00'
 server: 37.27.128.39
 gates:
   OFF_HOST_BACKUP:
@@ -7,9 +7,9 @@ gates:
     evidence: STAGE6-BACKUP-EVIDENCE.md
     reason: No approved off-host destination or current off-host recovery point is evidenced.
   ISOLATED_RESTORE:
-    status: FAIL
-    evidence: STAGE6-BACKUP-EVIDENCE.md
-    reason: Archive readability passed, but a current isolated restore of every production stateful service has not.
+    status: PASS
+    evidence: SERVER-37-RESTORE-EVIDENCE.md
+    reason: Klyrow/PostgreSQL/Mautic/Postal, Telnexa core/billing/Keycloak PostgreSQL/Redis/RabbitMQ/Jasmin, and Kyqra PostgreSQL/Redis restored into isolated no-public-port targets with no residual resources.
   POSITIVE_AND_NEGATIVE_MTLS_E2E:
     status: FAIL
     evidence: EXTERNAL_AUTHORITY_REQUIRED
@@ -35,9 +35,9 @@ gates:
     evidence: SERVER-37-PRODUCTION-API-MATRIX.yaml
     reason: Discovery is live, but the complete approved service-account and user authentication lifecycle is not evidenced.
   MAUTIC_KLYROW_E2E:
-    status: FAIL
-    evidence: SERVER-37-PRODUCTION-ROLLBACK.yaml
-    reason: Bounded OAuth validation was rolled back and the reviewed Klyrow integration is not deployed.
+    status: PASS
+    evidence: SERVER-37-MAUTIC-INTEGRATION-EVIDENCE.md
+    reason: Dedicated OAuth2 client-credentials integration is enabled on the private network; token issuance, users/self, contact CRUD, segment membership, campaign membership, and cleanup passed. Public Mautic API/OAuth routes remain denied by Nginx.
   ALERT_AND_RETENTION_E2E:
     status: FAIL
     evidence: STAGE7-OBSERVABILITY-EVIDENCE.md

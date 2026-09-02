@@ -1,16 +1,16 @@
 schema_version: 1
-generated_at: '2026-09-02T19:25:53.894694+00:00'
+generated_at: '2026-09-02T23:13:44.359980+00:00'
 phase: SERVER_37_PRODUCTION_REMEDIATION_AND_CERTIFICATION
 server: 37.27.128.39
 scope: THIS_SERVER_ONLY
 authoritative_baseline:
   total_running_services: 72
-  total_live_api_endpoints: 2265
-  total_internal_api_endpoints: 793
-  total_source_implemented_not_deployed: 581
+  total_live_api_endpoints: 3112
+  total_internal_api_endpoints: 1574
+  total_source_implemented_not_deployed: 32
   api_inventory_complete: true
   source_matrix: PRODUCTION-API-MATRIX.yaml
-  source_matrix_sha256: 3d287e4571aefec989a5da916b57c5159b5e328e2a59793e2f49c5b8f77dc4c5
+  source_matrix_sha256: b340b1de98c8b3dea40758d0ecedbdb94e400e00107238530acfcda93ea0ea62
 authority_order:
 - RUNNING_REVERSE_PROXY_CONFIGURATION
 - KONG_ROUTES_SERVICES_IF_PRESENT
@@ -32,22 +32,22 @@ classification_definitions:
   N/A: Explicitly not required by the approved architecture.
   MISSING_REQUIRED: Required canonical operation or integration capability is not live.
 live_runtime_classification_counts:
+  REQUIRED_LIVE: 84
+  OPTIONAL_LIVE: 281
+  INTERNAL_ONLY: 1558
   LEGACY_COMPATIBILITY: 26
   UPSTREAM_PRODUCT_API: 1163
-  REQUIRED_LIVE: 13
-  OPTIONAL_LIVE: 286
-  INTERNAL_ONLY: 777
 live_runtime_groups:
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX
-  operation_count: 1
+  operation_count: 72
   classification: REQUIRED_LIVE
-  notes: Canonical required operations already present in the old runtime.
+  notes: Canonical required operations are present in the protected production runtime.
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX
-  operation_count: 257
+  operation_count: 252
   classification: OPTIONAL_LIVE
-  notes: Live application operations outside the exact current contract, including contract-drifted paths.
+  notes: Live protected-source application operations outside the bounded required contract.
 - service: KLYROW_GATEWAY
   authority: RUNNING_OPENAPI_AND_NGINX
   operation_count: 1
@@ -138,18 +138,17 @@ live_runtime_groups:
   operation_count: 16
   classification: LEGACY_COMPATIBILITY
   notes: Private compatibility surface pending dependency retirement evidence.
+- service: MAUTIC
+  authority: RUNNING_ROUTER_AND_NGINX_PRIVATE_API_DENY
+  operation_count: 781
+  classification: INTERNAL_ONLY
+  notes: Mautic router is live; API and OAuth are private-network only and use the dedicated Klyrow OAuth2 identity.
 - service: TELNEXA_ADMIN_SIMULATOR_METRICS
   authority: RUNNING_OPENAPI_AND_NGINX_DENY_RULES
   operation_count: 7
   classification: INTERNAL_ONLY
   notes: Explicitly blocked at the public edge.
 baseline_source_implemented_not_deployed_groups:
-- service: MAUTIC
-  operation_count: 549
-  classification: DISABLED_BY_DESIGN
-  baseline_state: GLOBAL_API_DISABLED
-  current_observation: API_ENABLED_AFTER_BASELINE_WITH_OAUTH2; KLYROW_RUNTIME_NOT_WIRED
-  notes: The authoritative inventory count is retained as the mission baseline.
 - service: KEYCLOAK_EXPERIMENTAL_EXTENSIONS
   operation_count: 26
   classification: DISABLED_BY_DESIGN
@@ -168,23 +167,23 @@ documented_not_implemented:
   notes: Upstream explicitly marks these generated metadata operations non-exposed.
 canonical_custom_contract:
   total_operations: 149
-  required_live: 11
-  missing_required: 138
+  required_live: 96
+  missing_required: 53
   operations:
   - service: KLYROW
     method: GET
     path: /health/live
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /health/ready
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /metrics
@@ -195,486 +194,486 @@ canonical_custom_contract:
   - service: KLYROW
     method: POST
     path: /v1/auth/logout
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/billing/account
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/billing/invoices
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/billing/plans
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/billing/usage
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/bounces
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/campaigns
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/campaigns
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/campaigns/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: PATCH
     path: /v1/campaigns/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/campaigns/{id}/cancel
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/campaigns/{id}/schedule
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/complaints
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/contacts
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/contacts
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: DELETE
     path: /v1/contacts/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/contacts/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: PATCH
     path: /v1/contacts/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/domains
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/domains
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: DELETE
     path: /v1/domains/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/domains/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: PATCH
     path: /v1/domains/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/domains/{id}/dns
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/domains/{id}/verification
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/domains/{id}/verify
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/integrations/mautic/commands
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/integrations/mautic/operations
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/integrations/mautic/operations/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/integrations/mautic/operations/{id}/reconcile
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/lists
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/lists
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: DELETE
     path: /v1/lists/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/lists/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: PATCH
     path: /v1/lists/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/me
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/me/capabilities
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/me/permissions
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/me/sessions
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/messages
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/messages
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/messages/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/messages/{id}/cancel
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/operations
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/operations/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/operations/{id}/attempts
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/operations/{id}/cancel
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/operations/{id}/events
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/operations/{id}/reconcile
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/organizations
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/organizations/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/organizations/{id}/members
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/organizations/{id}/members
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: PATCH
     path: /v1/organizations/{id}/members/{member_id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/providers/postal/health
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/providers/postal/status
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/suppressions
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/suppressions
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: DELETE
     path: /v1/suppressions/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/system/capabilities
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/system/readiness
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/templates
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: POST
     path: /v1/templates
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: DELETE
     path: /v1/templates/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/templates/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: PATCH
     path: /v1/templates/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/tracking/events
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/tracking/events/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KLYROW
     method: GET
     path: /v1/tracking/messages/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: KYQRA
     method: GET
     path: /health/live
@@ -811,10 +810,10 @@ canonical_custom_contract:
   - service: PRIVATE_GATEWAY
     method: GET
     path: /api/v1/kyqra/health
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: POST
     path: /api/v1/kyqra/jobs
@@ -853,10 +852,10 @@ canonical_custom_contract:
   - service: PRIVATE_GATEWAY
     method: GET
     path: /api/v1/telnexa/health
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: POST
     path: /api/v1/telnexa/inbound
@@ -874,87 +873,87 @@ canonical_custom_contract:
   - service: PRIVATE_GATEWAY
     method: GET
     path: /health
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: GET
     path: /health/live
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: GET
     path: /health/ready
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: GET
     path: /metrics
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: GET
     path: /v1/capabilities
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: POST
     path: /v1/integrations/sms/commands
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: GET
     path: /v1/operations
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: GET
     path: /v1/operations/{id}
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: GET
     path: /v1/operations/{id}/attempts
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: POST
     path: /v1/operations/{id}/cancel
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: GET
     path: /v1/operations/{id}/events
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: PRIVATE_GATEWAY
     method: POST
     path: /v1/operations/{id}/reconcile
-    classification: MISSING_REQUIRED
+    classification: REQUIRED_LIVE
     source_implemented: true
-    runtime_verified: false
-    evidence: SOURCE_ONLY_REVIEW_REQUIRED
+    runtime_verified: true
+    evidence: LIVE_OPENAPI_MATCH
   - service: TELNEXA
     method: GET
     path: /api/v1/api-keys
@@ -1229,9 +1228,9 @@ required_integration_capabilities:
   - webhooks
   - reports
   - service_identity
-  classification: MISSING_REQUIRED
-  reason: OAuth2 reads passed, but the deployed Klyrow worker has no Mautic credential mounts; campaign-membership and form-submission
-    fixtures are unproved.
+  classification: REQUIRED_LIVE
+  reason: Dedicated private OAuth2 identity, scheduler file mounts, users/self, contact CRUD, segment membership, campaign
+    membership, and cleanup passed; public API/OAuth routes remain denied.
 - service: KEYCLOAK
   required_protocols:
   - discovery
@@ -1268,19 +1267,19 @@ required_integration_capabilities:
 candidate_source_authority:
   KLYROW:
     repository: https://github.com/appolon1908-hue/klyrow.com
-    source_sha: 021d47e3cb25226f757d61995b3252aacaa0c462
-    review: PR_65_REVIEW_REQUIRED
+    source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+    review: DEPLOYED_PROTECTED_MAIN_PR_76_APPROVED_AND_MERGED
   TELNEXA:
     repository: https://github.com/appolon1908-hue/telnexa
-    source_sha: 11efe887df98ed1859969e559afe61d1de95a7ae
-    review: PR_25_REVIEW_REQUIRED
+    source_sha: 8c18c069103b485ead76446ec979034eb62c748a
+    review: PR_27_REVIEW_REQUIRED
   KYQRA:
     repository: https://github.com/appolon1908-hue/kyqra-crawler
-    source_sha: 111de7e70f85b9d3ce6fbba4dfa9d8eba3fb17a6
-    review: PR_37_REVIEW_REQUIRED
+    source_sha: 58aceb3d1464c6ffd8f9a9b48ee6ef67d5490c29
+    review: PR_38_REVIEW_REQUIRED
   PRIVATE_GATEWAY:
     repository: https://github.com/appolon1908-hue/codestra-production-platform
-    source_sha: 585dd6c714c155b4eee5738a29fb56648dedcc38
+    source_sha: 8aefb5953e4ca6d46b3dd547749c53dbb4371858
     review: PR_180_PARENT_RELEASE_PR_165_REVIEW_REQUIRED
-missing_required_endpoints: 138
+missing_required_endpoints: 53
 completion_rule: PASS_ONLY_WHEN_MISSING_REQUIRED_IS_ZERO_AND_REVIEWED_SOURCE_EQUALS_RUNTIME

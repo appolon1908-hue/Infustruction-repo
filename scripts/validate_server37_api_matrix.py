@@ -77,9 +77,12 @@ def main() -> None:
     assert live == contract["required_live"]
     assert missing == contract["missing_required"] == matrix["missing_required_endpoints"]
 
-    for row in matrix["candidate_source_authority"].values():
+    for service, row in matrix["candidate_source_authority"].items():
         assert GIT_SHA.fullmatch(row["source_sha"])
-        assert "REVIEW_REQUIRED" in row["review"]
+        if service == "KLYROW":
+            assert row["review"] == "DEPLOYED_PROTECTED_MAIN_PR_76_APPROVED_AND_MERGED"
+        else:
+            assert "REVIEW_REQUIRED" in row["review"]
 
     assert rollback["production_changed"] is True
     assert rollback["rollback_gate"] == "FAIL"
@@ -92,10 +95,11 @@ def main() -> None:
         configuration_change["temporary_state"]
         == "OAUTH2_API_ENABLED_FOR_BOUNDED_VALIDATION"
     )
-    assert configuration_change["after_state"] == "GLOBAL_API_DISABLED"
+    assert configuration_change["after_state"] == "OAUTH2_API_ENABLED_PRIVATE_EDGE_DENIED"
     assert configuration_change["rollback_procedure"]
     assert configuration_change["rollback_status"] == "PASS"
     assert rollback["candidate_promotions"]
+    deployed = {"KLYROW_GATEWAY_AND_WORKER", "KLYROW_WEB", "POSTAL_PROVISIONER"}
     for row in rollback["candidate_promotions"]:
         digests = []
         if "before_image_digest" in row:
@@ -103,7 +107,10 @@ def main() -> None:
         digests.extend(row.get("before_image_digests", []))
         digests.append(row["after_image_digest"])
         assert all(IMAGE_DIGEST.fullmatch(value) for value in digests)
-        assert row["status"] == "NOT_DEPLOYED_REVIEW_REQUIRED"
+        if row["service"] in deployed:
+            assert row["status"] == "DEPLOYED_PASS"
+        else:
+            assert row["status"] == "NOT_DEPLOYED_REVIEW_REQUIRED"
         assert row["rollback_procedure"]
 
     print(

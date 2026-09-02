@@ -1,17 +1,16 @@
 schema_version: 1
-generated_at: '2026-09-02T19:25:53.894694+00:00'
+generated_at: '2026-09-02T23:13:44.359980+00:00'
 phase: SERVER_37_PRODUCTION_REMEDIATION_AND_CERTIFICATION
 server: 37.27.128.39
 production_changed: true
 rollback_gate: FAIL
-reason: Mautic API was temporarily enabled for bounded OAuth validation and restored fail-closed because the reviewed public-route
-  denial is not deployed; no candidate image was promoted and isolated deployment rollback rehearsal remains required after
-  approval.
+reason: Klyrow and its private Mautic integration are deployed with tested rollback controls; Telnexa, Kyqra, and later private-gateway
+  candidates remain review-gated, so the platform rollback gate remains fail-closed.
 production_configuration_changes:
 - service: MAUTIC_API
   before_state: GLOBAL_API_DISABLED
   temporary_state: OAUTH2_API_ENABLED_FOR_BOUNDED_VALIDATION
-  after_state: GLOBAL_API_DISABLED
+  after_state: OAUTH2_API_ENABLED_PRIVATE_EDGE_DENIED
   rollback_procedure: Restore api_enabled=false, clear and warm the production cache without restarting services, and verify
     public API requests fail closed while application health remains green.
   rollback_status: PASS
@@ -19,29 +18,30 @@ candidate_promotions:
 - service: KLYROW_GATEWAY_AND_WORKER
   before_source_sha: UNVERIFIED_RUNTIME_DRIFT
   before_image_digest: sha256:7cb3769eceb3339dbbd4392580fceaa4ff285dbec3721fbb4dd2763a00e27d7f
-  after_source_sha: 41df73dec9f11a76e23de918cbbedba67c7b957c
-  after_image_digest: sha256:0bb27f9d2dbf90b8e95de542c6b68be72ba047abc590db1d8cc0f6927c6df0b6
-  database_migration: REVIEW_MIGRATION_HEAD_BEFORE_PROMOTION
-  rollback_procedure: Redeploy the recorded before digest and run only the reviewed backward-compatible migration procedure.
-  status: NOT_DEPLOYED_REVIEW_REQUIRED
+  after_source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  after_image_digest: sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  database_migration: 2026090208_runtime_database_least_privilege.sql
+  rollback_procedure: Run the root-gated Klyrow rollback operator, restoring all recorded prior service digests and the prior
+    fixed boot inventory.
+  status: DEPLOYED_PASS
 - service: KLYROW_WEB
   before_source_sha: UNVERIFIED_RUNTIME_DRIFT
   before_image_digest: sha256:dd4a20b1c80f206ffb471bffaff5024f426e03f47ba9787e060933d65fb27019
-  after_source_sha: 41df73dec9f11a76e23de918cbbedba67c7b957c
-  after_image_digest: sha256:8b5650d08ded35c3a19efe4d0e4320055ac3624ba8a3c78ce507529b19e21bfc
+  after_source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  after_image_digest: sha256:7227cf01cf5ac998bf15321c70546c2c8e1e25e9ca2b37f31cb8151f8aa6a6c1
   database_migration: NONE
   rollback_procedure: Restore the recorded before digest at the same Nginx route, then execute browser and authentication
     smoke tests.
-  status: NOT_DEPLOYED_REVIEW_REQUIRED
+  status: DEPLOYED_PASS
 - service: POSTAL_PROVISIONER
   before_source_sha: UNKNOWN
-  before_image_digest: sha256:2bd3c7123f26da553729d288c4e238076cbbfb4894295521d0e47cdf05a08798
-  after_source_sha: 41df73dec9f11a76e23de918cbbedba67c7b957c
-  after_image_digest: sha256:876e547dd238adf2a00452fbc1ad90b7968b6d485fccb918beb5dafbb027fce8
+  before_image_digest: sha256:82910d20b3cabd293d2bd896ee4b32cb5edf8c45412f44fd7800d86e18aefeb8
+  after_source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  after_image_digest: sha256:d30d3065c5f4a87fc793a422dfd4e66d938b83d9562f9f9b0cb247cf3c704cd8
   database_migration: NONE
   rollback_procedure: Restore the recorded before digest and verify idempotent read-only provisioner health before allowing
     reconciliation.
-  status: NOT_DEPLOYED_REVIEW_REQUIRED
+  status: DEPLOYED_PASS
 - service: KYQRA_API_AND_WORKERS
   before_source_sha: DIRTY_WORKTREE_AT_45b388fed2f9424c296ca74e19404b383cafeee4
   before_image_digests:

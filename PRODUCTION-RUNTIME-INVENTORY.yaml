@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T19:25:39.245669+00:00'
+generated_at: '2026-09-02T23:11:44.868655+00:00'
 server_scope: CURRENT_SERVER_ONLY
 server: Ubuntu-jammy-latest-amd64-base.zst
 public_ipv4: 37.27.128.39
@@ -110,13 +110,13 @@ workloads:
   stage: TOOLING
 - software: KLYROW
   container_or_service: klyrow-billing-api-1
-  image: sha256:b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
-  image_digest: sha256:b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
-  image_reference_digest_pinned: 'NO'
-  version: b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
+  image: ghcr.io/appolon1908-hue/klyrow-gateway@sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_digest: sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
   source_repository: https://github.com/appolon1908-hue/klyrow.com
-  source_sha: 9684fd55bdbc64a971a17a291ff293a178a2ebac
-  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
   ports:
   - 8000/tcp (container network only)
   public_url: N/A
@@ -131,13 +131,13 @@ workloads:
   stage: PRODUCTION
 - software: KLYROW
   container_or_service: klyrow-billing-worker-1
-  image: sha256:b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
-  image_digest: sha256:b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
-  image_reference_digest_pinned: 'NO'
-  version: b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
+  image: ghcr.io/appolon1908-hue/klyrow-gateway@sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_digest: sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
   source_repository: https://github.com/appolon1908-hue/klyrow.com
-  source_sha: 9684fd55bdbc64a971a17a291ff293a178a2ebac
-  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
   ports:
   - 8000/tcp (container network only)
   public_url: N/A
@@ -151,13 +151,13 @@ workloads:
   stage: PRODUCTION
 - software: KLYROW
   container_or_service: klyrow-gateway-1
-  image: codestra/klyrow-gateway:webmail-20260828
-  image_digest: sha256:7cb3769eceb3339dbbd4392580fceaa4ff285dbec3721fbb4dd2763a00e27d7f
-  image_reference_digest_pinned: 'NO'
-  version: webmail-20260828
-  source_repository: N/A
-  source_sha: N/A
-  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml
+  image: ghcr.io/appolon1908-hue/klyrow-gateway@sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_digest: sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
+  source_repository: https://github.com/appolon1908-hue/klyrow.com
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
   ports:
   - 127.0.0.1:18000->8000/tcp
   public_url: https://api.klyrow.com
@@ -331,13 +331,13 @@ workloads:
   stage: PRODUCTION
 - software: POSTAL
   container_or_service: klyrow-postal-provisioner-1
-  image: sha256:82910d20b3cabd293d2bd896ee4b32cb5edf8c45412f44fd7800d86e18aefeb8
-  image_digest: sha256:82910d20b3cabd293d2bd896ee4b32cb5edf8c45412f44fd7800d86e18aefeb8
-  image_reference_digest_pinned: 'NO'
-  version: 64f79c7b386a2ad66cb6d5d356972b7f63fc6aa6
+  image: ghcr.io/appolon1908-hue/klyrow-postal-provisioner@sha256:d30d3065c5f4a87fc793a422dfd4e66d938b83d9562f9f9b0cb247cf3c704cd8
+  image_digest: sha256:d30d3065c5f4a87fc793a422dfd4e66d938b83d9562f9f9b0cb247cf3c704cd8
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
   source_repository: https://github.com/appolon1908-hue/klyrow.com
-  source_sha: 64f79c7b386a2ad66cb6d5d356972b7f63fc6aa6
-  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-production-64f79c7b386a.override.yaml
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
   ports:
   - 9090/tcp (container network only)
   public_url: N/A
@@ -462,6 +462,26 @@ workloads:
   databases: N/A
   health: RUNNING
   stage: PRODUCTION
+- software: KLYROW
+  container_or_service: klyrow-provisioning-worker-1
+  image: ghcr.io/appolon1908-hue/klyrow-gateway@sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_digest: sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
+  source_repository: https://github.com/appolon1908-hue/klyrow.com
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
+  ports:
+  - 8000/tcp (container network only)
+  public_url: N/A
+  private_url: tcp://klyrow-provisioning-worker-1:8000
+  networks:
+  - klyrow_backend
+  volumes:
+  - bind:[SECRET_MOUNT_REDACTED]
+  databases: klyrow-postgres-1/PostgreSQL
+  health: HEALTHY
+  stage: PRODUCTION
 - software: RABBITMQ
   container_or_service: klyrow-rabbitmq-1
   image: rabbitmq:4.1.3-alpine
@@ -489,13 +509,13 @@ workloads:
   stage: PRODUCTION
 - software: KLYROW
   container_or_service: klyrow-scheduler-1
-  image: sha256:b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
-  image_digest: sha256:b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
-  image_reference_digest_pinned: 'NO'
-  version: b64e9364400e0ce2b63929802afe864cfaaf8be466f3f6077e042dc7c463793c
+  image: ghcr.io/appolon1908-hue/klyrow-gateway@sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_digest: sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
   source_repository: https://github.com/appolon1908-hue/klyrow.com
-  source_sha: 9684fd55bdbc64a971a17a291ff293a178a2ebac
-  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
   ports:
   - 8000/tcp (container network only)
   public_url: N/A
@@ -509,13 +529,13 @@ workloads:
   stage: PRODUCTION
 - software: KLYROW
   container_or_service: klyrow-smtp-relay-1
-  image: codestra/klyrow-gateway:smtp-hotfix-20260826.9
-  image_digest: sha256:102d79b3ce37fe2bcbcdd033c2960e6a2dc17cddde980731212957a2ef01980a
-  image_reference_digest_pinned: 'NO'
-  version: smtp-hotfix-20260826.9
+  image: ghcr.io/appolon1908-hue/klyrow-gateway@sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_digest: sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
   source_repository: https://github.com/appolon1908-hue/klyrow.com
-  source_sha: 9684fd55bdbc64a971a17a291ff293a178a2ebac
-  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
   ports:
   - 8000/tcp (container network only)
   - 10.40.0.4:587->8025/tcp
@@ -527,6 +547,7 @@ workloads:
   volumes:
   - bind:/run/klyrow/smtp.cert
   - bind:/run/klyrow/smtp.key
+  - bind:[SECRET_MOUNT_REDACTED]
   databases: klyrow-postgres-1/PostgreSQL
   health: HEALTHY
   stage: PRODUCTION
@@ -540,7 +561,7 @@ workloads:
   source_sha: MISSING_UNCOMMITTED_BUILD
   deployment_file: N/A
   ports:
-  - 127.0.0.1:18004->8080/tcp
+  - 8080/tcp (container network only)
   public_url: https://app.klyrow.com
   private_url: tcp://klyrow-web-candidate:8080
   networks:
@@ -548,7 +569,7 @@ workloads:
   volumes:
   - N/A
   databases: klyrow-postgres-1/PostgreSQL
-  health: HEALTHY
+  health: COMPLETED
   stage: PRODUCTION_CANDIDATE
 - software: KLYROW
   container_or_service: klyrow-web-pre-dynamic-dns-20260828T1626Z
@@ -571,6 +592,26 @@ workloads:
   health: COMPLETED
   stage: LEGACY
 - software: KLYROW
+  container_or_service: klyrow-web-production
+  image: ghcr.io/appolon1908-hue/klyrow-web@sha256:7227cf01cf5ac998bf15321c70546c2c8e1e25e9ca2b37f31cb8151f8aa6a6c1
+  image_digest: sha256:7227cf01cf5ac998bf15321c70546c2c8e1e25e9ca2b37f31cb8151f8aa6a6c1
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
+  source_repository: https://github.com/appolon1908-hue/klyrow.com
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
+  ports:
+  - 127.0.0.1:18004->8080/tcp
+  public_url: N/A
+  private_url: tcp://klyrow-web-production:8080
+  networks:
+  - klyrow_frontend
+  volumes:
+  - N/A
+  databases: klyrow-postgres-1/PostgreSQL
+  health: HEALTHY
+  stage: PRODUCTION
+- software: KLYROW
   container_or_service: klyrow-web-rollback-20260828T1612Z
   image: klyrow-web:00631572f25db6cb99905210a781be5dba3d08dd
   image_digest: sha256:d9841c0fa30f0a0ddd6aae9f911993351b8158c459299cf3bca4b1892c41d25e
@@ -592,13 +633,13 @@ workloads:
   stage: LEGACY
 - software: KLYROW
   container_or_service: klyrow-worker-1
-  image: codestra/klyrow-gateway:webmail-20260828
-  image_digest: sha256:7cb3769eceb3339dbbd4392580fceaa4ff285dbec3721fbb4dd2763a00e27d7f
-  image_reference_digest_pinned: 'NO'
-  version: webmail-20260828
-  source_repository: N/A
-  source_sha: N/A
-  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml
+  image: ghcr.io/appolon1908-hue/klyrow-gateway@sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_digest: sha256:1b0caed0283f03bf3e1f05e8411ca7e28f30ab42c4b854b570471a22671a740b
+  image_reference_digest_pinned: 'YES'
+  version: da9d85891a4e313748e309aed86662d6c03d26bb
+  source_repository: https://github.com/appolon1908-hue/klyrow.com
+  source_sha: da9d85891a4e313748e309aed86662d6c03d26bb
+  deployment_file: /opt/klyrow/klyrow-mail-engine-release-381ac4d.compose.yaml,/opt/klyrow/klyrow-server-a-mtls.override.yaml,/opt/klyrow/klyrow-final-6df4ced579b3.override.yaml,/opt/klyrow/klyrow-smtp-hotfix-20260826.override.yaml,/opt/klyrow/klyrow-webmail-20260828.override.yaml,/opt/klyrow/klyrow-protected-release.override.yaml
   ports:
   - 8000/tcp (container network only)
   public_url: N/A
@@ -761,10 +802,10 @@ workloads:
   stage: TOOLING
 - software: PRIVATE_GATEWAY
   container_or_service: private-app-integration-gateway-1
-  image: private-app-integration-gateway:latest (implicit)
-  image_digest: sha256:457971045f964ea80dadcfcd75069adf4d092cf6f075b2410055163b8fbc4981
-  image_reference_digest_pinned: 'NO'
-  version: latest (implicit)
+  image: ghcr.io/appolon1908-hue/codestra-private-integration-gateway@sha256:6d6d8cefa4a32796c85a1d6505d74fefdd2e1646421f387f126a2d0ecd03ed88
+  image_digest: sha256:6d6d8cefa4a32796c85a1d6505d74fefdd2e1646421f387f126a2d0ecd03ed88
+  image_reference_digest_pinned: 'YES'
+  version: a3dbfd6b464d2ba4c130e360f8ad73338bdd9fbb
   source_repository: https://github.com/appolon1908-hue/codestra-production-platform
   source_sha: MISSING_LIVE_PROVENANCE
   deployment_file: /opt/private-integration/compose.yaml
