@@ -1,0 +1,148 @@
+name: Audit Prometheus Hetzner production host
+
+on:
+  push:
+    branches:
+      - audit/prometheus-hetzner-host-20260903
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-prometheus-hetzner-host
+  cancel-in-progress: false
+
+env:
+  EXPECTED_IPV4: 37.27.128.39
+
+jobs:
+  identify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: stage6-infrastructure-provisioning
+    env:
+      HETZNER_CLOUD_TOKEN: ${{ secrets.HETZNER_CLOUD_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Collect sanitized GET-only host authority
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -n "$HETZNER_CLOUD_TOKEN"
+          install -d -m 0755 evidence
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+          from datetime import UTC, datetime
+          from pathlib import Path
+
+          expected_ip = os.environ["EXPECTED_IPV4"]
+          token = os.environ["HETZNER_CLOUD_TOKEN"].strip()
+          headers = {
+              "Authorization": f"Bearer {token}",
+              "Accept": "application/json",
+              "User-Agent": "codestra-prometheus-host-audit",
+          }
+
+          servers: list[dict[str, object]] = []
+          page = 1
+          while True:
+              query = urllib.parse.urlencode({"page": page, "per_page": 50})
+              request = urllib.request.Request(
+                  f"https://api.hetzner.cloud/v1/servers?{query}",
+                  headers=headers,
+                  method="GET",
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  payload = json.loads(response.read().decode())
+              for server in payload.get("servers", []):
+                  ipv4 = ((server.get("public_net") or {}).get("ipv4") or {}).get("ip")
+                  if ipv4 != expected_ip:
+                      continue
+                  server_type = server.get("server_type") or {}
+                  datacenter = server.get("datacenter") or {}
+                  location = datacenter.get("location") or {}
+                  image = server.get("image") or {}
+                  protection = server.get("protection") or {}
+                  volumes = server.get("volumes") or []
+                  private_net = server.get("private_net") or []
+                  servers.append({
+                      "id": server.get("id"),
+                      "name": server.get("name"),
+                      "status": server.get("status"),
+                      "locked": server.get("locked"),
+                      "created": server.get("created"),
+                      "ipv4": ipv4,
+                      "ipv6_present": bool(((server.get("public_net") or {}).get("ipv6") or {}).get("ip")),
+                      "server_type": server_type.get("name"),
+                      "cores": server_type.get("cores"),
+                      "memory_gib": server_type.get("memory"),
+                      "disk_gib": server_type.get("disk"),
+                      "cpu_type": server_type.get("cpu_type"),
+                      "architecture": server_type.get("architecture"),
+                      "datacenter": datacenter.get("name"),
+                      "location": location.get("name"),
+                      "country": location.get("country"),
+                      "network_zone": location.get("network_zone"),
+                      "image_type": image.get("type"),
+                      "image_os_flavor": image.get("os_flavor"),
+                      "image_os_version": image.get("os_version"),
+                      "backups_enabled": bool(server.get("backup_window")),
+                      "included_traffic_bytes": server.get("included_traffic"),
+                      "outgoing_traffic_bytes": server.get("outgoing_traffic"),
+                      "ingoing_traffic_bytes": server.get("ingoing_traffic"),
+                      "rescue_enabled": bool((server.get("rescue_enabled"))),
+                      "delete_protection": bool(protection.get("delete")),
+                      "rebuild_protection": bool(protection.get("rebuild")),
+                      "attached_volume_count": len(volumes),
+                      "private_network_count": len(private_net),
+                      "labels": server.get("labels") or {},
+                  })
+              pagination = ((payload.get("meta") or {}).get("pagination") or {})
+              next_page = pagination.get("next_page")
+              if not next_page:
+                  break
+              page = int(next_page)
+
+          result = {
+              "schema_version": "1.0",
+              "captured_at": datetime.now(UTC).isoformat(),
+              "method": "GET",
+              "expected_ipv4": expected_ip,
+              "matching_server_count": len(servers),
+              "servers": servers,
+              "cloud_mutation_performed": False,
+          }
+          if len(servers) != 1:
+              result["result"] = "FAIL"
+              Path("evidence/hetzner-prometheus-host.json").write_text(
+                  json.dumps(result, indent=2, sort_keys=True) + "\n",
+                  encoding="utf-8",
+              )
+              raise SystemExit(f"expected exactly one server for {expected_ip}, found {len(servers)}")
+          result["result"] = "PASS"
+          Path("evidence/hetzner-prometheus-host.json").write_text(
+              json.dumps(result, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(f"HETZNER_PROMETHEUS_HOST={servers[0]['name']}")
+          print(f"HETZNER_PROMETHEUS_SERVER_ID={servers[0]['id']}")
+          print("HETZNER_PROMETHEUS_HOST_AUDIT=PASS")
+          PY
+
+      - name: Upload sanitized host evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: prometheus-hetzner-host-audit
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
