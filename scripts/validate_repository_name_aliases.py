@@ -156,6 +156,28 @@ HISTORICAL_STAGE6_LOCK_SHA256 = (
     "46f0b40e8c07828d3299306d707ff5b9f859ea1a56536b262de82ef36f0741af"
 )
 
+STRUCTURED_TEXT_SUFFIXES = {
+    ".cfg",
+    ".conf",
+    ".env",
+    ".hcl",
+    ".ini",
+    ".properties",
+    ".tf",
+    ".tfvars",
+    ".toml",
+    ".yaml",
+    ".yml",
+}
+KUBERNETES_PUBLIC_ROUTE_KINDS = {
+    "gateway",
+    "httproute",
+    "grpcroute",
+    "tcproute",
+    "tlsroute",
+    "ingress",
+}
+
 
 def fail(message: str) -> None:
     print(f"ERROR: {message}", file=sys.stderr)
@@ -227,7 +249,7 @@ def forbidden_non_operational_names(data: dict[str, Any]) -> set[str]:
 
 
 def forbidden_pre_cutover_targets(data: dict[str, Any]) -> set[str]:
-    """Compatibility alias for callers enforcing inactive repository names."""
+    """Compatibility alias retained for existing tests and callers."""
 
     return forbidden_non_operational_names(data)
 
@@ -240,11 +262,10 @@ def is_operational_source(path: Path) -> bool:
     except ValueError:
         return False
 
-    if path.resolve() == HISTORICAL_STAGE6_LOCK.resolve():
-        # This fixed-digest evidence intentionally records a pre-cutover slug.
-        # It is validated separately and cannot control a current deployment.
+    resolved = path.resolve()
+    if resolved == HISTORICAL_STAGE6_LOCK.resolve():
         return False
-    if path.resolve() in {MANIFEST.resolve(), RUNBOOK.resolve(), VALIDATOR}:
+    if resolved in {MANIFEST.resolve(), RUNBOOK.resolve(), VALIDATOR}:
         return False
     if any(part in EXCLUDED_ROOTS for part in relative.parts):
         return False
@@ -311,6 +332,36 @@ def iter_dicts(value: Any) -> Iterator[dict[str, Any]]:
             yield from iter_dicts(child)
 
 
+def _record_repository_values(record: dict[str, Any]) -> dict[str, str]:
+    return {
+        field: value
+        for field, value in record.items()
+        if field in REPOSITORY_FIELDS and isinstance(value, str)
+    }
+
+
+def _validate_repository_values(
+    repository_id: int,
+    expected: str,
+    values: dict[str, str],
+    source: str,
+) -> None:
+    if not values:
+        fail(
+            f"{source} binds repository ID {repository_id} without a recognized "
+            "repository field"
+        )
+    conflicts = {field: value for field, value in values.items() if value != expected}
+    if conflicts:
+        rendered = ", ".join(
+            f"{field}={value}" for field, value in sorted(conflicts.items())
+        )
+        fail(
+            f"{source} binds repository ID {repository_id} to conflicting "
+            f"repository fields ({rendered}); expected {expected}"
+        )
+
+
 def validate_json_repository_pairs(
     path: Path,
     text: str,
@@ -328,18 +379,12 @@ def validate_json_repository_pairs(
         )
         if repository_id not in operational_by_id:
             continue
-
-        expected = operational_by_id[repository_id]
-        repository_values = {
-            value
-            for field, value in record.items()
-            if field in REPOSITORY_FIELDS and isinstance(value, str)
-        }
-        if expected not in repository_values:
-            fail(
-                "operational JSON binds a governed repository ID to the wrong "
-                f"record: {repository_id} in {path.relative_to(ROOT)}"
-            )
+        _validate_repository_values(
+            repository_id,
+            operational_by_id[repository_id],
+            _record_repository_values(record),
+            str(path.relative_to(ROOT)),
+        )
 
 
 def explicit_id_pattern(repository_id: int) -> re.Pattern[str]:
@@ -364,6 +409,32 @@ def repository_field_pattern(expected: str) -> re.Pattern[str]:
         rf'["\']?{re.escape(expected)}(?=["\'\s,\}}\]]|$)',
         re.IGNORECASE,
     )
+
+
+def repository_field_values(record: str) -> dict[str, str]:
+    """Extract all recognized repository assignments from one text record."""
+
+    field_names = "|".join(sorted(REPOSITORY_FIELDS))
+    pattern = re.compile(
+        rf'(?<![A-Za-z0-9_])["\']?(?P<field>{field_names})["\']?\s*[:=]\s*'
+        r'["\']?(?P<value>appolon1908-hue/[A-Za-z0-9._-]+)',
+        re.IGNORECASE,
+    )
+    values: dict[str, str] = {}
+    material = "\n".join(
+        line for line in record.splitlines() if not line.lstrip().startswith("#")
+    )
+    for match in pattern.finditer(material):
+        field = match.group("field").lower()
+        value = match.group("value")
+        previous = values.get(field)
+        if previous is not None and previous != value:
+            fail(
+                f"text record assigns conflicting values to {field}: "
+                f"{previous} and {value}"
+            )
+        values[field] = value
+    return values
 
 
 def line_indent(line: str) -> int:
@@ -424,11 +495,12 @@ def validate_text_repository_pairs(
             if pattern.search(line) is None:
                 continue
             record = textual_record(lines, index)
-            if repository_field_pattern(expected).search(record) is None:
-                fail(
-                    "operational source binds a governed repository ID to the "
-                    f"wrong local record: {repository_id} in {path.relative_to(ROOT)}"
-                )
+            _validate_repository_values(
+                repository_id,
+                expected,
+                repository_field_values(record),
+                str(path.relative_to(ROOT)),
+            )
 
 
 def validate_repository_id_current_name_pairing(
@@ -438,21 +510,7 @@ def validate_repository_id_current_name_pairing(
     """Pair each structured stable-ID record with its approved repository."""
 
     expected = operational_by_id or {
-        repository_id: values[0]
-        for repository_id, values in EXPECTED.items()
-    }
-    structured_text_suffixes = {
-        ".cfg",
-        ".conf",
-        ".env",
-        ".hcl",
-        ".ini",
-        ".properties",
-        ".tf",
-        ".tfvars",
-        ".toml",
-        ".yaml",
-        ".yml",
+        repository_id: values[0] for repository_id, values in EXPECTED.items()
     }
 
     for path in paths:
@@ -460,7 +518,7 @@ def validate_repository_id_current_name_pairing(
         suffix = path.suffix.lower()
         if suffix == ".json":
             validate_json_repository_pairs(path, text, expected)
-        elif suffix in structured_text_suffixes:
+        elif suffix in STRUCTURED_TEXT_SUFFIXES:
             validate_text_repository_pairs(path, text, expected)
 
 
@@ -594,25 +652,64 @@ def validate_known_operational_bindings(
         )
 
 
+def is_compose_source(path: Path, text: str | None = None) -> bool:
+    """Return true only for Docker/Podman Compose configuration sources."""
+
+    if path.suffix.lower() not in {".yaml", ".yml"}:
+        return False
+    name = path.name.lower()
+    parts = {part.lower() for part in path.parts}
+    named_compose = (
+        name in {
+            "compose.yaml",
+            "compose.yml",
+            "docker-compose.yaml",
+            "docker-compose.yml",
+            "podman-compose.yaml",
+            "podman-compose.yml",
+        }
+        or "compose" in name
+        or "compose" in parts
+    )
+    if named_compose:
+        return True
+    if text is None:
+        return False
+    return (
+        re.search(r"(?mi)^services\s*:", text) is not None
+        and not is_kubernetes_source(path, text)
+    )
+
+
+def is_kubernetes_source(path: Path, text: str) -> bool:
+    parts = {part.lower() for part in path.parts}
+    if parts & {"k8s", "kubernetes", "helm"}:
+        return True
+    lowered = text.lower()
+    return "apiversion:" in lowered and re.search(r"(?mi)^\s*kind\s*:", text) is not None
+
+
 def compose_ports_blocks(text: str) -> list[str]:
+    """Return Compose `ports` keys and their nested values."""
+
     lines = text.splitlines()
     blocks: list[str] = []
     for index, line in enumerate(lines):
-        match = re.match(r"^(\s*)ports\s*:(.*)$", line, re.IGNORECASE)
+        match = re.match(r'^(?P<indent>\s*)["\']?ports["\']?\s*:(?P<tail>.*)$', line, re.IGNORECASE)
         if match is None:
             continue
 
-        indent = len(match.group(1))
+        indent = len(match.group("indent"))
         selected = [line]
-        if match.group(2).strip() and not match.group(2).lstrip().startswith("#"):
+        tail = match.group("tail").strip()
+        if tail and not tail.startswith("#"):
             blocks.append(line)
             continue
         for following in lines[index + 1 :]:
             if not following.strip() or following.lstrip().startswith("#"):
                 selected.append(following)
                 continue
-            following_indent = line_indent(following)
-            if following_indent <= indent:
+            if line_indent(following) <= indent:
                 break
             selected.append(following)
         blocks.append("\n".join(selected))
@@ -621,7 +718,15 @@ def compose_ports_blocks(text: str) -> list[str]:
 
 def is_gateway_source(path: Path, text: str) -> bool:
     lowered_parts = {part.lower() for part in path.relative_to(ROOT).parts}
-    gateway_tokens = {"caddy", "kong", "gateway", "ingress", "nginx", "proxy", "traefik"}
+    gateway_tokens = {
+        "caddy",
+        "kong",
+        "gateway",
+        "ingress",
+        "nginx",
+        "proxy",
+        "traefik",
+    }
     if lowered_parts & gateway_tokens:
         return True
 
@@ -634,13 +739,36 @@ def is_gateway_source(path: Path, text: str) -> bool:
         "_format_version:" in lowered and "services:" in lowered
     ):
         return True
-    if re.search(
-        r"(?mi)^\s*kind\s*:\s*(?:gateway|httproute|grpcroute|tcproute|tlsroute|ingress)\s*$",
-        text,
-    ):
+    kind_match = re.search(r"(?mi)^\s*kind\s*:\s*([A-Za-z]+)\s*$", text)
+    if kind_match and kind_match.group(1).lower() in KUBERNETES_PUBLIC_ROUTE_KINDS:
         return True
     if re.search(r"(?mi)^\s*(?:backendrefs|parentrefs)\s*:", text):
         return True
+    return False
+
+
+def _kubernetes_public_service_exposes_exporter(text: str) -> bool:
+    """Detect public Service or hostPort exposure while allowing private ports."""
+
+    lowered = text.lower()
+    if "postgres-exporter" not in lowered and "9187" not in lowered:
+        return False
+    if re.search(r"(?mi)^\s*hostport\s*:\s*9187\s*$", text):
+        return True
+
+    for document in re.split(r"(?m)^\s*---\s*$", text):
+        kind = re.search(r"(?mi)^\s*kind\s*:\s*([A-Za-z]+)\s*$", document)
+        if kind is None or kind.group(1).lower() != "service":
+            continue
+        service_type = re.search(
+            r"(?mi)^\s*type\s*:\s*(LoadBalancer|NodePort)\s*$",
+            document,
+        )
+        if service_type and re.search(
+            r"(?mi)^\s*(?:port|targetPort|nodePort)\s*:\s*9187\s*$",
+            document,
+        ):
+            return True
     return False
 
 
@@ -658,12 +786,14 @@ def validate_postgres_exporter_privacy(paths: list[Path]) -> None:
         if forbidden_hostname in lowered:
             fail(f"retired PostgreSQL Exporter hostname appears in {relative}")
 
-        for block in compose_ports_blocks(text):
-            if re.search(r"\b9187\b", block):
-                fail(f"PostgreSQL Exporter port is host-published in {relative}")
+        if is_compose_source(path, text):
+            for block in compose_ports_blocks(text):
+                if re.search(r"\b9187\b", block):
+                    fail(f"PostgreSQL Exporter port is host-published in {relative}")
 
         if re.search(
-            r"(?:docker|podman)\s+(?:run|create)[^\n]*(?:-p|--publish)(?:=|\s+)[^\n]*\b9187\b",
+            r"(?:docker|podman)\s+(?:run|create)[^\n]*(?:-p|--publish)(?:=|\s+)"
+            r"[^\n]*\b9187\b",
             lowered,
         ):
             fail(
@@ -671,13 +801,10 @@ def validate_postgres_exporter_privacy(paths: list[Path]) -> None:
                 f"in {relative}"
             )
 
-        if "9187" in lowered and re.search(
-            r"\btype\s*:\s*(?:loadbalancer|nodeport)\b",
-            lowered,
-        ):
+        if is_kubernetes_source(path, text) and _kubernetes_public_service_exposes_exporter(text):
             fail(
                 "PostgreSQL Exporter is exposed by a public Kubernetes "
-                f"Service in {relative}"
+                f"service or hostPort in {relative}"
             )
 
         if (
@@ -768,25 +895,20 @@ def validate() -> None:
         fail("renamed infrastructure authority requires verified runtime state")
 
     postgres = data.get("postgres_exporter_authority", {})
-    if postgres.get("repository_id") != 1350839865:
-        fail("PostgreSQL Exporter repository ID is incorrect")
-    if postgres.get("repository") != "appolon1908-hue/Codestra-Postgres-Exporter":
-        fail("PostgreSQL Exporter principal repository is incorrect")
-    if postgres.get("public_hostname") is not None:
-        fail("PostgreSQL Exporter must not have a public hostname")
-    if postgres.get("private_service_identity") != "postgres-exporter:9187":
-        fail("PostgreSQL Exporter private service identity is incorrect")
-    if postgres.get("forbidden_public_hostname") != "pgex.codestra.media":
-        fail("retired public hostname must remain explicitly forbidden")
-    if postgres.get("exposure") != "PRIVATE_INTERNAL_ONLY":
-        fail("PostgreSQL Exporter must remain private/internal only")
-    for field in (
-        "caddy_publication_allowed",
-        "kong_publication_allowed",
-        "host_public_port_allowed",
-    ):
-        if postgres.get(field) is not False:
-            fail(f"PostgreSQL Exporter {field} must remain false")
+    expected_postgres = {
+        "repository_id": 1350839865,
+        "repository": "appolon1908-hue/Codestra-Postgres-Exporter",
+        "public_hostname": None,
+        "private_service_identity": "postgres-exporter:9187",
+        "forbidden_public_hostname": "pgex.codestra.media",
+        "exposure": "PRIVATE_INTERNAL_ONLY",
+        "caddy_publication_allowed": False,
+        "kong_publication_allowed": False,
+        "host_public_port_allowed": False,
+    }
+    for field, expected_value in expected_postgres.items():
+        if postgres.get(field) != expected_value:
+            fail(f"PostgreSQL Exporter {field} is incorrect")
 
     if len(mappings_by_id) != len(EXPECTED):
         fail("manifest must contain exactly the six approved mappings")
