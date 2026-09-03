@@ -57,10 +57,32 @@ class RepositoryTransitionTests(unittest.TestCase):
         document = self.manifest("PREPARED_NOT_RENAMED", "PREPARED_NOT_RENAMED")
         TRANSITION.validate_one_repository_transition(document, document)
 
-    def test_one_transition_is_allowed(self) -> None:
+    def test_prepared_to_renamed_is_allowed(self) -> None:
         base = self.manifest("PREPARED_NOT_RENAMED", "PREPARED_NOT_RENAMED")
         current = self.manifest("RENAMED_VERIFIED", "PREPARED_NOT_RENAMED")
         TRANSITION.validate_one_repository_transition(base, current)
+
+    def test_renamed_to_rolled_back_is_allowed(self) -> None:
+        base = self.manifest("RENAMED_VERIFIED", "PREPARED_NOT_RENAMED")
+        current = self.manifest("ROLLED_BACK_VERIFIED", "PREPARED_NOT_RENAMED")
+        TRANSITION.validate_one_repository_transition(base, current)
+
+    def test_rolled_back_to_renamed_retry_is_allowed(self) -> None:
+        base = self.manifest("ROLLED_BACK_VERIFIED", "PREPARED_NOT_RENAMED")
+        current = self.manifest("RENAMED_VERIFIED", "PREPARED_NOT_RENAMED")
+        TRANSITION.validate_one_repository_transition(base, current)
+
+    def test_renamed_to_prepared_is_rejected(self) -> None:
+        base = self.manifest("RENAMED_VERIFIED", "PREPARED_NOT_RENAMED")
+        current = self.manifest("PREPARED_NOT_RENAMED", "PREPARED_NOT_RENAMED")
+        with self.assertRaises(SystemExit):
+            TRANSITION.validate_one_repository_transition(base, current)
+
+    def test_prepared_to_rolled_back_is_rejected(self) -> None:
+        base = self.manifest("PREPARED_NOT_RENAMED", "PREPARED_NOT_RENAMED")
+        current = self.manifest("ROLLED_BACK_VERIFIED", "PREPARED_NOT_RENAMED")
+        with self.assertRaises(SystemExit):
+            TRANSITION.validate_one_repository_transition(base, current)
 
     def test_two_transitions_are_rejected(self) -> None:
         base = self.manifest("PREPARED_NOT_RENAMED", "PREPARED_NOT_RENAMED")
