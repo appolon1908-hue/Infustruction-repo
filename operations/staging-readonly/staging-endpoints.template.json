@@ -1,0 +1,32 @@
+{
+  "schema": "codestra.staging-endpoints.v1",
+  "candidate_id": "REPLACE_WITH_CANONICAL_CANDIDATE_ID",
+  "bearer_token_environment": "STAGING_READONLY_BEARER_TOKEN",
+  "metrics_token_environment": "STAGING_METRICS_BEARER_TOKEN",
+  "counters": [
+    {
+      "name": "calls",
+      "url": "https://REPLACE_WITH_PROTECTED_COUNTER_HOST/api/v1/safety/counters/calls",
+      "json_pointer": "/value",
+      "expected": 0
+    },
+    {
+      "name": "emails",
+      "url": "https://REPLACE_WITH_PROTECTED_COUNTER_HOST/api/v1/safety/counters/emails",
+      "json_pointer": "/value",
+      "expected": 0
+    },
+    {
+      "name": "sms",
+      "url": "https://REPLACE_WITH_PROTECTED_COUNTER_HOST/api/v1/safety/counters/sms",
+      "json_pointer": "/value",
+      "expected": 0
+    }
+  ],
+  "probe": {
+    "requests": 50,
+    "maximum_error_rate": 0,
+    "maximum_p95_ms": 500,
+    "maximum_regression_percent": 10
+  }
+}
