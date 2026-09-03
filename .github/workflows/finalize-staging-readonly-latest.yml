@@ -1,5 +1,7 @@
 name: Converge immutable release source from latest branch head
 
+# One-time workflow. It removes itself and every superseded finalizer after a
+# successful, fully tested convergence onto permanent source files.
 on:
   push:
     branches:
