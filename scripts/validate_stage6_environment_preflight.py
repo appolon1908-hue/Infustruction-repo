@@ -50,6 +50,9 @@ APPROVED_PRODUCTION_DENY_CIDRS = {
 }
 BUCKET_RE = re.compile(r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$")
 REGION_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,31}$")
+ED25519_PUBLIC_KEY_RE = re.compile(
+    r"^ssh-ed25519 [A-Za-z0-9+/]{40,}={0,2}( [A-Za-z0-9_.@-]{1,64})?$"
+)
 
 
 class PreflightError(ValueError):
@@ -87,11 +90,26 @@ def validate_tfvars(raw: str) -> list[str]:
         return ["STAGE6_TFVARS_JSON must be a JSON object"]
 
     try:
-        key_ids = set(_list_of_ints(value.get("approved_ssh_key_ids"), "approved_ssh_key_ids"))
+        key_ids = set(
+            _list_of_ints(
+                value.get("approved_ssh_key_ids"),
+                "approved_ssh_key_ids",
+            )
+        )
         if key_ids != APPROVED_SSH_KEY_IDS:
             errors.append("approved_ssh_key_ids must equal the reviewed Stage 6 key set")
     except PreflightError as exc:
         errors.append(str(exc))
+
+    operator_key = value.get("staging_readonly_operator_public_key")
+    if (
+        not isinstance(operator_key, str)
+        or "\n" in operator_key.strip()
+        or not ED25519_PUBLIC_KEY_RE.fullmatch(operator_key.strip())
+    ):
+        errors.append(
+            "staging_readonly_operator_public_key must contain exactly one reviewed Ed25519 public key"
+        )
 
     try:
         cidrs = _list_of_strings(
