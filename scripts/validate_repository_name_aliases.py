@@ -287,15 +287,7 @@ def is_operational_source(path: Path) -> bool:
             "Makefile",
         }
     if len(relative.parts) == 1:
-        name = relative.name.lower()
-        return relative.suffix.lower() in {".json", ".yaml", ".yml", ".toml"} and (
-            "compose" in name
-            or "lock" in name
-            or "manifest" in name
-            or "matrix" in name
-            or "production" in name
-            or "release" in name
-        )
+        return relative.suffix.lower() in TEXT_SUFFIXES
     return False
 
 
@@ -417,7 +409,7 @@ def repository_field_values(record: str) -> dict[str, str]:
     field_names = "|".join(sorted(REPOSITORY_FIELDS))
     pattern = re.compile(
         rf'(?<![A-Za-z0-9_])["\']?(?P<field>{field_names})["\']?\s*[:=]\s*'
-        r'["\']?(?P<value>appolon1908-hue/[A-Za-z0-9._-]+)',
+        r'(?P<value>"[^"\r\n]*"|\'[^\'\r\n]*\'|[^\s,\}\]#]+)',
         re.IGNORECASE,
     )
     values: dict[str, str] = {}
@@ -427,6 +419,8 @@ def repository_field_values(record: str) -> dict[str, str]:
     for match in pattern.finditer(material):
         field = match.group("field").lower()
         value = match.group("value")
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
         previous = values.get(field)
         if previous is not None and previous != value:
             fail(
@@ -764,10 +758,12 @@ def _kubernetes_public_service_exposes_exporter(text: str) -> bool:
             r"(?mi)^\s*type\s*:\s*(LoadBalancer|NodePort)\s*$",
             document,
         )
-        if service_type and re.search(
+        exporter_identity = "postgres-exporter" in document.lower()
+        exporter_port = re.search(
             r"(?mi)^\s*(?:port|targetPort|nodePort)\s*:\s*9187\s*$",
             document,
-        ):
+        )
+        if service_type and (exporter_identity or exporter_port):
             return True
     return False
 

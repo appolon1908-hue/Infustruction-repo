@@ -76,6 +76,8 @@ class RepositoryNameAliasTests(unittest.TestCase):
             ROOT / ".github" / "actions" / "checkout-source" / "action.yml",
             ROOT / "infra" / "modules" / "source.tf",
             ROOT / "scripts" / "checkout-release.sh",
+            ROOT / "main.tf",
+            ROOT / "checkout.sh",
             ROOT / ".gitmodules",
         )
         for path in expected:
@@ -160,6 +162,17 @@ class RepositoryNameAliasTests(unittest.TestCase):
             "- repository_id: 1351353723\n"
             "  current_repository: appolon1908-hue/Codesrea-Social-\n"
             "  repository: appolon1908-hue/unapproved-social-fork\n"
+        )
+        with patch.object(Path, "read_text", return_value=payload):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
+
+    def test_text_record_rejects_repository_owned_by_another_account(self) -> None:
+        fake_path = ROOT / "production.tf"
+        payload = (
+            "repository_id = 1351353723\n"
+            'current_repository = "appolon1908-hue/Codesrea-Social-"\n'
+            'repository = "attacker/unapproved-fork"\n'
         )
         with patch.object(Path, "read_text", return_value=payload):
             with self.assertRaises(SystemExit):
@@ -263,6 +276,52 @@ spec:
         with patch.object(Path, "read_text", return_value=payload):
             with self.assertRaises(SystemExit):
                 AUTHORITY.validate_postgres_exporter_privacy([fake_path])
+
+    def test_public_exporter_service_with_named_target_port_is_denied(self) -> None:
+        fake_path = ROOT / "k8s" / "postgres-exporter-service.yaml"
+        payload = """apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-exporter
+spec:
+  type: LoadBalancer
+  selector:
+    app: postgres-exporter
+  ports:
+    - name: web
+      port: 80
+      targetPort: metrics
+"""
+        with patch.object(Path, "read_text", return_value=payload):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_postgres_exporter_privacy([fake_path])
+
+    def test_unrelated_public_service_in_exporter_manifest_is_allowed(self) -> None:
+        fake_path = ROOT / "k8s" / "combined-services.yaml"
+        payload = """apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-exporter
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 9187
+      targetPort: metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unrelated-public-ui
+spec:
+  type: LoadBalancer
+  ports:
+    - name: web
+      port: 80
+      targetPort: http
+"""
+        with patch.object(Path, "read_text", return_value=payload):
+            AUTHORITY.validate_postgres_exporter_privacy([fake_path])
 
     def test_historical_source_lock_digest_is_complete(self) -> None:
         original = AUTHORITY.HISTORICAL_STAGE6_LOCK.read_text(encoding="utf-8")
