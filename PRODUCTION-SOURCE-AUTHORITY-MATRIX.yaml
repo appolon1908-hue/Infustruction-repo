@@ -17,12 +17,22 @@ defaults:
   protected_branch: UNKNOWN
   source_sha: UNKNOWN
   confidence: low
-api_completion_candidates:
-  codestra-ai: {repository: appolon1908-hue/Codestra-AI, pr: 5, feature_head: 9d141379a9f355c8dbbee56214be4129e9c9f66b, protected_merge: 1832d19eb779146beaf7aa9ead17aac4f502beb7, merge_signature: VERIFIED, runtime: NOT_DEPLOYED}
-  codestra-middleware: {repository: Codestra-SRL/codestra-middleware, pr: 282, feature_head: a397f6084703472ae2fbfb1995cc5508bddabe39, protected_merge: c8c8d6fad442e7a65eeac353a0f0853797ea84a8, merge_signature: VERIFIED, runtime: NOT_DEPLOYED}
-  codestra-communication: {repository: appolon1908-hue/Codestra-Communication-CC, pr: 5, feature_head: ec56638cbf543f02ad960c3647e74481d5a5bbb1, protected_merge: cceb1fd7462f765e6ac36db154086d56a88ba712, merge_signature: VERIFIED, runtime: NOT_DEPLOYED}
-  codestra-marketing: {repository: appolon1908-hue/Codestra-Marketing-, pr: 5, feature_head: 4a7c0277d831e658ed3ed77ef9bf331171c0b819, protected_merge: 3f78cbdeccbdd69f1dfa7f4d31232b43e798047a, merge_signature: VERIFIED, runtime: NOT_DEPLOYED}
-  codestra-social: {repository: appolon1908-hue/Codesrea-Social-, pr: 5, feature_head: 9479a3bc59bd8f809e052c191fe138f72da4531c, protected_merge: 1323a7335e1724a00406aeadd1fec4c8e8af5f1a, merge_signature: VERIFIED, runtime: NOT_DEPLOYED}
+restricted_operators:
+  klyrow-stack:
+    source_repository: appolon1908-hue/Infustruction-repo
+    protected_branch: main
+    source_path: operators/klyrow-stack
+    installer_path: operators/install-klyrow-stack
+    sudoers_path: operators/klyrow-stack.sudoers
+    installed_path: /usr/local/sbin/klyrow-stack
+    installed_owner: root
+    installed_group: root
+    installed_mode: '0755'
+    allowed_subcommands: [status, rollback-plan, preflight, plan, stage, deploy, rollback]
+    approval_marker_schema: 1
+    known_good_override_sha256: 345093a338012f9d32f6d7569f20b8c62503058731e0d4c5a7765dbe667dcc6e
+    rollback_policy: fail_closed_automatic_on_health_or_safety_failure
+    runtime_installation: pending_reviewed_merge
 workloads:
   codestra-middleware-1:
     runtime_image: codestra/middleware:health-contract-b3ca9aa
