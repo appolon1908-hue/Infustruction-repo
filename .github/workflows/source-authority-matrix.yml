@@ -66,3 +66,20 @@ jobs:
           mkdir -p "${scan_root}"
           git archive HEAD | tar -x -C "${scan_root}"
           (cd "${scan_root}" && "${RUNNER_TEMP}/authority-gitleaks" dir --no-banner --redact --exit-code 1 .)
+
+  validate:
+    name: validate
+    if: always()
+    needs:
+      - validate-source
+      - validate-merge-result
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require both exact-source gates
+        env:
+          SOURCE_RESULT: ${{ needs.validate-source.result }}
+          MERGE_RESULT: ${{ needs.validate-merge-result.result }}
+        run: |
+          set -Eeuo pipefail
+          test "${SOURCE_RESULT}" = "success"
+          test "${MERGE_RESULT}" = "success"
