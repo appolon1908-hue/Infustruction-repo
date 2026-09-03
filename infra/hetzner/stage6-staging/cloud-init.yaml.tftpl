@@ -6,6 +6,11 @@ disable_root: true
 package_update: false
 users:
   - default
+  - name: codestra-stage6-deploy
+    gecos: Codestra Stage 6 deployment identity
+    groups: []
+    shell: /bin/bash
+    lock_passwd: true
   - name: codestra-staging-readonly
     gecos: Codestra restricted staging-readonly automation identity
     groups: []
@@ -53,7 +58,7 @@ write_files:
       PasswordAuthentication no
       PermitRootLogin no
       PubkeyAuthentication yes
-      AllowUsers codestra-staging-readonly codestra-stage6-admin
+      AllowUsers codestra-stage6-deploy codestra-staging-readonly codestra-stage6-admin
 
       Match User codestra-staging-readonly
           AuthenticationMethods publickey
@@ -166,12 +171,16 @@ runcmd:
   - [install, -d, -m, "0755", /srv/codestra, /srv/codestra/releases, /srv/codestra/state]
   - [install, -d, -m, "0755", /etc/codestra]
   - [install, -d, -m, "0755", /etc/codestra/staging-readonly]
+  - [install, -d, -m, "0700", -o, codestra-stage6-deploy, -g, codestra-stage6-deploy, /home/codestra-stage6-deploy/.ssh]
   - [install, -d, -m, "0700", -o, codestra-staging-readonly, -g, codestra-staging-readonly, /home/codestra-staging-readonly/.ssh]
-  - [chown, "codestra-staging-readonly:codestra-staging-readonly", /home/codestra-staging-readonly/.ssh/authorized_keys]
-  - [chmod, "0600", /home/codestra-staging-readonly/.ssh/authorized_keys]
   - [install, -d, -m, "0700", -o, codestra-stage6-admin, -g, codestra-stage6-admin, /home/codestra-stage6-admin/.ssh]
+  - [cp, /root/.ssh/authorized_keys, /home/codestra-stage6-deploy/.ssh/authorized_keys]
   - [cp, /root/.ssh/authorized_keys, /home/codestra-stage6-admin/.ssh/authorized_keys]
+  - [chown, "codestra-stage6-deploy:codestra-stage6-deploy", /home/codestra-stage6-deploy/.ssh/authorized_keys]
+  - [chown, "codestra-staging-readonly:codestra-staging-readonly", /home/codestra-staging-readonly/.ssh/authorized_keys]
   - [chown, "codestra-stage6-admin:codestra-stage6-admin", /home/codestra-stage6-admin/.ssh/authorized_keys]
+  - [chmod, "0600", /home/codestra-stage6-deploy/.ssh/authorized_keys]
+  - [chmod, "0600", /home/codestra-staging-readonly/.ssh/authorized_keys]
   - [chmod, "0600", /home/codestra-stage6-admin/.ssh/authorized_keys]
   - [visudo, -cf, /etc/sudoers.d/90-codestra-staging-readonly]
   - [sshd, -t]
@@ -181,6 +190,6 @@ runcmd:
   - [systemctl, restart, systemd-timesyncd]
   - [systemctl, restart, ssh]
   - [systemctl, enable, --now, docker]
-  - [sh, -c, "test ! -S /home/codestra-staging-readonly/docker.sock && test ! -S /home/codestra-stage6-admin/docker.sock"]
+  - [sh, -c, "test ! -S /home/codestra-stage6-deploy/docker.sock && test ! -S /home/codestra-staging-readonly/docker.sock && test ! -S /home/codestra-stage6-admin/docker.sock"]
   - [sh, -c, "/usr/local/sbin/codestra-staging-readonly-operator status | jq -e '.deployment_authorized == false and .runtime_mutated == false and .live_effects_enabled == false' >/dev/null"]
 final_message: "Codestra Stage 6 runtime prepared through controlled egress; restricted staging identity is status-only and applications remain undeployed."
