@@ -1,7 +1,8 @@
-name: Converge immutable release source from latest branch head
+name: Converge permanent immutable release controller source
 
-# One-time workflow. It removes itself and every superseded finalizer after a
-# successful, fully tested convergence onto permanent source files.
+# One-time source transformation. Workflow cleanup is performed separately by
+# a workflow-authorized repository identity after this job publishes only
+# non-workflow source and tests.
 on:
   push:
     branches:
@@ -26,7 +27,7 @@ jobs:
         with:
           ref: release/staging-readonly-production-canary-20260903
           fetch-depth: 0
-      - name: Converge, test, and publish permanent source
+      - name: Transform, test, and publish non-workflow source
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -89,15 +90,10 @@ jobs:
             python3 operations/staging-readonly/finalize_v3.py
           fi
 
-          git add -A
           git rm -f --ignore-unmatch \
-            .github/workflows/finalize-staging-readonly-source.yml \
-            .github/workflows/finalize-staging-readonly-v2.yml \
-            .github/workflows/retry-finalize-staging-readonly-v2.yml \
-            .github/workflows/finalize-staging-readonly-v3.yml \
-            .github/workflows/finalize-staging-readonly-latest.yml \
             operations/staging-readonly/finalize_v2.py \
             operations/staging-readonly/finalize_v3.py
+          git add -A -- operations/staging-readonly
 
           python3 -m py_compile \
             operations/staging-readonly/release_control.py \
