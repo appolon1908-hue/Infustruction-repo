@@ -1,0 +1,57 @@
+name: Dispatch protected Stage 6 read-only inventory
+
+on:
+  push:
+    branches:
+      - audit/prometheus-hetzner-host-20260903
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: dispatch-stage6-readonly-inventory
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_WORKFLOW: stage6-readonly-inventory.yml
+      TARGET_REF: main
+    steps:
+      - name: Dispatch existing protected GET-only inventory workflow
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          before="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$TARGET_WORKFLOW/runs?event=workflow_dispatch&branch=$TARGET_REF&per_page=20")"
+          jq -r '.workflow_runs[].id' <<<"$before" | sort -n > /tmp/before-run-ids
+          gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/$TARGET_WORKFLOW/dispatches" \
+            -f ref="$TARGET_REF"
+
+          run_id=""
+          for _ in $(seq 1 30); do
+            current="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$TARGET_WORKFLOW/runs?event=workflow_dispatch&branch=$TARGET_REF&per_page=20")"
+            run_id="$(jq -r --arg started "$started_at" '[.workflow_runs[] | select(.created_at >= $started) | .id] | max // empty' <<<"$current")"
+            if [[ -n "$run_id" ]] && ! grep -qx "$run_id" /tmp/before-run-ids; then
+              break
+            fi
+            sleep 2
+          done
+          test -n "$run_id"
+          printf 'DISPATCHED_WORKFLOW=%s\n' "$TARGET_WORKFLOW"
+          printf 'DISPATCHED_REF=%s\n' "$TARGET_REF"
+          printf 'DISPATCHED_RUN_ID=%s\n' "$run_id"
+          printf 'DISPATCHED_AT=%s\n' "$started_at"
+          {
+            printf '# Protected read-only inventory dispatch\n\n'
+            printf -- '- Workflow: `%s`\n' "$TARGET_WORKFLOW"
+            printf -- '- Ref: `%s`\n' "$TARGET_REF"
+            printf -- '- Run ID: `%s`\n' "$run_id"
+            printf -- '- Method: workflow dispatch only\n'
+            printf -- '- Cloud mutation authorized: no\n'
+          } >> "$GITHUB_STEP_SUMMARY"
