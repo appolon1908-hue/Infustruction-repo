@@ -121,6 +121,19 @@ class RepositoryNameAliasTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
 
+    def test_json_record_rejects_conflicting_repository_fields(self) -> None:
+        fake_path = ROOT / "release" / "synthetic-conflict.json"
+        payload = json.dumps(
+            {
+                "repository_id": 1351353723,
+                "current_repository": "appolon1908-hue/Codesrea-Social-",
+                "repository": "appolon1908-hue/unapproved-social-fork",
+            }
+        )
+        with patch.object(Path, "read_text", return_value=payload):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
+
     def test_repository_id_pairing_is_scoped_to_toml_table(self) -> None:
         fake_path = ROOT / "release" / "synthetic-source-lock.toml"
         payload = (
@@ -138,6 +151,17 @@ class RepositoryNameAliasTests(unittest.TestCase):
             'repository = "appolon1908-hue/unapproved-social-fork"',
         )
         with patch.object(Path, "read_text", return_value=changed):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
+
+    def test_text_record_rejects_conflicting_repository_fields(self) -> None:
+        fake_path = ROOT / "release" / "synthetic-source-lock.yaml"
+        payload = (
+            "- repository_id: 1351353723\n"
+            "  current_repository: appolon1908-hue/Codesrea-Social-\n"
+            "  repository: appolon1908-hue/unapproved-social-fork\n"
+        )
+        with patch.object(Path, "read_text", return_value=payload):
             with self.assertRaises(SystemExit):
                 AUTHORITY.validate_repository_id_current_name_pairing([fake_path])
 
@@ -192,12 +216,63 @@ class RepositoryNameAliasTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 AUTHORITY.validate_postgres_exporter_privacy([fake_path])
 
+    def test_private_kubernetes_container_port_is_allowed(self) -> None:
+        fake_path = ROOT / "k8s" / "postgres-exporter-deployment.yaml"
+        payload = """apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-exporter
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres-exporter
+          ports:
+            - name: metrics
+              containerPort: 9187
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-exporter
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 9187
+      targetPort: 9187
+"""
+        with patch.object(Path, "read_text", return_value=payload):
+            AUTHORITY.validate_postgres_exporter_privacy([fake_path])
+
+    def test_kubernetes_host_port_is_denied(self) -> None:
+        fake_path = ROOT / "k8s" / "postgres-exporter-deployment.yaml"
+        payload = """apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-exporter
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres-exporter
+          ports:
+            - containerPort: 9187
+              hostPort: 9187
+"""
+        with patch.object(Path, "read_text", return_value=payload):
+            with self.assertRaises(SystemExit):
+                AUTHORITY.validate_postgres_exporter_privacy([fake_path])
+
     def test_historical_source_lock_digest_is_complete(self) -> None:
         original = AUTHORITY.HISTORICAL_STAGE6_LOCK.read_text(encoding="utf-8")
 
         def fake_require(path: Path) -> str:
             if path == AUTHORITY.HISTORICAL_STAGE6_LOCK:
-                return original.replace('"environment": "staging"', '"environment": "test"')
+                return original.replace(
+                    '"environment": "staging"',
+                    '"environment": "test"',
+                )
             return path.read_text(encoding="utf-8")
 
         with patch.object(AUTHORITY, "require_file", side_effect=fake_require):
