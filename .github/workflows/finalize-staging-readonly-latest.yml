@@ -1,0 +1,127 @@
+name: Converge immutable release source from latest branch head
+
+on:
+  push:
+    branches:
+      - release/staging-readonly-production-canary-20260903
+    paths:
+      - .github/workflows/finalize-staging-readonly-latest.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-staging-readonly-v2
+  cancel-in-progress: false
+
+jobs:
+  converge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out latest branch head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: release/staging-readonly-production-canary-20260903
+          fetch-depth: 0
+      - name: Converge, test, and publish permanent source
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin release/staging-readonly-production-canary-20260903
+          git reset --hard origin/release/staging-readonly-production-canary-20260903
+
+          if ! grep -q 'def validate_run_evidence' operations/staging-readonly/release_control_v2.py; then
+            test -f operations/staging-readonly/finalize_v2.py
+            python3 operations/staging-readonly/finalize_v2.py
+          fi
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          legacy = Path("operations/staging-readonly/test_release_control.py")
+          source = legacy.read_text(encoding="utf-8")
+          if "import sys\n" not in source:
+              source = source.replace(
+                  "import os\nfrom pathlib import Path\n",
+                  "import os\nimport sys\nfrom pathlib import Path\n",
+                  1,
+              )
+          if "sys.modules[SPEC.name] = release_control" not in source:
+              source = source.replace(
+                  "release_control = importlib.util.module_from_spec(SPEC)\nSPEC.loader.exec_module(release_control)\n",
+                  "release_control = importlib.util.module_from_spec(SPEC)\nsys.modules[SPEC.name] = release_control\nSPEC.loader.exec_module(release_control)\n",
+                  1,
+              )
+          legacy.write_text(source, encoding="utf-8")
+
+          path = Path("operations/staging-readonly/test_release_control_v2.py")
+          tests = path.read_text(encoding="utf-8")
+          tests = tests.replace(
+              "        release.validate_staging_evidence(evidence, candidate, digest)\n",
+              "        release.validate_run_evidence(\n"
+              "            evidence, candidate, digest,\n"
+              "            expected_mode=\"staging\",\n"
+              "            environment_prefix=\"STAGING\",\n"
+              "            required_gates={\"all\"},\n"
+              "        )\n",
+              1,
+          )
+          tests = tests.replace(
+              "            release.validate_staging_evidence, evidence, candidate, digest\n",
+              "            release.validate_run_evidence, evidence, candidate, digest,\n"
+              "            expected_mode=\"staging\",\n"
+              "            environment_prefix=\"STAGING\",\n"
+              "            required_gates={\"all\"},\n",
+              1,
+          )
+          if "validate_staging_evidence" in tests:
+              raise SystemExit("stale staging-evidence helper remains in tests")
+          path.write_text(tests, encoding="utf-8")
+          PY
+
+          if ! grep -q 'def validate_canary_receipt' operations/staging-readonly/release_control_v2.py; then
+            test -f operations/staging-readonly/finalize_v3.py
+            python3 operations/staging-readonly/finalize_v3.py
+          fi
+
+          git add -A
+          git rm -f --ignore-unmatch \
+            .github/workflows/finalize-staging-readonly-source.yml \
+            .github/workflows/finalize-staging-readonly-v2.yml \
+            .github/workflows/retry-finalize-staging-readonly-v2.yml \
+            .github/workflows/finalize-staging-readonly-v3.yml \
+            .github/workflows/finalize-staging-readonly-latest.yml \
+            operations/staging-readonly/finalize_v2.py \
+            operations/staging-readonly/finalize_v3.py
+
+          python3 -m py_compile \
+            operations/staging-readonly/release_control.py \
+            operations/staging-readonly/release_control_v2.py \
+            operations/staging-readonly/release_control_entry.py \
+            operations/staging-readonly/test_release_control.py \
+            operations/staging-readonly/test_release_control_v2.py
+          python3 operations/staging-readonly/test_release_control.py
+          python3 operations/staging-readonly/test_release_control_v2.py
+          for path in \
+            operations/staging-readonly/release-control.schema.json \
+            operations/staging-readonly/staging-endpoints.schema.json \
+            operations/staging-readonly/release-control.template.json \
+            operations/staging-readonly/staging-endpoints.template.json \
+            operations/staging-readonly/production-endpoints.template.json; do
+            python3 -m json.tool "$path" >/dev/null
+          done
+          grep -q 'environment: staging-readonly' .github/workflows/staging-readonly-certification.yml
+          grep -q 'environment: production-readonly-canary' .github/workflows/staging-readonly-certification.yml
+          grep -q 'rollback_evidence_run_id' .github/workflows/staging-readonly-certification.yml
+          grep -q 'PRODUCTION_ENDPOINT_MANIFEST_B64' .github/workflows/staging-readonly-certification.yml
+          git diff --check
+
+          if git diff --cached --quiet; then
+            echo "PERMANENT_SOURCE_ALREADY_CONVERGED=YES"
+            exit 0
+          fi
+          git commit -m "fix(release): converge immutable staging and canary authority"
+          git push origin HEAD:release/staging-readonly-production-canary-20260903
