@@ -81,6 +81,8 @@ def main() -> None:
         assert GIT_SHA.fullmatch(row["source_sha"])
         if service == "KLYROW":
             assert row["review"] == "DEPLOYED_PROTECTED_MAIN_PR_76_APPROVED_AND_MERGED"
+        elif service == "PRIVATE_GATEWAY":
+            assert row["review"] == "PROTECTED_RELEASE_SIGNED_AND_DEPLOYED"
         else:
             assert "REVIEW_REQUIRED" in row["review"]
 
@@ -105,7 +107,12 @@ def main() -> None:
     assert admin_deny["rollback_procedure"]
     assert admin_deny["rollback_status"] == "PASS"
     assert rollback["candidate_promotions"]
-    deployed = {"KLYROW_GATEWAY_AND_WORKER", "KLYROW_WEB", "POSTAL_PROVISIONER"}
+    deployed = {
+        "KLYROW_GATEWAY_AND_WORKER",
+        "KLYROW_WEB",
+        "POSTAL_PROVISIONER",
+        "PRIVATE_INTEGRATION_GATEWAY",
+    }
     for row in rollback["candidate_promotions"]:
         digests = []
         if "before_image_digest" in row:

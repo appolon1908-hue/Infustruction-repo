@@ -216,10 +216,10 @@ def main() -> None:
         },
         {
             "service": "PRIVATE_INTEGRATION_GATEWAY",
-            "authority": "RUNNING_SOURCE_ROUTES",
-            "operation_count": 12,
+            "authority": "RUNNING_PROTECTED_SOURCE_OPENAPI",
+            "operation_count": 20,
             "classification": "INTERNAL_ONLY",
-            "notes": "Legacy runtime graph; candidate contract is not deployed.",
+            "notes": "Signed shared-mode protected release is deployed; the separately governed middleware-mode ingress contract is not deployed.",
         },
         {
             "service": "PROMETHEUS",
@@ -283,8 +283,8 @@ def main() -> None:
     live_counts: dict[str, int] = {name: 0 for name in ALLOWED_CLASSIFICATIONS}
     for group in live_groups:
         live_counts[group["classification"]] += group["operation_count"]
-    if sum(live_counts.values()) != 3112:
-        raise RuntimeError(f"live classification total is {sum(live_counts.values())}, expected 3112")
+    if sum(live_counts.values()) != 3120:
+        raise RuntimeError(f"live classification total is {sum(live_counts.values())}, expected 3120")
 
     source_only_groups = [
         {
@@ -397,8 +397,8 @@ def main() -> None:
         "scope": "THIS_SERVER_ONLY",
         "authoritative_baseline": {
             "total_running_services": 72,
-            "total_live_api_endpoints": 3112,
-            "total_internal_api_endpoints": 1574,
+            "total_live_api_endpoints": 3120,
+            "total_internal_api_endpoints": 1582,
             "total_source_implemented_not_deployed": 32,
             "api_inventory_complete": True,
             "source_matrix": SOURCE_MATRIX.name,
@@ -461,7 +461,7 @@ def main() -> None:
             "PRIVATE_GATEWAY": {
                 "repository": "https://github.com/appolon1908-hue/codestra-production-platform",
                 "source_sha": certification["PRIVATE_GATEWAY_SOURCE_SHA"],
-                "review": "PR_180_PARENT_RELEASE_PR_165_REVIEW_REQUIRED",
+                "review": "PROTECTED_RELEASE_SIGNED_AND_DEPLOYED",
             },
         },
         "missing_required_endpoints": missing_required,
@@ -476,7 +476,7 @@ def main() -> None:
         "server": matrix["server"],
         "production_changed": True,
         "rollback_gate": "FAIL",
-        "reason": "Klyrow and its private Mautic integration are deployed with tested rollback controls; Telnexa, Kyqra, and later private-gateway candidates remain review-gated, so the platform rollback gate remains fail-closed.",
+        "reason": "Klyrow, its private Mautic integration, and the shared private gateway are deployed with tested rollback controls; Telnexa and Kyqra candidates remain review-gated, so the platform rollback gate remains fail-closed.",
         "production_configuration_changes": [
             {
                 "service": "MAUTIC_API",
@@ -591,16 +591,17 @@ def main() -> None:
             },
             {
                 "service": "PRIVATE_INTEGRATION_GATEWAY",
-                "before_source_sha": "UNKNOWN",
-                "before_image_digest": "sha256:457971045f964ea80dadcfcd75069adf4d092cf6f075b2410055163b8fbc4981",
-                "after_source_sha": "783ea785fd8373e53819878c38818fd71ec9361f",
-                "after_image_digest": "sha256:63e7bd7bc86652d49df521ebd2e868597902b26b79edb912057b5942c232e655",
-                "database_migration": "SQLITE_SCHEMA_MIGRATION_REQUIRES_ISOLATED_ROUNDTRIP",
-                "rollback_procedure": "Stop intake, drain or reconcile durable operations, restore the recorded data snapshot and before digest, then prove positive mTLS read-only access.",
-                "status": "NOT_DEPLOYED_REVIEW_REQUIRED",
+                "before_source_sha": "a3dbfd6b464d2ba4c130e360f8ad73338bdd9fbb",
+                "before_image_digest": "sha256:6d6d8cefa4a32796c85a1d6505d74fefdd2e1646421f387f126a2d0ecd03ed88",
+                "after_source_sha": "9ec227d6a2b5c14217d88c33a8cfd4e057486c56",
+                "after_image_digest": "sha256:8f963929c600baa03435e9c5d7bc7bfa9af152fe26736ca201c586a7b6c0db6b",
+                "database_migration": "NONE_APPLICATION_BYTES_IDENTICAL_SQLITE_INTEGRITY_VERIFIED",
+                "rollback_procedure": "Use the root-only private-gateway rollout bundle to restore the prior digest; the rollback and forward recovery rehearsal both returned healthy with SQLite integrity preserved.",
+                "rollback_evidence": "SERVER-37-PRIVATE-GATEWAY-RELEASE-EVIDENCE.md",
+                "status": "DEPLOYED_PASS",
             },
         ],
-        "required_next_action": "Independent reviewers approve exact heads; release owner publishes signed digests and performs isolated rollback rehearsals before production promotion.",
+        "required_next_action": "Independent reviewers approve the remaining exact Telnexa and Kyqra heads; release owners publish signed digests and perform isolated rollback rehearsals before production promotion.",
     }
     OUTPUT_ROLLBACK.write_text(yaml.safe_dump(rollback, sort_keys=False, width=120))
 

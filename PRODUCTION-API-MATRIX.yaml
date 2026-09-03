@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: '2026-09-02T23:53:39.830258+00:00'
+generated_at: '2026-09-03T00:14:47.876204+00:00'
 server_scope: CURRENT_SERVER_ONLY
 source_repositories:
   KLYROW: https://github.com/appolon1908-hue/klyrow.com
@@ -18,7 +18,7 @@ source_authority:
     source_sha: 58aceb3d1464c6ffd8f9a9b48ee6ef67d5490c29
   PRIVATE_GATEWAY:
     repository: https://github.com/appolon1908-hue/codestra-production-platform
-    source_sha: 8aefb5953e4ca6d46b3dd547749c53dbb4371858
+    source_sha: 9ec227d6a2b5c14217d88c33a8cfd4e057486c56
 required_contracts:
 - service: KLYROW
   method: GET

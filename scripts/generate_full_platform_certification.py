@@ -56,7 +56,7 @@ SOURCE_DIRECTORIES = {
     "KLYROW": Path("/root/klyrow-production-release-da9d85891a4e"),
     "TELNEXA": Path("/root/full-platform-telnexa-20260902"),
     "KYQRA": Path("/root/kyqra-production-hardening-20260902"),
-    "PRIVATE_GATEWAY": Path("/root/full-platform-private-gateway-20260902"),
+    "PRIVATE_GATEWAY": Path("/root/private-gateway-protected-9ec227d"),
 }
 EXPECTED_PUBLIC_IPV4 = "37.27.128.39"
 EXPECTED_PRIVATE_IPV4 = "10.40.0.4"
@@ -782,8 +782,6 @@ def runtime_inventory() -> dict[str, Any]:
         revision = labels.get("org.opencontainers.image.revision", "N/A")
         if name == "klyrow-web-candidate":
             repository, revision = CUSTOM_REPOSITORIES["KLYROW"], "MISSING_UNCOMMITTED_BUILD"
-        elif name == "private-app-integration-gateway-1":
-            repository, revision = CUSTOM_REPOSITORIES["PRIVATE_GATEWAY"], "MISSING_LIVE_PROVENANCE"
         elif name.startswith("kyqra-crawler-") and name not in {"kyqra-crawler-postgres-1", "kyqra-crawler-redis-1"}:
             repository, revision = CUSTOM_REPOSITORIES["KYQRA"], "MISSING_LIVE_PROVENANCE"
         health = (item["State"].get("Health") or {}).get("Status", item["State"]["Status"])
