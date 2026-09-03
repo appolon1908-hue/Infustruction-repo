@@ -3,12 +3,14 @@ from __future__ import annotations
 import copy
 import importlib.util
 import os
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SPEC = importlib.util.spec_from_file_location("release_control", ROOT / "release_control.py")
 assert SPEC and SPEC.loader
 release_control = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = release_control
 SPEC.loader.exec_module(release_control)
 
 
@@ -118,6 +120,10 @@ def expect_gate_error(function, *args, **kwargs) -> None:
     except release_control.GateError:
         return
     raise AssertionError("expected GateError")
+
+
+def test_dynamic_import_is_registered_for_dataclass_resolution() -> None:
+    assert sys.modules[SPEC.name] is release_control
 
 
 def test_valid_complete_candidate_passes() -> None:
