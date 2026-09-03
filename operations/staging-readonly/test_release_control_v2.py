@@ -347,10 +347,18 @@ def test_staging_evidence_is_bound_to_candidate_and_authenticated_run() -> None:
         os.environ["STAGING_EVIDENCE_RUN_ID"] = "123"
         os.environ["STAGING_EVIDENCE_RUN_ATTEMPT"] = "1"
         os.environ["STAGING_EVIDENCE_HEAD_SHA"] = "8" * 40
-        release.validate_staging_evidence(evidence, candidate, digest)
+        release.validate_run_evidence(
+            evidence, candidate, digest,
+            expected_mode="staging",
+            environment_prefix="STAGING",
+            required_gates={"all"},
+        )
         evidence["producer"]["run_id"] = 124
         expect_gate_error(
-            release.validate_staging_evidence, evidence, candidate, digest
+            release.validate_run_evidence, evidence, candidate, digest,
+            expected_mode="staging",
+            environment_prefix="STAGING",
+            required_gates={"all"},
         )
     finally:
         for key, value in previous.items():
@@ -358,6 +366,60 @@ def test_staging_evidence_is_bound_to_candidate_and_authenticated_run() -> None:
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = value
+
+
+def test_canary_controller_receipt_binds_percent_methods_and_digests() -> None:
+    candidate = valid_candidate()
+    digest = "8" * 64
+    receipt = {
+        "schema": "codestra.readonly-canary-receipt.v1",
+        "candidate_id": candidate["candidate_id"],
+        "source_lock_sha": candidate["candidate_source_lock_sha"],
+        "candidate_manifest_sha256": digest,
+        "percent": 1.0,
+        "methods": ["GET", "HEAD"],
+        "read_only": True,
+        "workloads": [
+            {
+                "service": item["service"],
+                "source_sha": item["source_sha"],
+                "image": item["image"],
+            }
+            for item in candidate["workloads"]
+        ],
+    }
+    release.validate_canary_receipt(receipt, candidate, digest, 1.0)
+    broken = copy.deepcopy(receipt)
+    broken["percent"] = 1.1
+    expect_gate_error(
+        release.validate_canary_receipt,
+        broken,
+        candidate,
+        digest,
+        1.0,
+    )
+    broken = copy.deepcopy(receipt)
+    broken["methods"] = ["GET", "POST"]
+    expect_gate_error(
+        release.validate_canary_receipt,
+        broken,
+        candidate,
+        digest,
+        1.0,
+    )
+
+
+def test_canary_rollback_receipt_is_exact() -> None:
+    candidate = valid_candidate()
+    receipt = {
+        "schema": "codestra.readonly-canary-rollback.v1",
+        "candidate_id": candidate["candidate_id"],
+        "source_lock_sha": candidate["candidate_source_lock_sha"],
+        "rolled_back": True,
+    }
+    release.validate_rollback_receipt(receipt, candidate)
+    receipt["rolled_back"] = False
+    expect_gate_error(release.validate_rollback_receipt, receipt, candidate)
 
 
 def test_safe_archive_extraction_rejects_links_and_traversal() -> None:

@@ -16,6 +16,7 @@ recovery point.
 
 from __future__ import annotations
 
+import argparse
 import copy
 import contextlib
 import dataclasses
@@ -45,6 +46,7 @@ CANARY_ENVIRONMENT = "production-readonly-canary"
 ZERO_SHA = "0" * 40
 ZERO_HASH = "0" * 64
 ZERO_DIGEST = "sha256:" + ZERO_HASH
+DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 ALLOWED_KONG_RESULTS = frozenset(
     {
         200,
@@ -503,13 +505,13 @@ def _normalize_digest(value: Any) -> str | None:
     if not isinstance(value, str):
         return None
     stripped = value.strip().lower()
-    if core.DIGEST_RE.fullmatch(stripped):
+    if DIGEST_RE.fullmatch(stripped):
         return stripped
     if core.HASH_RE.fullmatch(stripped):
         return "sha256:" + stripped
     if "@sha256:" in stripped:
         candidate = "sha256:" + stripped.rsplit("@sha256:", 1)[1]
-        if core.DIGEST_RE.fullmatch(candidate):
+        if DIGEST_RE.fullmatch(candidate):
             return candidate
     return None
 
@@ -1090,6 +1092,22 @@ def automatic_rollback(
         }
 
 
+def previous_image_workloads(
+    candidate: Mapping[str, Any],
+) -> list[dict[str, str]]:
+    current = {item["service"]: item for item in candidate["workloads"]}
+    return [
+        {
+            "name": current[item["service"]]["name"],
+            "service": item["service"],
+            "repository": current[item["service"]]["repository"],
+            "source_sha": item["source_sha"],
+            "image": item["image"],
+        }
+        for item in candidate["rollback"]["workloads"]
+    ]
+
+
 def execute_staging(
     candidate: Mapping[str, Any],
     manifest: Mapping[str, Any],
@@ -1100,7 +1118,7 @@ def execute_staging(
         override = Path(directory) / "candidate.override.yml"
         core.write_override(candidate["workloads"], override)
         core.verify_images(candidate["workloads"])
-        core.verify_images(candidate["rollback"]["workloads"])
+        core.verify_images(previous_image_workloads(candidate))
         evidence.record(
             "immutable-image-source-readback",
             "PASS",
@@ -1231,33 +1249,43 @@ def _identity_projection(candidate: Mapping[str, Any]) -> list[dict[str, str]]:
     ]
 
 
-def validate_staging_evidence(
-    staging: Mapping[str, Any],
+def validate_run_evidence(
+    payload: Mapping[str, Any],
     candidate: Mapping[str, Any],
     candidate_sha256: str,
+    *,
+    expected_mode: str,
+    environment_prefix: str,
+    required_gates: set[str],
 ) -> None:
-    if staging.get("candidate_id") != candidate["candidate_id"]:
+    if payload.get("candidate_id") != candidate["candidate_id"]:
         raise core.GateError("staging evidence candidate_id mismatch")
-    if staging.get("candidate_source_lock_sha") != candidate["candidate_source_lock_sha"]:
+    if payload.get("candidate_source_lock_sha") != candidate["candidate_source_lock_sha"]:
         raise core.GateError("staging evidence source-lock mismatch")
-    if staging.get("candidate_manifest_sha256") != candidate_sha256:
+    if payload.get("candidate_manifest_sha256") != candidate_sha256:
         raise core.GateError("staging evidence candidate SHA-256 mismatch")
-    if staging.get("workload_identities") != _identity_projection(candidate):
+    if payload.get("workload_identities") != _identity_projection(candidate):
         raise core.GateError("staging evidence workload identities mismatch")
-    if staging.get("mode") != "staging" or staging.get("verdict") != "GO":
-        raise core.GateError("staging evidence is not an exact GO result")
-    gates = staging.get("gates")
+    if payload.get("mode") != expected_mode or payload.get("verdict") != "GO":
+        raise core.GateError(f"{expected_mode} evidence is not an exact GO result")
+    gates = payload.get("gates")
     if not isinstance(gates, list) or not gates or any(
         not isinstance(gate, Mapping) or gate.get("status") != "PASS"
         for gate in gates
     ):
-        raise core.GateError("staging evidence contains an absent or non-PASS gate")
-    producer = staging.get("producer")
+        raise core.GateError(f"{expected_mode} evidence contains an absent or non-PASS gate")
+    gate_names = {str(gate.get("gate")) for gate in gates}
+    if not required_gates <= gate_names:
+        raise core.GateError(
+            f"{expected_mode} evidence is missing required gates: "
+            + ", ".join(sorted(required_gates - gate_names))
+        )
+    producer = payload.get("producer")
     if not isinstance(producer, Mapping):
         raise core.GateError("staging evidence producer is absent")
-    expected_run = os.environ.get("STAGING_EVIDENCE_RUN_ID")
-    expected_attempt = os.environ.get("STAGING_EVIDENCE_RUN_ATTEMPT")
-    expected_head = os.environ.get("STAGING_EVIDENCE_HEAD_SHA")
+    expected_run = os.environ.get(f"{environment_prefix}_EVIDENCE_RUN_ID")
+    expected_attempt = os.environ.get(f"{environment_prefix}_EVIDENCE_RUN_ATTEMPT")
+    expected_head = os.environ.get(f"{environment_prefix}_EVIDENCE_HEAD_SHA")
     if not expected_run or producer.get("run_id") != int(expected_run):
         raise core.GateError("staging evidence run ID mismatch")
     if not expected_attempt or producer.get("run_attempt") != int(expected_attempt):
@@ -1268,6 +1296,81 @@ def validate_staging_evidence(
         raise core.GateError("staging evidence producer repository mismatch")
     if producer.get("workflow") != PRODUCER_WORKFLOW:
         raise core.GateError("staging evidence producer workflow mismatch")
+
+
+def validate_canary_receipt(
+    payload: Any,
+    candidate: Mapping[str, Any],
+    candidate_sha256: str,
+    requested_percent: float,
+) -> dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        raise core.GateError("canary controller did not return a JSON object")
+    required = {
+        "schema",
+        "candidate_id",
+        "source_lock_sha",
+        "candidate_manifest_sha256",
+        "percent",
+        "methods",
+        "read_only",
+        "workloads",
+    }
+    core.ensure_exact_keys(payload, required, required, "canary controller receipt")
+    if payload.get("schema") != "codestra.readonly-canary-receipt.v1":
+        raise core.GateError("canary controller receipt schema mismatch")
+    if payload.get("candidate_id") != candidate["candidate_id"]:
+        raise core.GateError("canary controller receipt candidate mismatch")
+    if payload.get("source_lock_sha") != candidate["candidate_source_lock_sha"]:
+        raise core.GateError("canary controller receipt source-lock mismatch")
+    if payload.get("candidate_manifest_sha256") != candidate_sha256:
+        raise core.GateError("canary controller receipt manifest SHA-256 mismatch")
+    percent = payload.get("percent")
+    if isinstance(percent, bool) or not isinstance(percent, (int, float)):
+        raise core.GateError("canary controller receipt percent is invalid")
+    if abs(float(percent) - requested_percent) > 0.000001 or float(percent) > 1:
+        raise core.GateError("canary controller applied an unexpected percentage")
+    if payload.get("methods") != ["GET", "HEAD"] or payload.get("read_only") is not True:
+        raise core.GateError("canary controller did not prove GET/HEAD-only read-only mode")
+    expected = [
+        {
+            "service": item["service"],
+            "source_sha": item["source_sha"],
+            "image": item["image"],
+        }
+        for item in candidate["workloads"]
+    ]
+    if payload.get("workloads") != expected:
+        raise core.GateError("canary controller receipt workload identities mismatch")
+    return dict(payload)
+
+
+def validate_rollback_receipt(
+    payload: Any,
+    candidate: Mapping[str, Any],
+) -> dict[str, Any]:
+    if not isinstance(payload, Mapping):
+        raise core.GateError("canary rollback controller did not return a JSON object")
+    required = {"schema", "candidate_id", "source_lock_sha", "rolled_back"}
+    core.ensure_exact_keys(payload, required, required, "canary rollback receipt")
+    if payload.get("schema") != "codestra.readonly-canary-rollback.v1":
+        raise core.GateError("canary rollback receipt schema mismatch")
+    if payload.get("candidate_id") != candidate["candidate_id"]:
+        raise core.GateError("canary rollback receipt candidate mismatch")
+    if payload.get("source_lock_sha") != candidate["candidate_source_lock_sha"]:
+        raise core.GateError("canary rollback receipt source-lock mismatch")
+    if payload.get("rolled_back") is not True:
+        raise core.GateError("canary rollback receipt did not confirm rollback")
+    return dict(payload)
+
+
+def _parse_controller_json(output: bytes, label: str) -> Any:
+    if not output or len(output) > 1024 * 1024:
+        raise core.GateError(f"{label} output is absent or oversized")
+    try:
+        return json.loads(output.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise core.GateError(f"{label} output is not one exact JSON document") from exc
 
 
 def _probe_samples(
@@ -1288,6 +1391,7 @@ def execute_canary(
     manifest: Mapping[str, Any],
     evidence: Evidence,
     staging_evidence_path: Path,
+    rollback_evidence_path: Path,
     requested_percent: float,
     candidate_path: Path,
     candidate_sha256: str,
@@ -1296,7 +1400,35 @@ def execute_canary(
         if not shutil_which(tool):
             raise core.GateError(f"required host tool is missing: {tool}")
     staging = core.load_json(staging_evidence_path)
-    validate_staging_evidence(staging, candidate, candidate_sha256)
+    validate_run_evidence(
+        staging,
+        candidate,
+        candidate_sha256,
+        expected_mode="staging",
+        environment_prefix="STAGING",
+        required_gates={
+            "paired-local-off-host-and-restore-verified-backup",
+            "source-digest-readiness-capabilities-metrics-migrations",
+            "keycloak-issuer",
+            "kong-29-route-smoke",
+            "zero-calls-emails-sms",
+        },
+    )
+    rollback_evidence = core.load_json(rollback_evidence_path)
+    validate_run_evidence(
+        rollback_evidence,
+        candidate,
+        candidate_sha256,
+        expected_mode="rollback-rehearsal",
+        environment_prefix="ROLLBACK",
+        required_gates={
+            "rollback-to-previous-exact-identities",
+            "candidate-redeployment",
+            "database-filestore-configuration-integrity",
+            "rollback-health-readiness-version-digest",
+            "zero-live-effects-during-rehearsal",
+        },
+    )
     maximum = float(candidate["canary"]["maximum_percent"])
     if requested_percent <= 0 or requested_percent > maximum or requested_percent > 1:
         raise core.GateError(
@@ -1324,7 +1456,9 @@ def execute_canary(
     baseline_latencies, baseline_errors = _probe_samples(
         probe["baseline_url"], bearer, probe["requests"]
     )
-    core.run(
+    if baseline_errors:
+        raise core.GateError("baseline monitoring probe failed before canary apply")
+    apply_result = core.run(
         [
             str(controller),
             "apply",
@@ -1344,15 +1478,19 @@ def execute_canary(
         ],
         capture=True,
     )
+    controller_receipt = validate_canary_receipt(
+        _parse_controller_json(apply_result.stdout, "canary controller"),
+        candidate,
+        candidate_sha256,
+        requested_percent,
+    )
     canary_applied = True
     try:
         checks = run_all_checks(candidate, manifest)
         canary_latencies, canary_errors = _probe_samples(
             probe["canary_url"], bearer, probe["requests"]
         )
-        total = probe["requests"] * 2
-        errors = baseline_errors + canary_errors
-        error_rate = (errors / total) * 100.0
+        error_rate = (canary_errors / probe["requests"]) * 100.0
         baseline_p95 = core.percentile(baseline_latencies, 0.95)
         canary_p95 = core.percentile(canary_latencies, 0.95)
         regression = (
@@ -1387,6 +1525,10 @@ def execute_canary(
                 "staging_evidence_run_id": int(
                     os.environ["STAGING_EVIDENCE_RUN_ID"]
                 ),
+                "rollback_evidence_run_id": int(
+                    os.environ["ROLLBACK_EVIDENCE_RUN_ID"]
+                ),
+                "controller_receipt": controller_receipt,
             }
         )
         evidence.record(
@@ -1399,7 +1541,7 @@ def execute_canary(
         evidence.record("zero-live-effect-counter-movement", "PASS")
     except Exception:
         if canary_applied:
-            core.run(
+            rollback_result = core.run(
                 [
                     str(controller),
                     "rollback",
@@ -1410,6 +1552,14 @@ def execute_canary(
                 ],
                 capture=True,
             )
+            rollback_receipt = validate_rollback_receipt(
+                _parse_controller_json(
+                    rollback_result.stdout,
+                    "canary rollback controller",
+                ),
+                candidate,
+            )
+            evidence.measurements["canary_rollback_receipt"] = rollback_receipt
             evidence.rollback_performed = True
         raise
 
@@ -1421,8 +1571,27 @@ def shutil_which(name: str) -> str | None:
     return shutil.which(name)
 
 
-def parse_args(argv: Sequence[str] | None = None) -> Any:
-    return core.parse_args(argv)
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--candidate", type=Path, required=True)
+    parser.add_argument("--endpoint-manifest", type=Path, required=True)
+    parser.add_argument(
+        "--mode",
+        choices=(
+            "validate",
+            "staging",
+            "rollback-rehearsal",
+            "production-readonly-canary",
+        ),
+        required=True,
+    )
+    parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--staging-evidence", type=Path)
+    parser.add_argument("--rollback-evidence", type=Path)
+    parser.add_argument("--canary-percent", type=float, default=1.0)
+    parser.add_argument("--confirm-candidate-id")
+    parser.add_argument("--confirm-source-lock-sha")
+    return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -1484,17 +1653,45 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.mode == "staging":
             execute_staging(candidate, manifest, evidence)
         elif args.mode == "rollback-rehearsal":
-            execute_rollback_rehearsal(candidate, manifest, evidence)
-        else:
             if args.staging_evidence is None:
                 raise core.GateError(
-                    "production canary requires --staging-evidence"
+                    "rollback rehearsal requires exact staging evidence"
+                )
+            staging = core.load_json(args.staging_evidence)
+            validate_run_evidence(
+                staging,
+                candidate,
+                candidate_sha256,
+                expected_mode="staging",
+                environment_prefix="STAGING",
+                required_gates={
+                    "paired-local-off-host-and-restore-verified-backup",
+                    "source-digest-readiness-capabilities-metrics-migrations",
+                    "keycloak-issuer",
+                    "kong-29-route-smoke",
+                    "zero-calls-emails-sms",
+                },
+            )
+            evidence.record(
+                "exact-successful-staging-prerequisite",
+                "PASS",
+                run_id=int(os.environ["STAGING_EVIDENCE_RUN_ID"]),
+            )
+            initial = run_all_checks(candidate, manifest)
+            evidence.measurements["initial_candidate_checks"] = initial
+            evidence.record("initial-candidate-readback", "PASS")
+            execute_rollback_rehearsal(candidate, manifest, evidence)
+        else:
+            if args.staging_evidence is None or args.rollback_evidence is None:
+                raise core.GateError(
+                    "production canary requires staging and rollback evidence"
                 )
             execute_canary(
                 candidate,
                 manifest,
                 evidence,
                 args.staging_evidence,
+                args.rollback_evidence,
                 args.canary_percent,
                 args.candidate,
                 candidate_sha256,

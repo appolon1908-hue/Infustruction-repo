@@ -151,3 +151,54 @@ A successful read-only canary does not authorize live business writes. Email,
 SMS, PSTN, provider delivery, campaigns, Odoo writes, n8n external delivery, and
 other live effects require a separate protected activation candidate, separate
 evidence, and separate production change.
+
+
+## Environment isolation and authenticated prerequisites
+
+The production canary must **not** reuse staging URLs or credentials. Configure
+`production-readonly-canary` with these separately scoped secrets:
+
+- `PRODUCTION_CANONICAL_CANDIDATE_B64` — byte-for-byte identical to the staging candidate;
+- `PRODUCTION_ENDPOINT_MANIFEST_B64` — completed production canary target manifest;
+- `PRODUCTION_READONLY_BEARER_TOKEN` — production read-only check identity;
+- `PRODUCTION_METRICS_BEARER_TOKEN` — production protected-metrics identity;
+- `PRODUCTION_GHCR_READ_TOKEN` — package-read-only identity.
+
+The candidate SHA-256 confirmation must match both environment copies. The
+production endpoint manifest carries production URLs, the canonical Keycloak
+issuer, production zero-effect counters, and distinct baseline/canary probe
+URLs. The controller rejects a staging manifest in the production environment
+and rejects production credentials or URLs in staging.
+
+A canary dispatch requires **both** a successful staging run ID and a successful
+rollback-rehearsal run ID. The workflow authenticates each through the GitHub
+Actions API, requiring a completed successful `workflow_dispatch` from `main`
+and the exact release-control workflow path. The downloaded JSON is then bound
+to the candidate ID, source-lock SHA, candidate SHA-256, exact workload source
+and image identities, run ID, run attempt, producer head SHA, and required PASS
+gates. A staging-only artifact cannot authorize the canary.
+
+Every version endpoint must return both the exact source SHA and the exact
+runtime image digest. HTTP redirects are not followed, and HTTP 404 is never an
+acceptable Kong route result. Recovery points are accepted only after local
+checksums, safe archive extraction, Odoo filestore byte-hash comparison, and a
+PostgreSQL restore into a disposable no-network container all pass.
+
+
+## Enforced execution sequence and canary receipt
+
+The rollback-rehearsal dispatch now requires the exact successful staging run
+ID. GitHub authenticates that run as a completed successful protected-main
+workflow dispatch, downloads its named artifact, and the controller verifies the
+candidate ID, source lock, candidate SHA-256, workload source/image identities,
+producer run/attempt/head, and every required staging gate before changing the
+candidate.
+
+The canary controller must return one JSON document using
+`codestra.readonly-canary-receipt.v1`. The receipt must echo the exact candidate,
+source lock, candidate SHA-256, applied percentage, `["GET", "HEAD"]`,
+`read_only: true`, and every workload's exact source SHA and image digest. A
+successful process exit without that receipt is a failure. A rollback command
+must likewise return `codestra.readonly-canary-rollback.v1` with
+`rolled_back: true`; the attempted rollback is never silently represented as
+successful.
