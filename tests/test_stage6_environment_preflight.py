@@ -24,6 +24,10 @@ class Stage6EnvironmentPreflightTests(unittest.TestCase):
             "private_ip": "10.250.6.10",
             "egress_gateway_private_ip": "10.250.6.2",
             "approved_ssh_key_ids": [118172836],
+            "staging_readonly_operator_public_key": (
+                "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= "
+                "codestra-staging-readonly"
+            ),
             "approved_ssh_source_cidrs": ["192.0.2.10/32"],
             "approved_egress_fqdns": [
                 "archive.ubuntu.com",
@@ -78,6 +82,22 @@ class Stage6EnvironmentPreflightTests(unittest.TestCase):
         environment["STAGE6_TFVARS_JSON"] = json.dumps(tfvars)
         errors, _ = PREFLIGHT.validate_environment(environment)
         self.assertTrue(any("unreviewed destinations" in error for error in errors))
+
+    def test_missing_or_multiline_operator_key_is_rejected(self) -> None:
+        environment = self.valid_environment()
+        tfvars = json.loads(environment["STAGE6_TFVARS_JSON"])
+        tfvars.pop("staging_readonly_operator_public_key")
+        environment["STAGE6_TFVARS_JSON"] = json.dumps(tfvars)
+        errors, _ = PREFLIGHT.validate_environment(environment)
+        self.assertTrue(any("operator_public_key" in error for error in errors))
+
+        tfvars["staging_readonly_operator_public_key"] = (
+            "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= first\n"
+            "ssh-ed25519 BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB= second"
+        )
+        environment["STAGE6_TFVARS_JSON"] = json.dumps(tfvars)
+        errors, _ = PREFLIGHT.validate_environment(environment)
+        self.assertTrue(any("operator_public_key" in error for error in errors))
 
     def test_secret_values_never_enter_evidence(self) -> None:
         environment = self.valid_environment()
