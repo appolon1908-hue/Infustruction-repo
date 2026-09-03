@@ -21,6 +21,11 @@ ACTIVE_REPOSITORY_FIELDS = (
     "repository_full_name",
     "principal_repository",
 )
+ALLOWED_STATUS_TRANSITIONS = {
+    ("PREPARED_NOT_RENAMED", "RENAMED_VERIFIED"),
+    ("RENAMED_VERIFIED", "ROLLED_BACK_VERIFIED"),
+    ("ROLLED_BACK_VERIFIED", "RENAMED_VERIFIED"),
+}
 
 
 def fail(message: str) -> None:
@@ -71,7 +76,7 @@ def validate_record_repository_fields(
     operational_by_id: dict[int, str],
     source: str,
 ) -> None:
-    """Reject any active repository field that conflicts with its stable ID."""
+    """Reject any recognized repository field that conflicts with its stable ID."""
 
     for record in iter_dicts(document):
         stable_id = repository_id(record)
@@ -79,29 +84,29 @@ def validate_record_repository_fields(
             continue
         expected = operational_by_id[stable_id]
 
-        current = record.get("current_repository")
-        if isinstance(current, str) and current != expected:
+        values = {
+            field: value
+            for field, value in record.items()
+            if (
+                field == "current_repository" or field in ACTIVE_REPOSITORY_FIELDS
+            )
+            and isinstance(value, str)
+        }
+        if not values:
             fail(
-                f"{source} binds repository ID {stable_id} to conflicting "
-                f"current_repository={current}; expected {expected}"
+                f"{source} binds repository ID {stable_id} without a recognized "
+                "repository field"
             )
 
-        active_values = {
-            field: record[field]
-            for field in ACTIVE_REPOSITORY_FIELDS
-            if isinstance(record.get(field), str)
-        }
         conflicts = {
-            field: value
-            for field, value in active_values.items()
-            if value != expected
+            field: value for field, value in values.items() if value != expected
         }
         if conflicts:
             rendered = ", ".join(
                 f"{field}={value}" for field, value in sorted(conflicts.items())
             )
             fail(
-                f"{source} binds repository ID {stable_id} to conflicting active "
+                f"{source} binds repository ID {stable_id} to conflicting "
                 f"repository fields ({rendered}); expected {expected}"
             )
 
@@ -143,12 +148,22 @@ def validate_one_repository_transition(
     base: dict[str, Any],
     current: dict[str, Any],
 ) -> None:
+    before = mapping_statuses(base)
+    after = mapping_statuses(current)
     changed = changed_status_ids(base, current)
     if len(changed) > 1:
         fail(
             "one_repository_per_cutover violation: status changed for repository "
             f"IDs {sorted(changed)}"
         )
+
+    for stable_id in changed:
+        edge = (before[stable_id], after[stable_id])
+        if edge not in ALLOWED_STATUS_TRANSITIONS:
+            fail(
+                "unsupported repository status transition for repository "
+                f"ID {stable_id}: {edge[0]} -> {edge[1]}"
+            )
 
 
 def base_manifest(base_ref: str) -> dict[str, Any] | None:
@@ -169,7 +184,15 @@ def validate() -> None:
     current = load_json_text(MANIFEST.read_text(encoding="utf-8"), MANIFEST_PATH)
     operational_by_id = authority.operational_repository_map(current)
 
-    for path in authority.operational_sources():
+    sources = authority.operational_sources()
+    # Re-run the authority module's record-scoped checks for both JSON and
+    # YAML/TOML/HCL so conflicting fields cannot hide behind one valid value.
+    authority.validate_repository_id_current_name_pairing(
+        sources,
+        operational_by_id,
+    )
+
+    for path in sources:
         if path.suffix.lower() != ".json":
             continue
         try:
