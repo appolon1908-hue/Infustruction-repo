@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codestra.co/schemas/staging-endpoints.v1.json",
+  "title": "Codestra protected staging endpoint and zero-effect counter manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "candidate_id",
+    "bearer_token_environment",
+    "metrics_token_environment",
+    "counters",
+    "probe"
+  ],
+  "properties": {
+    "schema": {"const": "codestra.staging-endpoints.v1"},
+    "candidate_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$"},
+    "bearer_token_environment": {"const": "STAGING_READONLY_BEARER_TOKEN"},
+    "metrics_token_environment": {"const": "STAGING_METRICS_BEARER_TOKEN"},
+    "counters": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "url", "json_pointer", "expected"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"},
+          "url": {"type": "string", "format": "uri", "pattern": "^https://[^?#]+$"},
+          "json_pointer": {"type": "string", "pattern": "^/(?:[^/~]|~[01])+(?:/(?:[^/~]|~[01])+)*$"},
+          "expected": {"const": 0}
+        }
+      }
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requests", "maximum_error_rate", "maximum_p95_ms", "maximum_regression_percent"],
+      "properties": {
+        "requests": {"type": "integer", "minimum": 10, "maximum": 1000},
+        "maximum_error_rate": {"type": "number", "minimum": 0, "maximum": 100},
+        "maximum_p95_ms": {"type": "number", "exclusiveMinimum": 0},
+        "maximum_regression_percent": {"type": "number", "minimum": 0, "maximum": 100}
+      }
+    }
+  }
+}
