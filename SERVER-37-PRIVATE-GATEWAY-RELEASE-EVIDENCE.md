@@ -38,6 +38,18 @@ Generated for `37.27.128.39` on 2026-09-03 UTC. This file contains no secret val
 
 The final runtime is healthy in `shared` mode at protected source `9ec227d6a2b5c14217d88c33a8cfd4e057486c56`. Live carrier submission, generic command intake, and middleware forwarding remain disabled. The public host has no listener for port `18443`; the only direct host binding is `127.0.0.1:18443`.
 
+## Private edge promotion
+
+The live Telnexa private edge was reconciled to the Nginx authority in the same protected source. The obsolete leaf-certificate serial pin and caller-controlled identity ambiguity were removed. The edge now uses its dedicated client CA plus CRL, retains the exact approved client subject, overwrites verified certificate identity and service scope headers, and proxies only to the loopback gateway.
+
+- Root-only edge rollback bundle: `/var/backups/codestra-operators/private-gateway-edge-20260903T002126Z`
+- Before Nginx checksum: `390839d0d142e335e722d7127e30eebc68c32314849ff145468a28794bdafca3`
+- After/protected-source Nginx checksum: `66c66dab3d1e67c230687af6d58e2fefe32d85e2ec9d44c2d0de9ea5b2d05231`
+- Client CRL parse and validity-window check: `PASS`
+- `nginx -t` before reload: `PASS`
+- Nginx reload and gateway health: `PASS`
+- Request without a client certificate after reload: HTTP 400, `PASS`
+
 ## Remaining boundary
 
 The Telnexa private Nginx listener rejected a request without a client certificate with HTTP 400. A positive mTLS transaction remains externally blocked because no approved client identity is present on this server. The eight general provider-ingress operations belong to the separately governed `middleware` mode and are not exposed by the reviewed `shared` deployment; adding that topology requires its own protected source review and release.
