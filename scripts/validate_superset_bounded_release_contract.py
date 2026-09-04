@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "operations/superset-bounded-release/contract.v1.json"
@@ -17,6 +18,49 @@ IMAGE = re.compile(
 EVIDENCE_SHA = re.compile(r"^[0-9a-f]{64}$")
 TAG = re.compile(r"^codestra-superset-v[0-9]+\.[0-9]+\.[0-9]+$")
 
+EXTERNAL_BINDING_KEYS = {
+    "stage6_host_created",
+    "codestra_staging_runner_registered",
+    "codestra_production_canary_runner_registered",
+    "staging_readonly_environment_configured",
+    "production_readonly_canary_environment_configured",
+    "superset_canary_controller_installed",
+    "superset_canary_controller_checksum_bound",
+}
+SAFETY_KEYS = {
+    "deployment_authorized",
+    "production_certified",
+    "live_write",
+    "odoo_write",
+    "external_delivery",
+    "email_delivery",
+    "sms_delivery",
+    "pstn_dialing",
+    "provider_delivery",
+    "campaign_activation",
+    "payment_execution",
+    "financial_trading",
+}
+LIVE_EFFECT_KEYS = SAFETY_KEYS - {"production_certified", "deployment_authorized"}
+CANDIDATE_IDENTITY_FIELDS = (
+    "source_sha",
+    "release_tag",
+    "image",
+    "image_digest",
+    "release_run_id",
+    "release_evidence_sha256",
+    "hosted_staging_evidence_sha256",
+    "bounded_staging_evidence_sha256",
+    "production_canary_evidence_sha256",
+)
+CANDIDATE_STATES = {
+    "PENDING_PROTECTED_SUPERSET_RELEASE",
+    "SIGNED_RELEASE_READY",
+    "HOSTED_STAGING_CERTIFIED",
+    "BOUNDED_STAGING_CERTIFIED",
+    "PRODUCTION_READONLY_CERTIFIED",
+}
+
 
 def fail(message: str) -> None:
     raise SystemExit(f"SUPERSET_BOUNDED_RELEASE_CONTRACT=FAIL reason={message}")
@@ -27,15 +71,46 @@ def require_equal(actual: object, expected: object, name: str) -> None:
         fail(f"{name}_mismatch")
 
 
-def require_false_map(value: object, name: str) -> None:
-    if not isinstance(value, dict) or not value:
+def require_boolean_map(value: object, expected_keys: set[str], name: str) -> dict[str, bool]:
+    if not isinstance(value, dict):
         fail(f"{name}_not_object")
-    if any(item is not False for item in value.values()):
-        fail(f"{name}_not_fail_closed")
+    if set(value) != expected_keys:
+        fail(f"{name}_keys_mismatch")
+    if any(type(item) is not bool for item in value.values()):
+        fail(f"{name}_contains_non_boolean")
+    return value
 
 
-def main() -> None:
-    data = json.loads(CONTRACT.read_text(encoding="utf-8"))
+def require_sha256(value: object, name: str) -> str:
+    text = str(value or "")
+    if not EVIDENCE_SHA.fullmatch(text):
+        fail(f"{name}_invalid")
+    return text
+
+
+def require_null(candidate: dict[str, Any], fields: tuple[str, ...], state: str) -> None:
+    for field in fields:
+        if candidate.get(field) is not None:
+            fail(f"{state.lower()}_{field}_must_be_null")
+
+
+def require_release_identity(candidate: dict[str, Any]) -> None:
+    if not SHA.fullmatch(str(candidate.get("source_sha", ""))):
+        fail("candidate_source_sha_invalid")
+    if not TAG.fullmatch(str(candidate.get("release_tag", ""))):
+        fail("candidate_release_tag_invalid")
+    if not IMAGE.fullmatch(str(candidate.get("image", ""))):
+        fail("candidate_image_invalid")
+    if not DIGEST.fullmatch(str(candidate.get("image_digest", ""))):
+        fail("candidate_image_digest_invalid")
+    if candidate["image"].rsplit("@", 1)[1] != candidate["image_digest"]:
+        fail("candidate_image_digest_mismatch")
+    if not isinstance(candidate.get("release_run_id"), int) or candidate["release_run_id"] <= 0:
+        fail("candidate_release_run_id_invalid")
+    require_sha256(candidate.get("release_evidence_sha256"), "candidate_release_evidence")
+
+
+def validate(data: dict[str, Any], serialized: str) -> str:
     require_equal(data.get("schema"), "codestra.superset-bounded-release-contract.v1", "schema")
     require_equal(data.get("workload"), "superset", "workload")
     require_equal(data.get("source_repository"), "appolon1908-hue/Superset", "source_repository")
@@ -162,67 +237,89 @@ def main() -> None:
         "canary_stop_conditions",
     )
 
-    bindings = data.get("required_external_bindings")
-    safety = data.get("safety_state")
-    require_false_map(bindings, "external_bindings")
-    require_false_map(safety, "safety_state")
+    bindings = require_boolean_map(
+        data.get("required_external_bindings"), EXTERNAL_BINDING_KEYS, "external_bindings"
+    )
+    safety = require_boolean_map(data.get("safety_state"), SAFETY_KEYS, "safety_state")
+    if safety["deployment_authorized"] is not False:
+        fail("read_only_certification_may_not_authorize_full_deployment")
+    if any(safety[key] is not False for key in LIVE_EFFECT_KEYS):
+        fail("live_effects_not_fail_closed")
 
     candidate = data.get("candidate")
     if not isinstance(candidate, dict):
         fail("candidate_not_object")
+    if set(candidate) != {"status", *CANDIDATE_IDENTITY_FIELDS}:
+        fail("candidate_keys_mismatch")
     status = candidate.get("status")
-    identity_fields = (
-        "source_sha",
-        "release_tag",
-        "image",
-        "image_digest",
-        "release_run_id",
-        "release_evidence_sha256",
-        "hosted_staging_evidence_sha256",
-        "bounded_staging_evidence_sha256",
-        "production_canary_evidence_sha256",
-    )
-    if status == "PENDING_PROTECTED_SUPERSET_RELEASE":
-        if any(candidate.get(field) is not None for field in identity_fields):
-            fail("pending_candidate_contains_unverified_identity")
-    elif status in {
-        "SIGNED_RELEASE_READY",
-        "HOSTED_STAGING_CERTIFIED",
-        "BOUNDED_STAGING_CERTIFIED",
-        "PRODUCTION_READONLY_CERTIFIED",
-    }:
-        if not SHA.fullmatch(str(candidate.get("source_sha", ""))):
-            fail("candidate_source_sha_invalid")
-        if not TAG.fullmatch(str(candidate.get("release_tag", ""))):
-            fail("candidate_release_tag_invalid")
-        if not IMAGE.fullmatch(str(candidate.get("image", ""))):
-            fail("candidate_image_invalid")
-        if not DIGEST.fullmatch(str(candidate.get("image_digest", ""))):
-            fail("candidate_image_digest_invalid")
-        if candidate["image"].rsplit("@", 1)[1] != candidate["image_digest"]:
-            fail("candidate_image_digest_mismatch")
-        if not isinstance(candidate.get("release_run_id"), int) or candidate["release_run_id"] <= 0:
-            fail("candidate_release_run_id_invalid")
-        if not EVIDENCE_SHA.fullmatch(str(candidate.get("release_evidence_sha256", ""))):
-            fail("candidate_release_evidence_invalid")
-
-        if status in {"HOSTED_STAGING_CERTIFIED", "BOUNDED_STAGING_CERTIFIED", "PRODUCTION_READONLY_CERTIFIED"}:
-            if not EVIDENCE_SHA.fullmatch(str(candidate.get("hosted_staging_evidence_sha256", ""))):
-                fail("hosted_staging_evidence_invalid")
-        if status in {"BOUNDED_STAGING_CERTIFIED", "PRODUCTION_READONLY_CERTIFIED"}:
-            if not EVIDENCE_SHA.fullmatch(str(candidate.get("bounded_staging_evidence_sha256", ""))):
-                fail("bounded_staging_evidence_invalid")
-        if status == "PRODUCTION_READONLY_CERTIFIED":
-            if not EVIDENCE_SHA.fullmatch(str(candidate.get("production_canary_evidence_sha256", ""))):
-                fail("production_canary_evidence_invalid")
-            if any(value is not True for value in bindings.values()):
-                fail("production_certified_without_external_bindings")
-            if safety.get("production_certified") is not True:
-                fail("production_certified_flag_missing")
-    else:
+    if status not in CANDIDATE_STATES:
         fail("candidate_status_invalid")
 
-    serialized = CONTRACT.read_text(encoding="utf-8").lower()
+    if status == "PENDING_PROTECTED_SUPERSET_RELEASE":
+        require_null(candidate, CANDIDATE_IDENTITY_FIELDS, status)
+        if any(bindings.values()):
+            fail("pending_release_contains_external_binding_claim")
+    else:
+        require_release_identity(candidate)
+
+        if status == "SIGNED_RELEASE_READY":
+            require_null(
+                candidate,
+                (
+                    "hosted_staging_evidence_sha256",
+                    "bounded_staging_evidence_sha256",
+                    "production_canary_evidence_sha256",
+                ),
+                status,
+            )
+        elif status == "HOSTED_STAGING_CERTIFIED":
+            require_sha256(
+                candidate.get("hosted_staging_evidence_sha256"),
+                "hosted_staging_evidence",
+            )
+            require_null(
+                candidate,
+                ("bounded_staging_evidence_sha256", "production_canary_evidence_sha256"),
+                status,
+            )
+        elif status == "BOUNDED_STAGING_CERTIFIED":
+            require_sha256(
+                candidate.get("hosted_staging_evidence_sha256"),
+                "hosted_staging_evidence",
+            )
+            require_sha256(
+                candidate.get("bounded_staging_evidence_sha256"),
+                "bounded_staging_evidence",
+            )
+            require_null(candidate, ("production_canary_evidence_sha256",), status)
+            for binding in (
+                "stage6_host_created",
+                "codestra_staging_runner_registered",
+                "staging_readonly_environment_configured",
+            ):
+                if bindings[binding] is not True:
+                    fail(f"bounded_staging_without_{binding}")
+        elif status == "PRODUCTION_READONLY_CERTIFIED":
+            require_sha256(
+                candidate.get("hosted_staging_evidence_sha256"),
+                "hosted_staging_evidence",
+            )
+            require_sha256(
+                candidate.get("bounded_staging_evidence_sha256"),
+                "bounded_staging_evidence",
+            )
+            require_sha256(
+                candidate.get("production_canary_evidence_sha256"),
+                "production_canary_evidence",
+            )
+            if any(value is not True for value in bindings.values()):
+                fail("production_certified_without_external_bindings")
+
+    expected_certified = status == "PRODUCTION_READONLY_CERTIFIED"
+    if safety["production_certified"] is not expected_certified:
+        fail("production_certified_flag_state_mismatch")
+
+    lowered = serialized.lower()
     for forbidden in (
         "begin openssh private key",
         "begin rsa private key",
@@ -230,9 +327,15 @@ def main() -> None:
         "password=",
         "client_secret=",
     ):
-        if forbidden in serialized:
+        if forbidden in lowered:
             fail("secret_material_detected")
 
+    return str(status)
+
+
+def main() -> None:
+    serialized = CONTRACT.read_text(encoding="utf-8")
+    status = validate(json.loads(serialized), serialized)
     print("SUPERSET_BOUNDED_RELEASE_CONTRACT=PASS")
     print(f"CANDIDATE_STATUS={status}")
     print("LIVE_EFFECTS=DISABLED")
