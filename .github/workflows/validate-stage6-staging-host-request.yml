@@ -1,0 +1,69 @@
+name: Validate Stage 6 staging-host request
+
+on:
+  pull_request:
+    paths:
+      - "config/stage6-staging-host-provisioning-request.v1.json"
+      - "tools/validate_stage6_staging_host_request.py"
+      - "tests/test_stage6_staging_host_request.py"
+      - ".github/workflows/validate-stage6-staging-host-request.yml"
+      - ".github/workflows/stage6-provision-staging-host.yml"
+  push:
+    branches:
+      - development
+      - test
+      - staging
+      - production
+      - main
+    paths:
+      - "config/stage6-staging-host-provisioning-request.v1.json"
+      - "tools/validate_stage6_staging_host_request.py"
+      - "tests/test_stage6_staging_host_request.py"
+      - ".github/workflows/validate-stage6-staging-host-request.yml"
+      - ".github/workflows/stage6-provision-staging-host.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify exact checkout
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "${EXPECTED_SHA}"
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Validate request authority and regressions
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile tools/validate_stage6_staging_host_request.py
+          python3 tools/validate_stage6_staging_host_request.py
+          python3 tests/test_stage6_staging_host_request.py
+          git diff --check
+
+      - name: Confirm source-only safety state
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          request = json.loads(Path('config/stage6-staging-host-provisioning-request.v1.json').read_text())
+          assert request['deployment_authorized'] is False
+          assert request['host_created'] is False
+          assert request['host_verified'] is False
+          assert all(value is False for value in request['safety_controls'].values())
+          PY
