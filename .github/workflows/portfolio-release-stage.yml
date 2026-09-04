@@ -1,0 +1,147 @@
+name: Portfolio immutable infrastructure stage
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/portfolio-release-stage.yml"
+      - ".github/workflows/staging-readonly-certification.yml"
+      - "operations/staging-readonly/portfolio_release_dispatch.py"
+      - "operations/staging-readonly/test_portfolio_release_dispatch.py"
+      - ".codestra/production-orchestrator-contract.v1.json"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Protected infrastructure stage
+        required: true
+        type: choice
+        options:
+          - staging
+          - rollback-rehearsal
+          - production-readonly-canary
+      confirm_candidate_id:
+        description: Exact immutable candidate identifier
+        required: true
+        type: string
+      confirm_source_lock_sha:
+        description: Exact source-lock commit SHA
+        required: true
+        type: string
+      confirm_candidate_sha256:
+        description: SHA-256 of the protected runtime candidate JSON
+        required: true
+        type: string
+      staging_evidence_run_id:
+        description: Successful prior staging wrapper run; required after staging
+        required: false
+        type: string
+      rollback_evidence_run_id:
+        description: Successful prior rollback wrapper run; required for canary
+        required: false
+        type: string
+      canary_percent:
+        description: Production read-only canary percent, greater than zero and at most one
+        required: true
+        type: string
+        default: "1"
+
+permissions:
+  actions: write
+  checks: read
+  contents: read
+
+concurrency:
+  group: portfolio-immutable-infrastructure-stage
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  policy:
+    name: portfolio-stage / source-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Compile and test fail-closed dispatcher
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile \
+            operations/staging-readonly/portfolio_release_dispatch.py \
+            operations/staging-readonly/test_portfolio_release_dispatch.py
+          python3 operations/staging-readonly/test_portfolio_release_dispatch.py
+          git diff --check
+          test -z "$(git status --porcelain)"
+
+  dispatch:
+    name: portfolio-stage / ${{ inputs.mode }}
+    needs:
+      - policy
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - name: Check out exact protected main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Re-prove exact protected-main authority
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          test "$GITHUB_REPOSITORY" = appolon1908-hue/Infustruction-repo
+          test "$GITHUB_REF" = refs/heads/main
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          test "$(gh api repos/${GITHUB_REPOSITORY}/branches/main --jq .protected)" = true
+          test "$(gh api repos/${GITHUB_REPOSITORY}/branches/main --jq .commit.sha)" = "$GITHUB_SHA"
+      - name: Validate prior evidence, dispatch protected child, and bind result
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          python3 operations/staging-readonly/portfolio_release_dispatch.py \
+            --mode "${{ inputs.mode }}" \
+            --candidate-id "${{ inputs.confirm_candidate_id }}" \
+            --source-lock-sha "${{ inputs.confirm_source_lock_sha }}" \
+            --candidate-sha256 "${{ inputs.confirm_candidate_sha256 }}" \
+            --staging-run-id "${{ inputs.staging_evidence_run_id }}" \
+            --rollback-run-id "${{ inputs.rollback_evidence_run_id }}" \
+            --canary-percent "${{ inputs.canary_percent }}" \
+            --work-directory "$RUNNER_TEMP/portfolio-stage-work" \
+            --output-directory "$RUNNER_TEMP/portfolio-stage-evidence"
+      - name: Verify bounded wrapper evidence
+        run: |
+          set -Eeuo pipefail
+          test "$(find "$RUNNER_TEMP/portfolio-stage-evidence" -maxdepth 1 -type f | wc -l)" -eq 2
+          test -f "$RUNNER_TEMP/portfolio-stage-evidence/binding.json"
+          test -f "$RUNNER_TEMP/portfolio-stage-evidence/child-evidence.json"
+          jq -e \
+            --arg mode "${{ inputs.mode }}" \
+            --arg candidate "${{ inputs.confirm_candidate_id }}" \
+            '.schema_version == "codestra.portfolio-infrastructure-stage.v1"
+             and .mode == $mode
+             and .candidate_id == $candidate
+             and .status == "PASS"
+             and .child_verdict == "GO"
+             and .runtime_contacted_by_wrapper == false
+             and .production_changed_by_wrapper == false
+             and .external_effects_enabled == false' \
+            "$RUNNER_TEMP/portfolio-stage-evidence/binding.json" >/dev/null
+      - name: Upload exact portfolio infrastructure evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.6.2
+        with:
+          name: portfolio-infrastructure-${{ inputs.mode }}-${{ inputs.confirm_candidate_id }}
+          path: ${{ runner.temp }}/portfolio-stage-evidence
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
