@@ -3,8 +3,8 @@
 This package closes the repository-to-runner handoff for the protected Caddy
 release chain without turning an untrusted pull request into a host command.
 
-The Caddy repository already builds, scans, signs, attests, and publishes an
-exact production image. Its bounded runtime workflow then requires two separate
+The Caddy repository builds, scans, signs, attests, and publishes an exact
+production image. Its bounded runtime workflow then requires two separate,
 one-job runner identities:
 
 | Target | Required label | Caddy environment |
@@ -27,6 +27,7 @@ The bootstrap never:
 - adds a user to the Docker group;
 - creates a broad sudo rule;
 - runs the Actions runner as root;
+- creates, updates, retires, or deletes a repository ruleset;
 - starts, reloads, replaces, or retags Caddy;
 - authorizes application writes or production traffic movement.
 
@@ -35,12 +36,23 @@ dedicated runner identity. The installer fails before registration when that
 authorization is absent. This preserves the existing host security boundary
 instead of silently granting root-equivalent Docker access.
 
-Before registering a runner, the controller reads the exact ruleset JSON from
-the current Caddy `production` SHA, validates zero bypass actors, zero human
-approvals, merge-only promotion, the five governed branches, and the four
-required CI checks, then applies it and reads it back. Only after that succeeds
-may it retire the two exact legacy rulesets named `AI automated production
-gates` and `Protect main`.
+Before registering a runner, the controller reads the exact canonical ruleset
+JSON from the current Caddy `production` SHA and independently reads the live
+`Protect Caddy promotion branches` ruleset. Both must agree on:
+
+- all five protected branches;
+- no bypass actors;
+- one exact-head approval;
+- stale-review dismissal and last-push approval;
+- resolved review conversations;
+- squash-only merging and linear history;
+- deletion and non-fast-forward protection;
+- the four actual required CI contexts.
+
+A mismatch is a hard failure. Ruleset application belongs to the separate,
+protected Caddy governance workflow. The runner bootstrap does not change
+canonical or legacy rulesets and does not represent ruleset verification as an
+account mutation.
 
 ## Protected bootstrap environments
 
@@ -54,12 +66,12 @@ Both require:
 
 ### Secrets
 
-- `CODESTRA_GITHUB_ADMIN_TOKEN`: fine-grained token restricted to the Caddy
-  repository with **Administration: read and write**, **Environments: read
-  and write**, and **Actions: read**. Administration is required for the
-  repository runner token and ruleset; Environments is required only for the
-  Caddy environment variables; Actions read binds the one-job runner to the
-  exact queued workflow job.
+- `CODESTRA_REPOSITORY_ADMIN_TOKEN`: fine-grained token restricted to the Caddy
+  repository with **Administration: read and write**, **Environments: read and
+  write**, and **Actions: read**. Administration is required for the repository
+  runner registration token and governance readback; Environments is required
+  for the Caddy environment variables; Actions read binds the one-job runner to
+  the exact queued workflow job.
 - `CADDY_RUNNER_SSH_PRIVATE_KEY`: private key for the existing restricted
   operator identity.
 - `CADDY_RUNNER_KNOWN_HOSTS`: pinned known-hosts line for the exact target.
@@ -87,7 +99,7 @@ Production additionally:
 - `CADDY_PRODUCTION_MTLS_CA_CERT`
 
 Every path must be absolute. The bootstrap verifies every target path before it
-mints a one-hour repository runner-registration token.
+mints a short-lived repository runner-registration token.
 
 ## Execution
 
@@ -109,12 +121,12 @@ confirmation=BOOTSTRAP_CADDY_PRODUCTION_CANARY_RUNNER
 bounded_runtime_run_id=<same run after its production canary job is queued>
 ```
 
-Register the staging runner only while the exact bounded staging job is
-already queued. Register the production canary runner only after that same run
-has queued `production-readonly-canary`; speculative runner registration is
-rejected. The production job still performs only the existing
-GET/HEAD/handshake checks and requires byte-identical production runtime
-readback before and after.
+Register the staging runner only while the exact bounded staging job is already
+queued for the current Caddy `production` SHA. Register the production canary
+runner only after that same run has queued `production-readonly-canary`;
+speculative runner registration is rejected. The production job still performs
+only the existing GET/HEAD/handshake checks and requires byte-identical
+production runtime readback before and after.
 
 `replace_stale_registration=true` deletes only the exact named, non-busy Caddy
 runner record. It never deletes a differently named runner and refuses a busy
@@ -131,5 +143,6 @@ scripts/configure_caddy_ci_cd_runner.sh --help
 ```
 
 The generated evidence contains runner identity, labels, online status,
-installer checksum, environment, and security assertions, but no credential
-values.
+installer checksum, environment, exact queued job, and governance-readback
+assertions. It records that the canonical ruleset, unrelated rulesets, and Caddy
+runtime were not changed by the bootstrap, and contains no credential values.
