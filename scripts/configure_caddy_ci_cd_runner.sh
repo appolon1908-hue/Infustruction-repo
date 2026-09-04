@@ -85,6 +85,7 @@ while (($#)); do
       value="${pair#*=}"
       [[ "$pair" == *=* && "$name" =~ ^[A-Z][A-Z0-9_]*$ ]] || fail invalid_environment_variable
       [[ "$value" = /* && "$value" != *..* && "$value" != *//* ]] || fail "invalid_environment_path:${name}"
+      [[ "$value" != *$'\n'* && "$value" != *$'\r'* ]] || fail "invalid_environment_control_character:${name}"
       ENVIRONMENT_VARIABLES["$name"]="$value"
       shift 2
       ;;
@@ -99,12 +100,17 @@ done
 [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && ((SSH_PORT >= 1 && SSH_PORT <= 65535)) || fail invalid_ssh_port
 [[ "$BOUNDED_RUNTIME_RUN_ID" =~ ^[0-9]+$ ]] || fail invalid_bounded_runtime_run_id
 [[ -n "$EVIDENCE_FILE" ]] || fail evidence_file_required
+[[ "$EVIDENCE_FILE" = /* && "$EVIDENCE_FILE" != *..* && "$EVIDENCE_FILE" != *//* ]] || fail invalid_evidence_path
 secure_file "$SSH_KEY_FILE" ssh_key
 secure_file "$KNOWN_HOSTS_FILE" known_hosts
 secure_file "$ADMIN_TOKEN_FILE" admin_token
+ssh-keygen -y -f "$SSH_KEY_FILE" >/dev/null 2>&1 || fail ssh_private_key_unusable
+known_host_lookup="$HOST"
+[[ "$SSH_PORT" == 22 ]] || known_host_lookup="[$HOST]:$SSH_PORT"
+ssh-keygen -F "$known_host_lookup" -f "$KNOWN_HOSTS_FILE" >/dev/null 2>&1 || fail known_hosts_target_missing
 [[ -x "$INSTALLER" && ! -L "$INSTALLER" ]] || fail installer_unavailable
 
-for tool in awk base64 cat gh grep head jq mktemp rm sha256sum ssh stat tr wc python3; do
+for tool in awk base64 cat gh grep head jq mktemp rm sha256sum ssh ssh-keygen stat tr wc python3; do
   command -v "$tool" >/dev/null || fail "missing_tool:${tool}"
 done
 
@@ -125,7 +131,6 @@ case "$TARGET" in
   production-readonly-canary)
     readonly ENVIRONMENT="production-readonly-canary"
     readonly RUNNER_NAME="codestra-caddy-production-canary-01"
-    readonly RUNNER_USER="codestra-caddy-production-canary-runner"
     readonly RUNNER_LABEL="codestra-production-canary"
     readonly EXPECTED_JOB_NAME="production-readonly-canary"
     required_variables=(
@@ -171,14 +176,6 @@ if [[ "$TARGET" == production-readonly-canary ]]; then
   remote_preflight+=" sudo -n /usr/bin/docker inspect codestra-caddy >/dev/null;"
 fi
 ssh "${ssh_options[@]}" "$remote" "$remote_preflight"
-
-# Install the reviewed bootstrap executable by exact checksum.
-ssh "${ssh_options[@]}" "$remote" \
-  "sudo -n install -d -m 0755 /usr/local/sbin && sudo -n tee /usr/local/sbin/install-codestra-caddy-actions-runner >/dev/null && sudo -n chmod 0755 /usr/local/sbin/install-codestra-caddy-actions-runner" \
-  <"$INSTALLER"
-remote_installer_sha256="$(ssh "${ssh_options[@]}" "$remote" \
-  "sudo -n sha256sum /usr/local/sbin/install-codestra-caddy-actions-runner | awk '{print \$1}'")"
-[[ "$remote_installer_sha256" == "$installer_sha256" ]] || fail remote_installer_checksum
 
 export GH_TOKEN
 GH_TOKEN="$(<"$ADMIN_TOKEN_FILE")"
@@ -306,6 +303,28 @@ for name in "${required_variables[@]}"; do
     --body "${ENVIRONMENT_VARIABLES[$name]}" >/dev/null
 done
 
+environment_readback="$(gh api -H "X-GitHub-Api-Version: $API_VERSION" \
+  "repos/$REPOSITORY/environments/$ENVIRONMENT")"
+jq -e '
+  .deployment_branch_policy.protected_branches == true and
+  .deployment_branch_policy.custom_branch_policies == false
+' <<<"$environment_readback" >/dev/null || fail environment_branch_policy_readback
+for name in "${required_variables[@]}"; do
+  actual_value="$(gh api -H "X-GitHub-Api-Version: $API_VERSION" \
+    "repos/$REPOSITORY/environments/$ENVIRONMENT/variables/$name" --jq .value)"
+  [[ "$actual_value" == "${ENVIRONMENT_VARIABLES[$name]}" ]] \
+    || fail "environment_variable_readback:${name}"
+done
+
+# Install the reviewed bootstrap executable only after every source, queued-job,
+# governance, environment, and host prerequisite has been read back.
+ssh "${ssh_options[@]}" "$remote" \
+  "sudo -n install -d -m 0755 /usr/local/sbin && sudo -n tee /usr/local/sbin/install-codestra-caddy-actions-runner >/dev/null && sudo -n chmod 0755 /usr/local/sbin/install-codestra-caddy-actions-runner" \
+  <"$INSTALLER"
+remote_installer_sha256="$(ssh "${ssh_options[@]}" "$remote" \
+  "sudo -n sha256sum /usr/local/sbin/install-codestra-caddy-actions-runner | awk '{print \$1}'")"
+[[ "$remote_installer_sha256" == "$installer_sha256" ]] || fail remote_installer_checksum
+
 # Remove only the exact stale, non-busy runner record when explicitly approved.
 runner_json="$(gh api --paginate \
   -H "X-GitHub-Api-Version: $API_VERSION" \
@@ -358,12 +377,34 @@ while ((SECONDS < deadline)); do
   verified_runner=""
   sleep 3
 done
-unset GH_TOKEN
 [[ -n "$verified_runner" ]] || fail runner_not_online
+verified_runner_id="$(jq -er '.id' <<<"$verified_runner")"
+
+# Require GitHub to bind the exact queued job to the exact ephemeral runner.
+assignment_deadline=$((SECONDS + 120))
+assigned_job=""
+while ((SECONDS < assignment_deadline)); do
+  assigned_job="$(gh api -H "X-GitHub-Api-Version: $API_VERSION" \
+    "repos/$REPOSITORY/actions/jobs/$bounded_job_id")"
+  assigned_runner_id="$(jq -r '.runner_id // 0' <<<"$assigned_job")"
+  assigned_status="$(jq -r '.status' <<<"$assigned_job")"
+  if [[ "$assigned_runner_id" == "$verified_runner_id" ]] && \
+     [[ "$assigned_status" == queued || "$assigned_status" == in_progress ]]; then
+    break
+  fi
+  if [[ "$assigned_runner_id" != 0 && "$assigned_runner_id" != "$verified_runner_id" ]]; then
+    fail bounded_job_assigned_to_different_runner
+  fi
+  [[ "$assigned_status" != completed ]] || fail bounded_job_completed_without_exact_runner
+  assigned_job=""
+  sleep 3
+done
+unset GH_TOKEN
+[[ -n "$assigned_job" ]] || fail bounded_job_not_assigned_to_exact_runner
 
 mkdir -p -- "$(dirname -- "$EVIDENCE_FILE")"
 python3 - "$EVIDENCE_FILE" "$TARGET" "$ENVIRONMENT" "$RUNNER_NAME" "$RUNNER_LABEL" \
-  "$installer_sha256" "$(jq -r '.id' <<<"$verified_runner")" "$production_sha" "$canonical_id" \
+  "$installer_sha256" "$verified_runner_id" "$production_sha" "$canonical_id" \
   "$BOUNDED_RUNTIME_RUN_ID" "$bounded_job_id" "$EXPECTED_JOB_NAME" <<'PY'
 from __future__ import annotations
 import json
@@ -411,6 +452,7 @@ evidence = {
     "bounded_job_id": int(bounded_job_id),
     "bounded_job_name": bounded_job_name,
     "bounded_job_was_queued_for_exact_labels": True,
+    "bounded_job_assigned_to_runner": True,
     "result": "PASS",
 }
 Path(path).write_text(

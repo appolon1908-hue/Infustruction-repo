@@ -86,12 +86,21 @@ def main() -> int:
     require("registration-token" in controller, "controller_registration_endpoint")
     require("printf '%s\\n' \"$registration_token\" | ssh" in controller, "controller_token_pipe")
     require("gh variable set" in controller, "controller_environment_variables")
+    require("environment_variable_readback" in controller, "controller_environment_variable_readback")
+    require("environment_branch_policy_readback" in controller, "controller_environment_policy_readback")
     require("deployment_branch_policy" in controller, "controller_environment_policy")
     require("actions/runners/$runner_id" in controller, "controller_stale_delete")
     require("runner_busy" in controller, "controller_busy_guard")
     require("bounded-runtime-certification.yml" in controller, "controller_run_identity")
     require("bounded_job_not_waiting_for_exact_runner" in controller, "controller_job_binding")
+    require("bounded_job_not_assigned_to_exact_runner" in controller, "controller_assignment_readback")
+    require("bounded_job_assigned_to_different_runner" in controller, "controller_assignment_mismatch")
     require("runner_registered_speculatively" not in controller, "controller_no_bad_flag")
+    require(
+        controller.index("bounded_job_not_waiting_for_exact_runner")
+        < controller.index("install-codestra-caddy-actions-runner"),
+        "controller_no_remote_install_before_job_validation",
+    )
     require("protected-branches-ruleset.json" in controller, "controller_ruleset_source")
     require("Protect Caddy promotion branches" in controller, "controller_ruleset_name")
     require("required_approving_review_count" in controller, "controller_zero_approval")

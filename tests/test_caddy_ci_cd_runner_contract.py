@@ -82,9 +82,15 @@ class CaddyCICDRunnerContractTests(unittest.TestCase):
         self.assertIn('.head_branch == "production"', self.controller)
         self.assertIn('.status == "queued"', self.controller)
         self.assertIn("bounded_job_not_waiting_for_exact_runner", self.controller)
+        self.assertIn("bounded_job_not_assigned_to_exact_runner", self.controller)
+        self.assertIn("bounded_job_assigned_to_different_runner", self.controller)
         self.assertLess(
             self.controller.index("bounded_job_not_waiting_for_exact_runner"),
             self.controller.index("actions/runners/registration-token"),
+        )
+        self.assertLess(
+            self.controller.index("bounded_job_not_waiting_for_exact_runner"),
+            self.controller.index("install-codestra-caddy-actions-runner"),
         )
         self.assertIn("bounded_runtime_run_id:", self.workflow)
         self.assertTrue(
@@ -94,6 +100,14 @@ class CaddyCICDRunnerContractTests(unittest.TestCase):
         )
         self.assertFalse(
             self.contract["security_invariants"]["runner_registered_speculatively"]
+        )
+
+    def test_environment_writes_are_read_back_before_host_install(self) -> None:
+        self.assertIn("environment_branch_policy_readback", self.controller)
+        self.assertIn("environment_variable_readback", self.controller)
+        self.assertLess(
+            self.controller.index("environment_variable_readback"),
+            self.controller.index("install-codestra-caddy-actions-runner"),
         )
 
     def test_governance_is_applied_before_runner_registration(self) -> None:
