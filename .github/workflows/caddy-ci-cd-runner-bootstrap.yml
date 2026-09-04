@@ -113,7 +113,7 @@ jobs:
           test "$(git rev-parse origin/main)" = "$GITHUB_SHA"
       - name: Materialize protected bootstrap inputs
         env:
-          ADMIN_TOKEN: ${{ secrets.CODESTRA_GITHUB_ADMIN_TOKEN }}
+          ADMIN_TOKEN: ${{ secrets.CODESTRA_REPOSITORY_ADMIN_TOKEN }}
           SSH_PRIVATE_KEY: ${{ secrets.CADDY_RUNNER_SSH_PRIVATE_KEY }}
           KNOWN_HOSTS: ${{ secrets.CADDY_RUNNER_KNOWN_HOSTS }}
         run: |
@@ -193,7 +193,7 @@ jobs:
           test "$(git rev-parse origin/main)" = "$GITHUB_SHA"
       - name: Materialize protected bootstrap inputs
         env:
-          ADMIN_TOKEN: ${{ secrets.CODESTRA_GITHUB_ADMIN_TOKEN }}
+          ADMIN_TOKEN: ${{ secrets.CODESTRA_REPOSITORY_ADMIN_TOKEN }}
           SSH_PRIVATE_KEY: ${{ secrets.CADDY_RUNNER_SSH_PRIVATE_KEY }}
           KNOWN_HOSTS: ${{ secrets.CADDY_RUNNER_KNOWN_HOSTS }}
         run: |
