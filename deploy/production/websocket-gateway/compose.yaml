@@ -2,15 +2,15 @@ name: codestra-websocket-gateway
 
 services:
   gateway:
-    image: ghcr.io/appolon1908-hue/websocket-gateway@sha256:1b544ec5f34127c76582ede651445ef035dc897b72f661a0ea3941b7d7921c12
+    image: ghcr.io/appolon1908-hue/websocket-gateway@sha256:dd3039f69532ccd918cf2e44f58871199943fffa492423b3e6235517a8e8976e
     environment:
       LISTEN_ADDR: ":8080"
       MIDDLEWARE_URL: "${MIDDLEWARE_URL:?MIDDLEWARE_URL is required}"
       MIDDLEWARE_SERVICE_TOKEN: "${MIDDLEWARE_SERVICE_TOKEN:?MIDDLEWARE_SERVICE_TOKEN is required}"
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:?ALLOWED_ORIGINS is required}"
       MAX_CONNECTIONS: "${MAX_CONNECTIONS:-1000}"
-      SOURCE_SHA: "b0f01f0fc6ce5652a7bec8cf199e0d5e7c9efdb3"
-      IMAGE_DIGEST: "sha256:1b544ec5f34127c76582ede651445ef035dc897b72f661a0ea3941b7d7921c12"
+      SOURCE_SHA: "6d52b253fc208f46aa32b26565dcb2f2be30c409"
+      IMAGE_DIGEST: "sha256:dd3039f69532ccd918cf2e44f58871199943fffa492423b3e6235517a8e8976e"
     init: true
     restart: unless-stopped
     read_only: true
