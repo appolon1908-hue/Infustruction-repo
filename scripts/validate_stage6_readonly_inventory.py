@@ -197,10 +197,24 @@ for value in (
     *EXPECTED_RESOURCES["runtime_server"].values(),
     *EXPECTED_RESOURCES["egress_server"].values(),
     *EXPECTED_RESOURCES["network"].values(),
-    EXPECTED_RESOURCES["runtime_firewall"]["name"],
-    EXPECTED_RESOURCES["egress_firewall"]["name"],
 ):
     require(str(value) in main_tf or str(value) in variables, f"iac_value:{value}")
+for exact_name, template, local_binding in (
+    (
+        EXPECTED_RESOURCES["runtime_firewall"]["name"],
+        '${local.runtime_name}-deny-default',
+        'runtime_name = "codestra-stage6-staging-01"',
+    ),
+    (
+        EXPECTED_RESOURCES["egress_firewall"]["name"],
+        '${local.gateway_name}-boundary',
+        'gateway_name = "codestra-stage6-egress-01"',
+    ),
+):
+    require(
+        exact_name in main_tf or (template in main_tf and local_binding in main_tf),
+        f"iac_firewall_name:{exact_name}",
+    )
 for values in (
     EXPECTED_FIELDS["approved_ssh_key_ids"],
     EXPECTED_FIELDS["approved_egress_fqdns"],
