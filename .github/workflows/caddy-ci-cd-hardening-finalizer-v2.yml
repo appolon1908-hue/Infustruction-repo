@@ -1,0 +1,283 @@
+name: Temporary Caddy CI/CD hardening finalizer v2
+
+on:
+  push:
+    branches:
+      - feat/caddy-ci-cd-runner-bootstrap-20260903
+    paths:
+      - ".github/workflows/caddy-ci-cd-hardening-finalizer-v2.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: caddy-ci-cd-hardening-finalizer-v2
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    if: >-
+      github.repository == 'appolon1908-hue/Infustruction-repo' &&
+      github.ref == 'refs/heads/feat/caddy-ci-cd-runner-bootstrap-20260903'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact feature head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Prove exact source identity
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$GITHUB_REF" = refs/heads/feat/caddy-ci-cd-runner-bootstrap-20260903
+          test -z "$(git status --porcelain)"
+      - name: Apply reviewed fail-closed ordering and assignment proof
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          controller = Path("scripts/configure_caddy_ci_cd_runner.sh")
+          source = controller.read_text(encoding="utf-8")
+          replacements = [
+              (
+                  '      [[ "$value" = /* && "$value" != *..* && "$value" != *//* ]] || fail "invalid_environment_path:${name}"\n',
+                  '      [[ "$value" = /* && "$value" != *..* && "$value" != *//* ]] || fail "invalid_environment_path:${name}"\n'
+                  '      [[ "$value" != *$\'\\n\'* && "$value" != *$\'\\r\'* ]] || fail "invalid_environment_control_character:${name}"\n',
+              ),
+              (
+                  '[[ -n "$EVIDENCE_FILE" ]] || fail evidence_file_required\n',
+                  '[[ -n "$EVIDENCE_FILE" ]] || fail evidence_file_required\n'
+                  '[[ "$EVIDENCE_FILE" = /* && "$EVIDENCE_FILE" != *..* && "$EVIDENCE_FILE" != *//* ]] || fail invalid_evidence_path\n',
+              ),
+              (
+                  'secure_file "$ADMIN_TOKEN_FILE" admin_token\n'
+                  '[[ -x "$INSTALLER" && ! -L "$INSTALLER" ]] || fail installer_unavailable\n',
+                  'secure_file "$ADMIN_TOKEN_FILE" admin_token\n'
+                  'ssh-keygen -y -f "$SSH_KEY_FILE" >/dev/null 2>&1 || fail ssh_private_key_unusable\n'
+                  'known_host_lookup="$HOST"\n'
+                  '[[ "$SSH_PORT" == 22 ]] || known_host_lookup="[$HOST]:$SSH_PORT"\n'
+                  'ssh-keygen -F "$known_host_lookup" -f "$KNOWN_HOSTS_FILE" >/dev/null 2>&1 || fail known_hosts_target_missing\n'
+                  '[[ -x "$INSTALLER" && ! -L "$INSTALLER" ]] || fail installer_unavailable\n',
+              ),
+              (
+                  'for tool in awk base64 cat gh grep head jq mktemp rm sha256sum ssh stat tr wc python3; do\n',
+                  'for tool in awk base64 cat gh grep head jq mktemp rm sha256sum ssh ssh-keygen stat tr wc python3; do\n',
+              ),
+          ]
+          for old, new in replacements:
+              if old not in source:
+                  raise SystemExit(f"missing controller replacement: {old[:48]!r}")
+              source = source.replace(old, new, 1)
+          source = source.replace(
+              '    readonly RUNNER_USER="codestra-caddy-production-canary-runner"\n',
+              '',
+          )
+
+          early_install = '''# Install the reviewed bootstrap executable by exact checksum.
+          ssh "${ssh_options[@]}" "$remote" \\
+            "sudo -n install -d -m 0755 /usr/local/sbin && sudo -n tee /usr/local/sbin/install-codestra-caddy-actions-runner >/dev/null && sudo -n chmod 0755 /usr/local/sbin/install-codestra-caddy-actions-runner" \\
+            <"$INSTALLER"
+          remote_installer_sha256="$(ssh "${ssh_options[@]}" "$remote" \\
+            "sudo -n sha256sum /usr/local/sbin/install-codestra-caddy-actions-runner | awk '{print \\$1}'")"
+          [[ "$remote_installer_sha256" == "$installer_sha256" ]] || fail remote_installer_checksum
+
+          '''
+          if early_install not in source:
+              raise SystemExit("missing early installer block")
+          source = source.replace(early_install, "", 1)
+
+          environment_block = '''for name in "${required_variables[@]}"; do
+            gh variable set "$name" \\
+              --env "$ENVIRONMENT" \\
+              --repo "$REPOSITORY" \\
+              --body "${ENVIRONMENT_VARIABLES[$name]}" >/dev/null
+          done
+
+          # Remove only the exact stale, non-busy runner record when explicitly approved.
+          '''
+          hardened_environment_block = '''for name in "${required_variables[@]}"; do
+            gh variable set "$name" \\
+              --env "$ENVIRONMENT" \\
+              --repo "$REPOSITORY" \\
+              --body "${ENVIRONMENT_VARIABLES[$name]}" >/dev/null
+          done
+
+          environment_readback="$(gh api -H "X-GitHub-Api-Version: $API_VERSION" \\
+            "repos/$REPOSITORY/environments/$ENVIRONMENT")"
+          jq -e '
+            .deployment_branch_policy.protected_branches == true and
+            .deployment_branch_policy.custom_branch_policies == false
+          ' <<<"$environment_readback" >/dev/null || fail environment_branch_policy_readback
+          for name in "${required_variables[@]}"; do
+            actual_value="$(gh api -H "X-GitHub-Api-Version: $API_VERSION" \\
+              "repos/$REPOSITORY/environments/$ENVIRONMENT/variables/$name" --jq .value)"
+            [[ "$actual_value" == "${ENVIRONMENT_VARIABLES[$name]}" ]] \\
+              || fail "environment_variable_readback:${name}"
+          done
+
+          # Install the reviewed bootstrap executable only after every source, queued-job,
+          # governance, environment, and host prerequisite has been read back.
+          ssh "${ssh_options[@]}" "$remote" \\
+            "sudo -n install -d -m 0755 /usr/local/sbin && sudo -n tee /usr/local/sbin/install-codestra-caddy-actions-runner >/dev/null && sudo -n chmod 0755 /usr/local/sbin/install-codestra-caddy-actions-runner" \\
+            <"$INSTALLER"
+          remote_installer_sha256="$(ssh "${ssh_options[@]}" "$remote" \\
+            "sudo -n sha256sum /usr/local/sbin/install-codestra-caddy-actions-runner | awk '{print \\$1}'")"
+          [[ "$remote_installer_sha256" == "$installer_sha256" ]] || fail remote_installer_checksum
+
+          # Remove only the exact stale, non-busy runner record when explicitly approved.
+          '''
+          if environment_block not in source:
+              raise SystemExit("missing environment block")
+          source = source.replace(environment_block, hardened_environment_block, 1)
+
+          assignment_block = '''unset GH_TOKEN
+          [[ -n "$verified_runner" ]] || fail runner_not_online
+
+          mkdir -p -- "$(dirname -- "$EVIDENCE_FILE")"
+          python3 - "$EVIDENCE_FILE" "$TARGET" "$ENVIRONMENT" "$RUNNER_NAME" "$RUNNER_LABEL" \\
+            "$installer_sha256" "$(jq -r '.id' <<<"$verified_runner")" "$production_sha" "$canonical_id" \\
+            "$BOUNDED_RUNTIME_RUN_ID" "$bounded_job_id" "$EXPECTED_JOB_NAME" <<'PY'
+          '''
+          hardened_assignment_block = '''[[ -n "$verified_runner" ]] || fail runner_not_online
+          verified_runner_id="$(jq -er '.id' <<<"$verified_runner")"
+
+          # Require GitHub to bind the exact queued job to the exact ephemeral runner.
+          assignment_deadline=$((SECONDS + 120))
+          assigned_job=""
+          while ((SECONDS < assignment_deadline)); do
+            assigned_job="$(gh api -H "X-GitHub-Api-Version: $API_VERSION" \\
+              "repos/$REPOSITORY/actions/jobs/$bounded_job_id")"
+            assigned_runner_id="$(jq -r '.runner_id // 0' <<<"$assigned_job")"
+            assigned_status="$(jq -r '.status' <<<"$assigned_job")"
+            if [[ "$assigned_runner_id" == "$verified_runner_id" ]] && \\
+               [[ "$assigned_status" == queued || "$assigned_status" == in_progress ]]; then
+              break
+            fi
+            if [[ "$assigned_runner_id" != 0 && "$assigned_runner_id" != "$verified_runner_id" ]]; then
+              fail bounded_job_assigned_to_different_runner
+            fi
+            [[ "$assigned_status" != completed ]] || fail bounded_job_completed_without_exact_runner
+            assigned_job=""
+            sleep 3
+          done
+          unset GH_TOKEN
+          [[ -n "$assigned_job" ]] || fail bounded_job_not_assigned_to_exact_runner
+
+          mkdir -p -- "$(dirname -- "$EVIDENCE_FILE")"
+          python3 - "$EVIDENCE_FILE" "$TARGET" "$ENVIRONMENT" "$RUNNER_NAME" "$RUNNER_LABEL" \\
+            "$installer_sha256" "$verified_runner_id" "$production_sha" "$canonical_id" \\
+            "$BOUNDED_RUNTIME_RUN_ID" "$bounded_job_id" "$EXPECTED_JOB_NAME" <<'PY'
+          '''
+          if assignment_block not in source:
+              raise SystemExit("missing assignment block")
+          source = source.replace(assignment_block, hardened_assignment_block, 1)
+          evidence_marker = '    "bounded_job_was_queued_for_exact_labels": True,\n'
+          if evidence_marker not in source:
+              raise SystemExit("missing evidence marker")
+          source = source.replace(
+              evidence_marker,
+              evidence_marker + '    "bounded_job_assigned_to_runner": True,\n',
+              1,
+          )
+          controller.write_text(source, encoding="utf-8")
+
+          validator = Path("scripts/validate_caddy_ci_cd_runner_contract.py")
+          source = validator.read_text(encoding="utf-8")
+          validator_replacements = [
+              (
+                  '    require("gh variable set" in controller, "controller_environment_variables")\n'
+                  '    require("deployment_branch_policy" in controller, "controller_environment_policy")\n',
+                  '    require("gh variable set" in controller, "controller_environment_variables")\n'
+                  '    require("environment_variable_readback" in controller, "controller_environment_variable_readback")\n'
+                  '    require("environment_branch_policy_readback" in controller, "controller_environment_policy_readback")\n'
+                  '    require("deployment_branch_policy" in controller, "controller_environment_policy")\n',
+              ),
+              (
+                  '    require("bounded_job_not_waiting_for_exact_runner" in controller, "controller_job_binding")\n',
+                  '    require("bounded_job_not_waiting_for_exact_runner" in controller, "controller_job_binding")\n'
+                  '    require("bounded_job_not_assigned_to_exact_runner" in controller, "controller_assignment_readback")\n'
+                  '    require("bounded_job_assigned_to_different_runner" in controller, "controller_assignment_mismatch")\n',
+              ),
+              (
+                  '    require("runner_registered_speculatively" not in controller, "controller_no_bad_flag")\n',
+                  '    require("runner_registered_speculatively" not in controller, "controller_no_bad_flag")\n'
+                  '    require(\n'
+                  '        controller.index("bounded_job_not_waiting_for_exact_runner")\n'
+                  '        < controller.index("install-codestra-caddy-actions-runner"),\n'
+                  '        "controller_no_remote_install_before_job_validation",\n'
+                  '    )\n',
+              ),
+          ]
+          for old, new in validator_replacements:
+              if old not in source:
+                  raise SystemExit("missing validator replacement")
+              source = source.replace(old, new, 1)
+          validator.write_text(source, encoding="utf-8")
+
+          tests = Path("tests/test_caddy_ci_cd_runner_contract.py")
+          source = tests.read_text(encoding="utf-8")
+          old = (
+              '        self.assertIn("bounded_job_not_waiting_for_exact_runner", self.controller)\n'
+              '        self.assertLess(\n'
+              '            self.controller.index("bounded_job_not_waiting_for_exact_runner"),\n'
+              '            self.controller.index("actions/runners/registration-token"),\n'
+              '        )\n'
+          )
+          new = (
+              '        self.assertIn("bounded_job_not_waiting_for_exact_runner", self.controller)\n'
+              '        self.assertIn("bounded_job_not_assigned_to_exact_runner", self.controller)\n'
+              '        self.assertIn("bounded_job_assigned_to_different_runner", self.controller)\n'
+              '        self.assertLess(\n'
+              '            self.controller.index("bounded_job_not_waiting_for_exact_runner"),\n'
+              '            self.controller.index("actions/runners/registration-token"),\n'
+              '        )\n'
+              '        self.assertLess(\n'
+              '            self.controller.index("bounded_job_not_waiting_for_exact_runner"),\n'
+              '            self.controller.index("install-codestra-caddy-actions-runner"),\n'
+              '        )\n'
+          )
+          if old not in source:
+              raise SystemExit("missing test replacement")
+          source = source.replace(old, new, 1)
+          marker = '    def test_governance_is_applied_before_runner_registration(self) -> None:\n'
+          addition = (
+              '    def test_environment_writes_are_read_back_before_host_install(self) -> None:\n'
+              '        self.assertIn("environment_branch_policy_readback", self.controller)\n'
+              '        self.assertIn("environment_variable_readback", self.controller)\n'
+              '        self.assertLess(\n'
+              '            self.controller.index("environment_variable_readback"),\n'
+              '            self.controller.index("install-codestra-caddy-actions-runner"),\n'
+              '        )\n\n'
+          )
+          if marker not in source:
+              raise SystemExit("missing test insertion marker")
+          source = source.replace(marker, addition + marker, 1)
+          tests.write_text(source, encoding="utf-8")
+          PY
+      - name: Validate patched source
+        run: |
+          set -Eeuo pipefail
+          bash -n scripts/install_caddy_actions_runner.sh
+          bash -n scripts/configure_caddy_ci_cd_runner.sh
+          python3 scripts/validate_caddy_ci_cd_runner_contract.py
+          python3 -m unittest -v tests/test_caddy_ci_cd_runner_contract.py
+          git diff --check
+      - name: Commit exact hardened source and remove temporary workflows
+        run: |
+          set -Eeuo pipefail
+          git rm \
+            .github/workflows/caddy-ci-cd-hardening-finalizer.yml \
+            .github/workflows/caddy-ci-cd-hardening-finalizer-v2.yml
+          git add \
+            scripts/configure_caddy_ci_cd_runner.sh \
+            scripts/validate_caddy_ci_cd_runner_contract.py \
+            tests/test_caddy_ci_cd_runner_contract.py
+          git diff --cached --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "security(caddy): bind exact job before runner activation"
+          git push origin HEAD:feat/caddy-ci-cd-runner-bootstrap-20260903
