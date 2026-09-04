@@ -9,7 +9,10 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COLLECTOR_PATH = Path(__file__).with_name("collect_stage6_hetzner_inventory.py")
+SCRIPTS = Path(__file__).resolve().parent
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+COLLECTOR_PATH = SCRIPTS / "collect_stage6_hetzner_inventory.py"
 spec = importlib.util.spec_from_file_location("stage6_inventory", COLLECTOR_PATH)
 assert spec and spec.loader
 collector = importlib.util.module_from_spec(spec)
