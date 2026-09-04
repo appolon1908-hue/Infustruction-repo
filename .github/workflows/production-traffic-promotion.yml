@@ -1,0 +1,208 @@
+name: Promote certified canary to full production traffic
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/production-traffic-promotion.yml"
+      - ".github/workflows/portfolio-release-stage.yml"
+      - "operations/staging-readonly/production_traffic_promotion.py"
+      - "operations/staging-readonly/test_production_traffic_promotion.py"
+      - "operations/staging-readonly/portfolio_release_dispatch.py"
+      - ".codestra/production-orchestrator-contract.v1.json"
+  workflow_dispatch:
+    inputs:
+      confirm_candidate_id:
+        description: Exact certified candidate identifier
+        required: true
+        type: string
+      confirm_source_lock_sha:
+        description: Exact source-lock commit SHA
+        required: true
+        type: string
+      confirm_candidate_sha256:
+        description: SHA-256 of the protected runtime candidate JSON
+        required: true
+        type: string
+      staging_evidence_run_id:
+        description: Successful portfolio staging wrapper run ID
+        required: true
+        type: string
+      rollback_evidence_run_id:
+        description: Successful portfolio rollback wrapper run ID
+        required: true
+        type: string
+      canary_evidence_run_id:
+        description: Successful portfolio one-percent canary wrapper run ID
+        required: true
+        type: string
+      observation_minutes:
+        description: Minimum elapsed canary observation window, 15-180 minutes
+        required: true
+        type: number
+        default: 30
+      production_percent:
+        description: Final traffic percent; must be exactly 100
+        required: true
+        type: number
+        default: 100
+      confirmation:
+        description: Type PROMOTE <candidate-id> TO 100 PERCENT
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+
+concurrency:
+  group: codestra-full-production-traffic-promotion
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  policy:
+    name: production-traffic / source-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Compile and test fail-closed promotion gate
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile \
+            operations/staging-readonly/portfolio_release_dispatch.py \
+            operations/staging-readonly/production_traffic_promotion.py \
+            operations/staging-readonly/test_portfolio_release_dispatch.py \
+            operations/staging-readonly/test_production_traffic_promotion.py
+          python3 operations/staging-readonly/test_portfolio_release_dispatch.py
+          python3 operations/staging-readonly/test_production_traffic_promotion.py
+          grep -q 'CONTROLLER_PATH = Path("/usr/local/sbin/codestra-production-traffic-controller")' \
+            operations/staging-readonly/production_traffic_promotion.py
+          git diff --check
+          test -z "$(git status --porcelain)"
+
+  promote:
+    name: production-traffic / protected-100-percent
+    needs:
+      - policy
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+    runs-on: [self-hosted, linux, x64, codestra-production-traffic]
+    timeout-minutes: 90
+    environment:
+      name: production
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      PRODUCTION_CANONICAL_CANDIDATE_B64: ${{ secrets.PRODUCTION_CANONICAL_CANDIDATE_B64 }}
+      PRODUCTION_ENDPOINT_MANIFEST_B64: ${{ secrets.PRODUCTION_ENDPOINT_MANIFEST_B64 }}
+      PRODUCTION_TRAFFIC_CONTROLLER_PATH: ${{ vars.PRODUCTION_TRAFFIC_CONTROLLER_PATH }}
+      PRODUCTION_TRAFFIC_CONTROLLER_SHA256: ${{ vars.PRODUCTION_TRAFFIC_CONTROLLER_SHA256 }}
+    steps:
+      - name: Check out exact protected main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Re-prove protected-main and required production bindings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          test "$GITHUB_REPOSITORY" = appolon1908-hue/Infustruction-repo
+          test "$GITHUB_REF" = refs/heads/main
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          test "$(gh api repos/${GITHUB_REPOSITORY}/branches/main --jq .protected)" = true
+          test "$(gh api repos/${GITHUB_REPOSITORY}/branches/main --jq .commit.sha)" = "$GITHUB_SHA"
+          test -n "$PRODUCTION_CANONICAL_CANDIDATE_B64"
+          test -n "$PRODUCTION_ENDPOINT_MANIFEST_B64"
+          test "$PRODUCTION_TRAFFIC_CONTROLLER_PATH" = /usr/local/sbin/codestra-production-traffic-controller
+          [[ "$PRODUCTION_TRAFFIC_CONTROLLER_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          test "$PRODUCTION_TRAFFIC_CONTROLLER_SHA256" != "$(printf '0%.0s' {1..64})"
+
+      - name: Materialize protected production authority without printing values
+        id: materialize
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          work="$RUNNER_TEMP/production-traffic-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -m 0700 -- "$work"
+          printf '%s' "$PRODUCTION_CANONICAL_CANDIDATE_B64" | base64 --decode > "$work/candidate.json"
+          printf '%s' "$PRODUCTION_ENDPOINT_MANIFEST_B64" | base64 --decode > "$work/endpoints.json"
+          chmod 0600 "$work/candidate.json" "$work/endpoints.json"
+          [[ "$(wc -c <"$work/candidate.json")" -le 1048576 ]]
+          [[ "$(wc -c <"$work/endpoints.json")" -le 1048576 ]]
+          python3 -m json.tool "$work/candidate.json" >/dev/null
+          python3 -m json.tool "$work/endpoints.json" >/dev/null
+          test "$(sha256sum "$work/candidate.json" | cut -d' ' -f1)" = "${{ inputs.confirm_candidate_sha256 }}"
+          test "$(jq -r .candidate_id "$work/candidate.json")" = "${{ inputs.confirm_candidate_id }}"
+          test "$(jq -r .candidate_source_lock_sha "$work/candidate.json")" = "${{ inputs.confirm_source_lock_sha }}"
+          echo "work=$work" >> "$GITHUB_OUTPUT"
+          echo "evidence=$work/production-traffic-evidence.json" >> "$GITHUB_OUTPUT"
+
+      - name: Verify exact release chain, observe canary, promote, and read back
+        run: |
+          set -Eeuo pipefail
+          python3 operations/staging-readonly/production_traffic_promotion.py \
+            --candidate-id "${{ inputs.confirm_candidate_id }}" \
+            --source-lock-sha "${{ inputs.confirm_source_lock_sha }}" \
+            --candidate-sha256 "${{ inputs.confirm_candidate_sha256 }}" \
+            --staging-run-id "${{ inputs.staging_evidence_run_id }}" \
+            --rollback-run-id "${{ inputs.rollback_evidence_run_id }}" \
+            --canary-run-id "${{ inputs.canary_evidence_run_id }}" \
+            --observation-minutes "${{ inputs.observation_minutes }}" \
+            --traffic-percent "${{ inputs.production_percent }}" \
+            --confirmation "${{ inputs.confirmation }}" \
+            --candidate "${{ steps.materialize.outputs.work }}/candidate.json" \
+            --endpoint-manifest "${{ steps.materialize.outputs.work }}/endpoints.json" \
+            --work-directory "${{ steps.materialize.outputs.work }}/chain" \
+            --evidence "${{ steps.materialize.outputs.evidence }}"
+
+      - name: Require final GO evidence with effects disabled
+        run: |
+          set -Eeuo pipefail
+          jq -e \
+            --arg candidate "${{ inputs.confirm_candidate_id }}" \
+            --arg source_lock "${{ inputs.confirm_source_lock_sha }}" \
+            --arg candidate_sha256 "${{ inputs.confirm_candidate_sha256 }}" \
+            '.schema_version == "codestra.production-traffic-promotion.v1"
+             and .candidate_id == $candidate
+             and .candidate_source_lock_sha == $source_lock
+             and .candidate_manifest_sha256 == $candidate_sha256
+             and .previous_traffic_percent <= 1
+             and .traffic_percent == 100
+             and .same_candidate == true
+             and .source_and_digest_match == true
+             and .readiness == "PASS"
+             and .monitoring == "PASS"
+             and .kong_routes == "29/29"
+             and .rollback_controller_verified == true
+             and .external_effects_enabled == false
+             and .verdict == "GO"
+             and (.error == null or .error == "")' \
+            "${{ steps.materialize.outputs.evidence }}" >/dev/null
+
+      - name: Upload exact production traffic evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.6.2
+        with:
+          name: codestra-production-traffic-${{ inputs.confirm_candidate_id }}
+          path: ${{ steps.materialize.outputs.evidence }}
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Remove protected material
+        if: always()
+        run: |
+          set +e
+          rm -rf -- "${{ steps.materialize.outputs.work }}"
