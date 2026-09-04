@@ -110,22 +110,42 @@ class CaddyCICDRunnerContractTests(unittest.TestCase):
             self.controller.index("install-codestra-caddy-actions-runner"),
         )
 
-    def test_governance_is_applied_before_runner_registration(self) -> None:
+    def test_governance_is_verified_but_never_mutated(self) -> None:
         self.assertLess(
             self.controller.index("protected-branches-ruleset.json"),
             self.controller.index("actions/runners/registration-token"),
         )
-        self.assertIn("Protect Caddy promotion branches", self.controller)
-        self.assertIn("required_approving_review_count", self.controller)
-        self.assertIn("AI automated production gates", self.controller)
-        self.assertIn("Protect main", self.controller)
+        for token in (
+            "Protect Caddy promotion branches",
+            "required_approving_review_count",
+            "dismiss_stale_reviews_on_push",
+            "require_last_push_approval",
+            "required_review_thread_resolution",
+            "allowed_merge_methods",
+            "required_linear_history",
+            "CADDY_CANONICAL_RULESET_READBACK=PASS",
+            "CADDY_CANONICAL_RULESET_MUTATION_FORBIDDEN=PASS",
+            '"canonical_ruleset_mutated": False',
+            '"unrelated_rulesets_changed": False',
+        ):
+            self.assertIn(token, self.controller)
+        self.assertNotIn("AI automated production gates", self.controller)
+        self.assertNotIn("Protect main", self.controller)
+        self.assertNotIn("canonical_ruleset_applied", self.controller)
+        self.assertNotIn("legacy_rulesets_retired", self.controller)
         self.assertEqual(
-            self.contract["bootstrap"]["admin_token_repository_permissions"],
-            {
-                "Actions": "read",
-                "Administration": "read-and-write",
-                "Environments": "read-and-write",
-            },
+            self.contract["bootstrap"]["governance_effect"],
+            "verify-canonical-ruleset-readback-no-mutation",
+        )
+        self.assertFalse(
+            self.contract["security_invariants"][
+                "canonical_ruleset_mutated_by_bootstrap"
+            ]
+        )
+        self.assertFalse(
+            self.contract["security_invariants"][
+                "unrelated_rulesets_changed_by_bootstrap"
+            ]
         )
 
     def test_workflow_has_protected_separate_environments(self) -> None:
@@ -139,6 +159,8 @@ class CaddyCICDRunnerContractTests(unittest.TestCase):
             "BOOTSTRAP_CADDY_PRODUCTION_CANARY_RUNNER",
             self.workflow,
         )
+        self.assertIn("CODESTRA_REPOSITORY_ADMIN_TOKEN", self.workflow)
+        self.assertNotIn("CODESTRA_GITHUB_ADMIN_TOKEN", self.workflow)
         self.assertNotIn("pull_request_target", self.workflow)
 
     def test_production_canary_remains_read_only(self) -> None:
