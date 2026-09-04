@@ -5,7 +5,7 @@ root = Path(__file__).resolve().parents[1]
 compose = (root / "deploy/production/websocket-gateway/compose.yaml").read_text()
 script = (root / "deploy/production/websocket-gateway/cutover.sh").read_text()
 
-digest = "sha256:1b544ec5f34127c76582ede651445ef035dc897b72f661a0ea3941b7d7921c12"
+digest = "sha256:dd3039f69532ccd918cf2e44f58871199943fffa492423b3e6235517a8e8976e"
 rollback = "sha256:1c8f28d3627955c0d07f8a3f2e4187edb0770f3a9fc7cbc7dc9d819fcd255ffd"
 required = ("MIDDLEWARE_URL", "MIDDLEWARE_SERVICE_TOKEN", "ALLOWED_ORIGINS")
 
