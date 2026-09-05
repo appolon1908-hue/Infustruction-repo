@@ -60,4 +60,6 @@ def test_release_passes_verified_metadata_as_build_arguments():
     assert '--build-arg "SOURCE_SHA=${source_sha}"' in text
     assert '--build-arg "BUILD_DATE=${build_date}"' in text
     assert 'source_sha="$(git rev-parse HEAD)"' in text
-    assert 'build_date="$(git show -s --format=%cI "$source_sha")"' in text
+    assert 'commit_epoch="$(git show -s --format=%ct "$source_sha")"' in text
+    assert "date --utc" in text
+    assert "'+%Y-%m-%dT%H:%M:%SZ'" in text
