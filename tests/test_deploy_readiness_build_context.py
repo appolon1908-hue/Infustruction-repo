@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
@@ -40,12 +41,15 @@ class BuildContextTest(unittest.TestCase):
             environment = os.environ | {
                 "GIT_AUTHOR_NAME": "Synthetic", "GIT_AUTHOR_EMAIL": "test@example.invalid",
                 "GIT_COMMITTER_NAME": "Synthetic", "GIT_COMMITTER_EMAIL": "test@example.invalid",
+                "GIT_AUTHOR_DATE": "2026-09-05T07:04:08-04:00",
+                "GIT_COMMITTER_DATE": "2026-09-05T07:04:08-04:00",
             }
             for args in (["init", "-q"], ["add", "."], ["commit", "-qm", "fixture"]):
                 subprocess.run(["git", *args], cwd=root, env=environment, check=True,
                                capture_output=True)
             sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
             date = subprocess.check_output(["git", "show", "-s", "--format=%cI", "HEAD"], cwd=root, text=True).strip()
+            date = datetime.fromisoformat(date).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
             binary = parent / "docker"
             binary.write_text(f"#!{sys.executable}\nimport json,os,sys\nfrom pathlib import Path\nPath(os.environ['CAPTURE']).write_text(json.dumps(sys.argv[1:]))\n")
             binary.chmod(0o755)
