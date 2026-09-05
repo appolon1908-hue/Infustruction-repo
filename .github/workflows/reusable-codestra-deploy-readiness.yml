@@ -11,6 +11,16 @@ on:
         description: Run detected Node, Python, Go, Compose, and Docker checks
         required: true
         type: boolean
+      dockerfile:
+        description: Explicit repository-relative Dockerfile; empty preserves discovery
+        required: false
+        type: string
+        default: ""
+      build_context:
+        description: Explicit repository-relative build context; empty uses Dockerfile directory
+        required: false
+        type: string
+        default: ""
       artifact_strategy:
         description: auto, oci, or source-bundle
         required: true
@@ -51,6 +61,8 @@ env:
   DEPLOY_READINESS_CONTRACT_VERSION: "2"
   REPOSITORY_CLASS: "${{ inputs.repository_class }}"
   RUN_STACK_TESTS: "${{ inputs.run_stack_tests }}"
+  INPUT_DOCKERFILE: "${{ inputs.dockerfile }}"
+  INPUT_BUILD_CONTEXT: "${{ inputs.build_context }}"
   ARTIFACT_STRATEGY: "${{ inputs.artifact_strategy }}"
   RUNTIME_DEPLOYABLE: "${{ inputs.runtime_deployable }}"
   HEALTH_PATHS: "${{ inputs.health_paths }}"
@@ -294,9 +306,21 @@ jobs:
         if: inputs.run_stack_tests && steps.stacks.outputs.docker == 'true'
         run: |
           set -Eeuo pipefail
-          dockerfile="$(find . -maxdepth 5 -type f -name Dockerfile | sort | head -n1)"
-          context="$(dirname "$dockerfile")"
+          dockerfile="${INPUT_DOCKERFILE:-$(find . -maxdepth 5 -type f -name Dockerfile | sort | head -n1 || true)}"
+          context="${INPUT_BUILD_CONTEXT:-$(dirname "$dockerfile")}"
+          # Resolve symlinks and reject paths outside this exact checkout.
+          checkout_root="$(pwd -P)"
+          dockerfile="$(realpath -e -- "$dockerfile")"
+          context="$(realpath -e -- "$context")"
+          test -f "$dockerfile"
+          test -d "$context"
+          case "$dockerfile" in "$checkout_root"/*) ;; *) echo "BUILD_ERROR=Dockerfile outside checkout" >&2; exit 1 ;; esac
+          case "$context" in "$checkout_root"|"$checkout_root"/*) ;; *) echo "BUILD_ERROR=context outside checkout" >&2; exit 1 ;; esac
+          source_sha="$(git rev-parse HEAD)"
+          build_date="$(git show -s --format=%cI "$source_sha")"
           docker build \
+            --build-arg "SOURCE_SHA=$source_sha" \
+            --build-arg "BUILD_DATE=$build_date" \
             --pull=false \
             --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
             --label "org.opencontainers.image.revision=${{ github.event.pull_request.head.sha || github.sha }}" \
@@ -457,7 +481,8 @@ jobs:
           raw_name="${GITHUB_REPOSITORY#*/}"
           image_name="$(printf '%s' "$raw_name" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/^[._-]+//; s/[._-]+$//')"
           image_repo="ghcr.io/${owner}/${image_name}"
-          dockerfile="$(find . -maxdepth 5 -type f -name Dockerfile | sort | head -n1 || true)"
+          dockerfile="${INPUT_DOCKERFILE:-$(find . -maxdepth 5 -type f -name Dockerfile | sort | head -n1 || true)}"
+          context="${INPUT_BUILD_CONTEXT:-$(dirname "$dockerfile")}"
 
           python - <<'PY'
           import json
@@ -472,6 +497,8 @@ jobs:
                       "source_sha": os.environ["GITHUB_SHA"],
                       "repository_class": os.environ["REPOSITORY_CLASS"],
                       "artifact_strategy": os.environ["ARTIFACT_STRATEGY"],
+                      "dockerfile_input": os.environ["INPUT_DOCKERFILE"],
+                      "build_context_input": os.environ["INPUT_BUILD_CONTEXT"],
                   },
                   "internalParameters": {},
                   "resolvedDependencies": [{
@@ -508,8 +535,19 @@ jobs:
 
           if [[ "$use_image" == true ]]; then
             tag="${image_repo}:sha-${source_sha}"
-            context="$(dirname "$dockerfile")"
+            # Resolve symlinks and reject paths outside this exact checkout.
+            checkout_root="$(pwd -P)"
+            dockerfile="$(realpath -e -- "$dockerfile")"
+            context="$(realpath -e -- "$context")"
+            test -f "$dockerfile"
+            test -d "$context"
+            case "$dockerfile" in "$checkout_root"/*) ;; *) echo "BUILD_ERROR=Dockerfile outside checkout" >&2; exit 1 ;; esac
+            case "$context" in "$checkout_root"|"$checkout_root"/*) ;; *) echo "BUILD_ERROR=context outside checkout" >&2; exit 1 ;; esac
+            source_sha="$(git rev-parse HEAD)"
+            build_date="$(git show -s --format=%cI "$source_sha")"
             docker build \
+              --build-arg "SOURCE_SHA=$source_sha" \
+              --build-arg "BUILD_DATE=$build_date" \
               --pull=false \
               --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
               --label "org.opencontainers.image.revision=${source_sha}" \
