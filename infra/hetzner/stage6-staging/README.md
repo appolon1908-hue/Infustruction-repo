@@ -42,6 +42,13 @@ direct public DNS path. Chrony on the gateway uses the Git-reviewed
 `approved_ssh_source_cidrs` remains a required owner-provided VPN, bastion, or
 operator allowlist; global SSH is rejected.
 
+An owner-reviewed plan from an earlier protected plan-only run is applied only
+through `stage6-apply-reviewed-plan.yml`. Its first protected job verifies the
+source run/SHA, GitHub artifact digest, internal checksums, exact eight-resource
+policy, and remote-state lineage/serial. A separate protected apply job repeats
+those checks and applies only the downloaded binary plan; it never regenerates
+a plan or reads tfvars.
+
 ## Plan and apply
 
 Pull requests run exact-head and merge-result formatting, validation, static

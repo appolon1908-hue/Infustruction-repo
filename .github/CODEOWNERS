@@ -5,3 +5,8 @@
 /.github/workflows/stage6-readonly-inventory.yml @kazan555
 /scripts/collect_stage6_hetzner_inventory.py @kazan555
 /scripts/validate_stage6_readonly_inventory.py @kazan555
+/.github/workflows/stage6-apply-reviewed-plan.yml @kazan555
+/scripts/validate_stage6_apply_reviewed_plan.py @kazan555
+/scripts/validate_stage6_artifact_authority.py @kazan555
+/scripts/validate_stage6_reviewed_plan.py @kazan555
+/scripts/validate_stage6_state_currency.py @kazan555

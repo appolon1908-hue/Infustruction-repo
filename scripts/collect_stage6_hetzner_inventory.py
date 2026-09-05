@@ -61,7 +61,8 @@ def get_collection(token: str, collection: str) -> list[dict[str, Any]]:
 
 def labels_mark(value: dict[str, Any], *terms: str) -> bool:
     labels = {str(k).lower(): str(v).lower() for k, v in value.get("labels", {}).items()}
-    text = " ".join([str(value.get("name", "")).lower(), *labels.keys(), *labels.values()])
+    enabled_label_keys = [key for key, label_value in labels.items() if label_value in {"1", "enabled", "true", "yes"}]
+    text = " ".join([str(value.get("name", "")).lower(), *enabled_label_keys, *labels.values()])
     return all(term in text for term in terms)
 
 
@@ -104,8 +105,8 @@ def main() -> None:
                 "status": server.get("status"),
                 "labels": sanitized_labels(server.get("labels", {})),
                 "location": server.get("datacenter", {}).get("location", {}).get("name"),
-                "public_ipv4": public_net.get("ipv4", {}).get("ip"),
-                "public_ipv6": public_net.get("ipv6", {}).get("ip"),
+                "public_ipv4": (public_net.get("ipv4") or {}).get("ip"),
+                "public_ipv6": (public_net.get("ipv6") or {}).get("ip"),
                 "private_network_attachments": [
                     {"network_id": x.get("network"), "private_ip": x.get("ip"), "aliases": x.get("alias_ips", [])}
                     for x in server.get("private_net", [])
