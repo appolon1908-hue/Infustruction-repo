@@ -1,8 +1,6 @@
 # Codestra Stage 6-8 Runtime Preflight Inventory
 
-Captured initially: `2026-08-31T01:38:54+02:00` (`2026-08-30T23:38:54Z`)
-
-Fail-closed read-back repeated: `2026-08-31T02:17:02+02:00`
+Captured: `2026-08-31T01:38:54+02:00` (`2026-08-30T23:38:54Z`)
 
 Scope: read-only discovery. No container, service, database, secret, identity,
 gateway, workflow, firewall, or production runtime was changed.
@@ -79,26 +77,19 @@ kyqra:   phase=uninitialized, current=absent
 ```
 
 That interface cannot supply the mandatory host, container, Compose, repository,
-database, secret-source, port, health, and rollback inventory. Its bounded
-Klyrow certification also returned `CERTIFIER_RESULT=FAIL`, including failed
-tenant-authority and cross-tenant-information-leak checks. Existing
+database, secret-source, port, health, and rollback inventory. Existing
 `reports/runtime-reconciliation/` evidence on protected `main` remains useful
 historical evidence, but it does not replace a fresh read-back for this run.
 
 ## Existing Git authority
 
-Protected `main` at `b71f922a8d878a47c5a41f6b1cf9e8b47f9fba68` is the current
-infrastructure evidence base. A fresh GitHub read-back at
-`2026-08-31T02:17:02+02:00` matched 23 locked component `main` heads and found
-only Infrastructure advanced, from
-`58122e4dd9446f9d9b38e17aa52a10a87baf10e8` to that protected-main revision.
-The Git heads are now refreshed, but the release artifact lock remains
-incomplete: reviewed immutable image digests are available only for Middleware,
-Odoo, and n8n. Marketing, AI, Communication, Social control, and Social runtime
-cannot be deployed from the manifest without inventing or rebuilding an
-artifact. Runtime mutation remains unauthorized. Backup-gate pull request 25
-and its PostgreSQL 17 verification follow-up are merged, but no backup was
-executed because the runtime safety prerequisite had failed.
+Protected `main` at `c451ff0` is the evidence base. A fresh GitHub read-back
+matched every locked component `main` except Keycloak. Keycloak had advanced by
+reviewed merge 48 from `ef1212d53ec8a136421dd20873183aef7845a46f` to descendant
+`80fc33c7159440e357219903f62ea7fb84914d59`; this branch refreshes the lock to
+that revision. The resulting source identity is locked, but runtime mutation is
+still unauthorized. Backup-gate pull request 25 merged as `6ab3b36`, but no
+backup was executed because the runtime safety prerequisite had failed.
 
 ## Stop conditions
 
@@ -109,8 +100,21 @@ The following mission stop conditions are active:
 2. General shell access to the core/staging server is unavailable.
 3. Fresh core runtime provenance cannot be established with the available
    forced-command interface.
-4. The complete immutable application artifact lock is unavailable.
 
 Consequently, backups, OpenBao, Keycloak, migrations, application/Kong/n8n
 deployment, observability hookup, E2E, failure injection, rollback proof, and
 the production read-only canary were not attempted.
+
+## Scoped safety decision refresh
+
+The stop conditions above record the earlier global evaluation. The owner
+subsequently approved a Stage 6 scope limited to the 22 locked staging
+workloads on `65.109.65.169`. Klyrow/Postal on `37.27.128.39` is now recorded
+as `OUT_OF_SCOPE_ACTIVE_PRODUCTION_DO_NOT_TOUCH`; its activity neither proves
+nor authorizes an external write from the Stage 6 path.
+
+This decision does not itself pass preflight. A fresh read-only safety and
+provenance read-back of all 22 in-scope workloads is still required before any
+staging apply. Keycloak source authority has advanced through reviewed merge 56
+to `303e2edef2219c5eb3ac167c309a9717a766d079`. Runtime mutation and production
+mutation remain unauthorized.

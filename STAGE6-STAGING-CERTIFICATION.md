@@ -22,24 +22,20 @@ failure injection, rollback, or production canary was performed by this run.
 3. General-purpose shell access to core/staging server `65.109.65.169` is
    unavailable. A bounded forced-command key can report only provider-credential
    state and cannot produce the mandatory fresh runtime inventory.
-4. All 24 protected `main` heads were refreshed, including Infrastructure at
-   `b71f922a8d878a47c5a41f6b1cf9e8b47f9fba68`, but the immutable artifact lock
-   is incomplete. Reviewed digests exist only for Middleware, Odoo, and n8n;
-   Marketing, AI, Communication, Social control, and Social runtime remain
-   unresolved. The backup gate is merged, but it was not executed after the
-   safety failure.
+4. The source lock was refreshed to the current reviewed Keycloak `main`, but
+   runtime mutation remains unauthorized. The backup gate is merged, but it was
+   not executed after the safety failure.
 5. A credential-shaped Klyrow worker environment value surfaced during the
    local inspection. It was not copied into Git, but the affected RabbitMQ
    credential must be rotated through the approved secret authority before a
    new promotion attempt.
 
-The refreshed Git revision inventory is valid evidence, but `SOURCE_LOCK=FAIL`
-because the deployable immutable artifact set is incomplete. Every downstream
-gate is also `FAIL` because it was not safely executable or certifiable after
-the preflight stop; this does not claim that a runtime mutation was attempted.
+The refreshed source lock is valid Git evidence. Every downstream gate is
+`FAIL` here because it was not safely executable or certifiable after the
+preflight stop; this does not claim that a runtime mutation was attempted.
 
 ```text
-SOURCE_LOCK=FAIL
+SOURCE_LOCK=PASS
 BACKUPS=FAIL
 STAGING_DEPLOYMENT=FAIL
 OPENBAO_BINDING=FAIL
