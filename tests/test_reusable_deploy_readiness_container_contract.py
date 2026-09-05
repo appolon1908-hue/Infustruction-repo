@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
@@ -8,20 +9,27 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "reusable-codestra-deploy-readiness.yml"
 
 
-def resolver_source() -> str:
+def resolver_sources() -> list[str]:
     text = WORKFLOW.read_text(encoding="utf-8")
-    start = text.index("          import os\n", text.index("readarray -t container_paths"))
-    end = text.index("          PY\n", start)
-    return textwrap.dedent(text[start:end])
+    sources = []
+    cursor = 0
+    while True:
+        marker = text.find("readarray -t container_paths", cursor)
+        if marker < 0:
+            return sources
+        start = text.index("          import os\n", marker)
+        end = text.index("          PY\n", start)
+        sources.append(textwrap.dedent(text[start:end]))
+        cursor = end + 1
 
 
-def resolve(tmp_path: Path, dockerfile: str = "", context: str = ""):
+def resolve(tmp_path: Path, source: str, dockerfile: str = "", context: str = ""):
     env = os.environ | {
         "CONFIGURED_DOCKERFILE": dockerfile,
         "CONFIGURED_BUILD_CONTEXT": context,
     }
     return subprocess.run(
-        ["python", "-c", resolver_source()], cwd=tmp_path, env=env,
+        [sys.executable, "-c", source], cwd=tmp_path, env=env,
         check=False, capture_output=True, text=True,
     )
 
@@ -31,10 +39,11 @@ def test_explicit_root_context_supports_nested_dockerfile(tmp_path):
     dockerfile.parent.mkdir(parents=True)
     dockerfile.write_text("FROM scratch\n", encoding="utf-8")
 
-    result = resolve(tmp_path, "vicidial/docker/Dockerfile", ".")
-
-    assert result.returncode == 0, result.stderr
-    assert result.stdout.splitlines() == ["vicidial/docker/Dockerfile", "."]
+    assert len(resolver_sources()) == 2
+    for source in resolver_sources():
+        result = resolve(tmp_path, source, "vicidial/docker/Dockerfile", ".")
+        assert result.returncode == 0, result.stderr
+        assert result.stdout.splitlines() == ["vicidial/docker/Dockerfile", "."]
 
 
 def test_default_layout_keeps_dockerfile_directory_context(tmp_path):
@@ -42,17 +51,27 @@ def test_default_layout_keeps_dockerfile_directory_context(tmp_path):
     dockerfile.parent.mkdir()
     dockerfile.write_text("FROM scratch\n", encoding="utf-8")
 
-    result = resolve(tmp_path)
-
-    assert result.returncode == 0, result.stderr
-    assert result.stdout.splitlines() == ["service/Dockerfile", "service"]
+    for source in resolver_sources():
+        result = resolve(tmp_path, source)
+        assert result.returncode == 0, result.stderr
+        assert result.stdout.splitlines() == ["service/Dockerfile", "service"]
 
 
 def test_container_paths_reject_traversal(tmp_path):
-    result = resolve(tmp_path, "../Dockerfile", ".")
+    for source in resolver_sources():
+        result = resolve(tmp_path, source, "../Dockerfile", ".")
+        assert result.returncode != 0
+        assert "must be repository-relative" in result.stderr
 
-    assert result.returncode != 0
-    assert "must be repository-relative" in result.stderr
+
+def test_container_paths_reject_missing_and_symlink_escape(tmp_path):
+    outside = tmp_path.parent / "outside"
+    outside.mkdir(exist_ok=True)
+    (tmp_path / "escape").symlink_to(outside, target_is_directory=True)
+    for source in resolver_sources():
+        for dockerfile, context in (("missing/Dockerfile", "."), ("Dockerfile", "missing"), ("escape/Dockerfile", "."), ("Dockerfile", "escape")):
+            result = resolve(tmp_path, source, dockerfile, context)
+            assert result.returncode != 0
 
 
 def test_release_passes_verified_metadata_as_build_arguments():
@@ -63,3 +82,24 @@ def test_release_passes_verified_metadata_as_build_arguments():
     assert 'commit_epoch="$(git show -s --format=%ct "$source_sha")"' in text
     assert "date --utc" in text
     assert "'+%Y-%m-%dT%H:%M:%SZ'" in text
+    assert text.count('--build-arg "SOURCE_SHA=${source_sha}"') == 2
+    assert text.count('--build-arg "BUILD_DATE=${build_date}"') == 2
+
+
+def test_source_bundle_is_scanned_fail_closed_before_publication():
+    text = WORKFLOW.read_text(encoding="utf-8")
+    branch = text[text.index('          else\n            "$RUNNER_TEMP/trivy" fs'):text.index("            artifact_kind=source-bundle")]
+    assert "--severity HIGH,CRITICAL" in branch
+    assert "--exit-code 1" in branch
+    assert "test -s evidence/vulnerability-report.json" in branch
+    assert "test -s evidence/sbom.spdx.json" in branch
+    assert branch.index('"$RUNNER_TEMP/trivy" fs') < branch.index("git archive")
+
+
+def test_node_audits_match_lockfile_package_manager():
+    text = WORKFLOW.read_text(encoding="utf-8")
+    assert "auditor=(npm audit --omit=dev --audit-level=high)" in text
+    assert "auditor=(pnpm audit --prod --audit-level high)" in text
+    assert "auditor=(yarn npm audit --environment production --severity high)" in text
+    assert "auditor=(yarn audit --groups dependencies --level high)" in text
+    assert '"${auditor[@]}"' in text
