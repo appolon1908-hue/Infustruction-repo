@@ -104,3 +104,18 @@ The [release-fix follow-up](release-fix-followup.json) records PR #23 for
 runtime-readable policy generation and PR #29 for strict disabled-state
 readback. Local tests passed (17 policy tests; 117 provisioning tests plus
 Ruff). Renewed review was requested. No production action occurred.
+
+## Verified-release continuation
+
+The [verified-release continuation](verified-release-continuation.json) records the
+current one-owner branch topology, finding closure evidence, exact-head CI, and
+remaining review gates. It also records a failed key-only SSH authorization attempt
+without promoting any prior runtime value: Server B running source remains blocked,
+Server A remains historical/unverified, restore proof remains `REPORTED_PASS`, the
+paired rollback tuple remains uncertified, and the protected release is `NOT_RUN`.
+
+VICIdial PR #23 was closed after its restrictive-umask regression was incorporated
+into canonical PR #22. SentinelX remains separately blocked by the installation-policy
+finding recorded in production-platform PR #269; `SENTINELX_SKIP_SUDO=1` does not
+disable the script/upload handlers. No deployment, restart, enrollment, grant,
+account, activation, call, live-call-control, or external-delivery action occurred.
