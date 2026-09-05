@@ -44,3 +44,13 @@ New failure: https://github.com/appolon1908-hue/Vicidialer-Codestra/actions/runs
 Run: `python3.11 -m unittest discover -s tests -p test_deploy_readiness_build_context.py -v`.
 
 Failure evidence: https://github.com/appolon1908-hue/Vicidialer-Codestra/actions/runs/33960984914/job/101292726625
+
+## Final coordination state
+
+The coordinated PR #85 now includes the UTC correction at
+`13916e5d3b17145351d771e16a9c4ef45fc82dfc`. This follow-up adopts that workflow
+unchanged, including its epoch validation. Final changes relative to PR #85
+are independent regression tests, their CI job and evidence only. The offset
+fixture passes against that coordinated implementation. VICIdial PR #22 owns
+the consumer pin and administrative packet; redundant consumer PR #21 is closed.
+No parallel workflow implementation remains proposed by this follow-up.
