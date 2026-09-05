@@ -23,7 +23,6 @@ def build_script(job, name):
 
 
 SCRIPTS = {
-    "source-ci": build_script("source-ci", "Build primary container without publishing"),
     "immutable-candidate": build_script("immutable-candidate", "Build once, scan, publish, sign, and attest"),
 }
 
@@ -53,7 +52,7 @@ class BuildContextTest(unittest.TestCase):
             capture = parent / "captured.json"
             environment.update({
                 "PATH": str(parent) + os.pathsep + os.environ["PATH"],
-                "INPUT_DOCKERFILE": dockerfile, "INPUT_BUILD_CONTEXT": context,
+                "CONFIGURED_DOCKERFILE": dockerfile, "CONFIGURED_BUILD_CONTEXT": context,
                 "GITHUB_SHA": sha, "GITHUB_REPOSITORY": "synthetic/repo",
                 "GITHUB_RUN_ID": "1", "GITHUB_RUN_ATTEMPT": "1",
                 "ARTIFACT_STRATEGY": "oci", "REPOSITORY_CLASS": "service",
@@ -69,8 +68,8 @@ class BuildContextTest(unittest.TestCase):
             with self.subTest(job=job):
                 result, args, root, sha, date = self.run_fixture(job)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertEqual(args[-1], root)
-                self.assertEqual(args[args.index("-f") + 1], root + "/vicidial/docker/Dockerfile")
+                self.assertEqual(args[-1], ".")
+                self.assertEqual(args[args.index("-f") + 1], "vicidial/docker/Dockerfile")
                 self.assertIn("SOURCE_SHA=" + sha, args)
                 self.assertIn("BUILD_DATE=" + date, args)
 
@@ -78,7 +77,7 @@ class BuildContextTest(unittest.TestCase):
         for job in SCRIPTS:
             result, args, root, _, _ = self.run_fixture(job, context="", dockerfile="")
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(args[-1], root + "/vicidial/docker")
+            self.assertEqual(args[-1], "vicidial/docker")
 
     def test_invalid_and_escaping_paths_never_build(self):
         for job in SCRIPTS:

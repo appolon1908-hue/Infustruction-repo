@@ -1,40 +1,30 @@
-# VICIdial immutable-candidate build contract repair
+# Independent build-context regression evidence
+
+The coordinated infrastructure PR #85 added explicit container layout in commit
+`7db424a47c5556dd473268fa484665c0bb5ee215` while this session was reviewing the
+same failure. That implementation is adopted unchanged. This PR now adds only
+independent tests, their CI job and this evidence; it does not introduce a
+second workflow input contract. Earlier local implementation history is
+superseded by the canonical workflow at that commit.
 
 Observed failure: Vicidialer-Codestra run `33960984914`, attempt 1, job
 `101292726625`, source `d2165e0615953de296dc80edab989f17137f7f45`.
-The build failed before vulnerability scanning, publishing, signing or attestation.
-Docker COPY could not find `/vicidial/docker/security_regression.py` and other
-repository-root inputs. This was a build-context failure, not a libuuid scan result.
+Docker COPY could not find `/vicidial/docker/security_regression.py` or other
+repository-root inputs because context was `vicidial/docker`. The failure
+preceded scanning, publishing, signing and attestation. It was not a libuuid
+scan failure. The same build path omitted required SOURCE_SHA and BUILD_DATE.
 
-The consumer pins reusable authority `1b4a90810eb03db3eae2b676b2d418daa434ec16`,
-which selects the first Dockerfile and uses its parent directory as context.
-The VICIdial Dockerfile lives in `vicidial/docker` but COPY references repository
-root paths. It also requires SOURCE_SHA and BUILD_DATE, which this build path
-did not pass. The existing dedicated container workflow passes those correctly.
+Canonical inputs are `dockerfile_path: vicidial/docker/Dockerfile` and
+`docker_build_context: .`. The repair supplies exact Git-derived build metadata.
+Review and protected promotion of PR #85 and the consumer pin remain necessary.
+No earlier PR image substitutes for a signed protected-source release.
 
-This repair adds explicit Dockerfile/context inputs, preserving defaults for
-existing callers, and derives build metadata from the exact checked-out commit.
-Resolved paths must stay within the checkout. Both source-test and protected
-candidate build paths use the same selection and metadata contract. Scanner
-severity/exit codes, exact-source/clean-tree checks, signing, attestation and
-protected deployment jobs are unchanged. Provenance records the new inputs.
+These tests execute the actual immutable-candidate workflow shell with a fake
+Docker binary, checking root context, exact metadata, backward-compatible
+layout discovery, missing paths, URL rejection, traversal and symlink escape.
+No Docker build, registry mutation, signing, deployment or account operation
+occurs. The historical source-CI build path is not certified by these tests.
 
-VICIdial must select `dockerfile: vicidial/docker/Dockerfile` and
-`build_context: .` at the repaired immutable workflow revision. Do not substitute
-an earlier PR image for a newly built, scanned, signed protected-source release.
+Run: `python3.11 -m unittest discover -s tests -p test_deploy_readiness_build_context.py -v`.
 
-The reusable workflow is still under infrastructure PR #85; this fix is stacked
-on its inspected head `f509d61a6207c7cd9e5f2562de0c2b32a85b6cca`. Both the
-reusable authority and consumer changes need their review/protected-merge path.
-No merge, deployment, workflow dispatch or production activation is performed.
-
-Validation executes actual workflow shell through the Docker command with a
-fake Docker executable. It checks root context, metadata, backward-compatible
-discovery, missing paths, URLs, traversal and symlink escapes before build.
-It does not claim an OCI build, scanner pass, digest or protected release.
-
-```bash
-python3.11 -m unittest discover -s tests -p test_deploy_readiness_build_context.py -v
-```
-
-Source evidence: https://github.com/appolon1908-hue/Vicidialer-Codestra/actions/runs/33960984914/job/101292726625
+Failure evidence: https://github.com/appolon1908-hue/Vicidialer-Codestra/actions/runs/33960984914/job/101292726625
