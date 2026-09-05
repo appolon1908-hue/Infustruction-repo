@@ -99,6 +99,10 @@ The current server inventory identified several infrastructure risks that this r
 - `docs/CAPACITY-AND-STORAGE.md`
 - `docs/RUNBOOKS.md`
 
+## Server 37 production evidence
+
+`SERVER-37-PRODUCTION-API-MATRIX.yaml` classifies the completed runtime inventory and the bounded custom API contract without counting product-native APIs as custom implementation work. `SERVER-37-PRODUCTION-ROLLBACK.yaml` records before/candidate identities and remains fail-closed until reviewed promotion and isolated rollback rehearsal are complete.
+
 ## Branch policy
 
 After repository bootstrap, use:
@@ -111,6 +115,11 @@ After repository bootstrap, use:
 
 Never perform production activation merely by merging documentation or infrastructure source. Deployment is a separate, explicitly approved action.
 
-## Server 37 production evidence
+## Observability private-network candidate
 
-`SERVER-37-PRODUCTION-API-MATRIX.yaml` classifies the completed runtime inventory and the bounded custom API contract without counting product-native APIs as custom implementation work. `SERVER-37-PRODUCTION-ROLLBACK.yaml` records before/candidate identities and remains fail-closed until reviewed promotion and isolated rollback rehearsal are complete.
+The canonical topology, east-west communication map, and additive default-deny
+firewall intent are under `config/observability/`. Validate them with
+`python3 scripts/validate-observability-topology.py`. These files are
+source-only and explicitly keep live installation disabled until principal
+service repositories confirm their deployment listeners and the Caddy and
+Keycloak changes pass review.
