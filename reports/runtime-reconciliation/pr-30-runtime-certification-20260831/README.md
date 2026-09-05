@@ -43,8 +43,8 @@ replace the separate verified backup evidence subsequently merged on main.
 
 ## Conflict-resolution authority
 
-The active root files and validators are retained byte-for-byte from the
-conflict-resolution main commit, including:
+The active source lock, validators, deployment manifests, and CI workflows
+are retained byte-for-byte from the conflict-resolution main commit, including:
 
 - [Canonical source lock](../../../STAGE6-SOURCE-LOCK.yaml) and
   [source-lock validator](../../../scripts/validate_stage6_source_lock.py).
@@ -68,6 +68,25 @@ artifact or runtime safety. It still reports
 production mutation remain unauthorized. The scope distinction is documented
 in [the source-lock remediation evidence](../STAGE6-SOURCE-LOCK-REMEDIATION-EVIDENCE.md).
 
-This resolution therefore adds historical evidence only. It does not replace
-main's current lock with the older snapshot, remove newer checks, refresh
-runtime claims, enable external delivery, or authorize deployment.
+This resolution preserves historical evidence. It does not replace main's
+current lock with the older snapshot, remove newer checks, refresh runtime
+claims, enable external delivery, or authorize deployment.
+
+## Exact historical Git-SHA secret-scan exception
+
+The source-authority workflow scans the complete source tree, including these
+snapshots. The canonical lock already has a path-scoped exception for its
+Keycloak Git-SHA field. Archiving the historical lock does not move or broaden
+that existing exception.
+
+The sole configuration change is an additional `.gitleaks.toml` exception
+requiring BOTH this exact archived lock path AND a whole-line match for the
+historical `keycloak_locked_sha` value
+`80fc33c7159440e357219903f62ea7fb84914d59`. That value was independently
+read back as the signed Keycloak merge-48 Git commit:
+https://github.com/appolon1908-hue/Keycloak/commit/80fc33c7159440e357219903f62ea7fb84914d59
+
+Default secret-detection rules and both exact-source and merge-result scans
+remain enabled. No directory, arbitrary hash, other field, or credential is
+excluded by the new exception. The historical snapshots remain byte-identical.
+Local TOML parsing and eight negative path/value/field matching cases passed.
