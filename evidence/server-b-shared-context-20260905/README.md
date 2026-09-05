@@ -114,3 +114,14 @@ Ruff). PR #23 now addresses restrictive umask after adopting coordinated policy
 cleanup. Current-head review and protected release proof remain outstanding.
 Server B was rechecked at 11:59:28 UTC: ready, writes false, live version 0.1.0;
 running source/digest remain unverified. No production changes occurred.
+
+## Latest release verification refresh
+
+The [release verification refresh](release-verification-refresh.json) records
+the latest PR and protected-run observations. No verified paired release is
+established: canonical PRs #22 and #28 remain unmerged, and the latest protected
+VICIdial run failed. The older successful provisioning immutable build is
+identified separately and is not substituted for this integration. PR #23 is
+closed after coordinated incorporation; PR #29 retains unique tests. Artifact,
+signature and deployment fields remain unverified. Runtime was not rechecked
+during this documentation-only update.
