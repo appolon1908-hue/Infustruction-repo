@@ -11,7 +11,8 @@
     "vicidial_23": "CLOSED_REGRESSION_INCORPORATED_IN_22",
     "provisioning_28": "OPEN_IMPLEMENTATION_OWNER_013a26016d461582fe12696b3656acc8db893c33",
     "provisioning_29": "OPEN_COORDINATED_REGRESSION_OWNER_d364d7d1e684a08b6aa89666a10014bb07786eaa",
-    "infrastructure_96": "OPEN_SHARED_EVIDENCE_OWNER"
+    "infrastructure_96": "MERGED_SHARED_EVIDENCE_OWNER_70f3ada996a12e64ade750c8319ff52e60a146ba",
+    "post_merge_continuation": "PENDING_REVIEW_FROM_SAME_EVIDENCE_BRANCH"
   },
   "review_findings": {
     "infrastructure": {
