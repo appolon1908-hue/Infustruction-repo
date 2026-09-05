@@ -497,9 +497,12 @@ jobs:
       contents: read
     steps:
       - name: Enforce fixed staging confirmation
+        env:
+          OPERATION: ${{ inputs.operation }}
+          CONFIRMATION: ${{ inputs.confirmation }}
         run: |
           set -Eeuo pipefail
-          case "${{ inputs.operation }}:${{ inputs.confirmation }}" in
+          case "${OPERATION}:${CONFIRMATION}" in
             deploy-staging-readonly:DEPLOY_STAGING_READONLY) ;;
             certify-staging-readonly:CERTIFY_STAGING_READONLY) ;;
             *) echo "STAGING_ERROR=invalid fixed confirmation" >&2; exit 1 ;;
@@ -539,6 +542,7 @@ jobs:
       - immutable-source-candidate
     if: >-
       inputs.runtime_deployable &&
+      github.event_name == 'workflow_dispatch' &&
       inputs.operation == 'promote-production-readonly'
     runs-on:
       - self-hosted
@@ -552,9 +556,10 @@ jobs:
       - name: Enforce fixed production confirmation and maximum one percent
         env:
           CANARY_PERCENT: ${{ inputs.canary_percent }}
+          CONFIRMATION: ${{ inputs.confirmation }}
         run: |
           set -Eeuo pipefail
-          test "${{ inputs.confirmation }}" = "PROMOTE_PRODUCTION_READONLY"
+          test "$CONFIRMATION" = "PROMOTE_PRODUCTION_READONLY"
           python3 - <<'PY'
           import os
           value = float(os.environ["CANARY_PERCENT"])

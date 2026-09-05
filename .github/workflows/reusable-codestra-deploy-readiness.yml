@@ -169,6 +169,8 @@ jobs:
 
       - name: Detect source stacks
         id: stacks
+        env:
+          CONFIGURED_DOCKERFILE: ${{ inputs.dockerfile_path }}
         run: |
           set -Eeuo pipefail
           has_node=false
@@ -179,6 +181,7 @@ jobs:
           find . -maxdepth 5 -type f \( -name pyproject.toml -o -name requirements.txt -o -name requirements.lock -o -name setup.py \) -print -quit | grep -q . && has_python=true || true
           find . -maxdepth 5 -type f -name go.mod -not -path '*/vendor/*' -print -quit | grep -q . && has_go=true || true
           find . -maxdepth 5 -type f -name Dockerfile -print -quit | grep -q . && has_docker=true || true
+          [[ -n "$CONFIGURED_DOCKERFILE" ]] && has_docker=true
           echo "node=${has_node}" >> "$GITHUB_OUTPUT"
           echo "python=${has_python}" >> "$GITHUB_OUTPUT"
           echo "go=${has_go}" >> "$GITHUB_OUTPUT"
@@ -205,24 +208,33 @@ jobs:
             if [[ -f package-lock.json ]]; then
               npm ci --legacy-peer-deps --no-audit --fund=false
               runner=(npm run)
+              auditor=(npm audit --omit=dev --audit-level=high)
             elif [[ -f pnpm-lock.yaml ]]; then
               corepack enable
               pnpm install --frozen-lockfile
               runner=(pnpm run)
+              auditor=(pnpm audit --prod --audit-level high)
             elif [[ -f yarn.lock ]]; then
               corepack enable
               yarn install --immutable || yarn install --frozen-lockfile
               runner=(yarn run)
+              yarn_major="$(yarn --version | cut -d. -f1)"
+              if (( yarn_major >= 2 )); then
+                auditor=(yarn npm audit --environment production --severity high)
+              else
+                auditor=(yarn audit --groups dependencies --level high)
+              fi
             else
               npm install --legacy-peer-deps --no-audit --fund=false
               runner=(npm run)
+              auditor=(npm audit --omit=dev --audit-level=high)
             fi
             for script in lint typecheck test build; do
               if node -e 'const p=require("./package.json"); process.exit(p.scripts && typeof p.scripts[process.argv[1]]==="string" ? 0 : 1)' "$script"; then
                 "${runner[@]}" "$script"
               fi
             done
-            npm audit --omit=dev --audit-level=critical
+            "${auditor[@]}"
             popd >/dev/null
           done < <(find . -maxdepth 5 -type f -name package.json -not -path '*/node_modules/*' | sort)
 
@@ -302,16 +314,68 @@ jobs:
 
       - name: Build primary container without publishing
         if: inputs.run_stack_tests && steps.stacks.outputs.docker == 'true'
+        env:
+          CONFIGURED_DOCKERFILE: ${{ inputs.dockerfile_path }}
+          CONFIGURED_BUILD_CONTEXT: ${{ inputs.docker_build_context }}
         run: |
           set -Eeuo pipefail
-          dockerfile="$(find . -maxdepth 5 -type f -name Dockerfile | sort | head -n1)"
-          context="$(dirname "$dockerfile")"
+          readarray -t container_paths < <(python - <<'PY'
+          import os
+          import pathlib
+
+          root = pathlib.Path.cwd().resolve()
+
+          def resolve_relative(value: str, *, kind: str) -> pathlib.Path:
+              candidate = pathlib.Path(value)
+              if candidate.is_absolute() or ".." in candidate.parts:
+                  raise SystemExit(f"BUILD_ERROR={kind} must be repository-relative")
+              resolved = (root / candidate).resolve()
+              try:
+                  resolved.relative_to(root)
+              except ValueError:
+                  raise SystemExit(f"BUILD_ERROR={kind} escapes repository")
+              return resolved
+
+          configured_dockerfile = os.environ["CONFIGURED_DOCKERFILE"]
+          if configured_dockerfile:
+              dockerfile = resolve_relative(configured_dockerfile, kind="dockerfile_path")
+              if not dockerfile.is_file():
+                  raise SystemExit("BUILD_ERROR=configured Dockerfile does not exist")
+          else:
+              dockerfiles = sorted(
+                  path for path in root.rglob("Dockerfile")
+                  if path.is_file() and len(path.relative_to(root).parts) <= 6
+              )
+              dockerfile = dockerfiles[0].resolve() if dockerfiles else None
+
+          configured_context = os.environ["CONFIGURED_BUILD_CONTEXT"]
+          if configured_context:
+              context = resolve_relative(configured_context, kind="docker_build_context")
+              if not context.is_dir():
+                  raise SystemExit("BUILD_ERROR=configured Docker build context does not exist")
+          else:
+              context = dockerfile.parent if dockerfile else None
+
+          if dockerfile is None or context is None:
+              raise SystemExit("BUILD_ERROR=no Dockerfile available")
+          print(dockerfile.relative_to(root))
+          print(context.relative_to(root))
+          PY
+          )
+          dockerfile="${container_paths[0]}"
+          context="${container_paths[1]}"
+          source_sha="${{ github.event.pull_request.head.sha || github.sha }}"
+          commit_epoch="$(git show -s --format=%ct "$source_sha")"
+          [[ "$commit_epoch" =~ ^[0-9]+$ ]]
+          build_date="$(date --utc --date="@${commit_epoch}" '+%Y-%m-%dT%H:%M:%SZ')"
           docker build \
             --pull=false \
+            --build-arg "SOURCE_SHA=${source_sha}" \
+            --build-arg "BUILD_DATE=${build_date}" \
             --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
-            --label "org.opencontainers.image.revision=${{ github.event.pull_request.head.sha || github.sha }}" \
+            --label "org.opencontainers.image.revision=${source_sha}" \
             -f "$dockerfile" \
-            -t "codestra-ci:${{ github.event.pull_request.head.sha || github.sha }}" \
+            -t "codestra-ci:${source_sha}" \
             "$context"
 
       - name: Emit source readiness summary
@@ -620,6 +684,19 @@ jobs:
             artifact_reference="$subject"
             artifact_digest="$digest"
           else
+            "$RUNNER_TEMP/trivy" fs \
+              --scanners vuln \
+              --exit-code 1 \
+              --severity HIGH,CRITICAL \
+              --format json \
+              --output evidence/vulnerability-report.json \
+              .
+            test -s evidence/vulnerability-report.json
+            "$RUNNER_TEMP/trivy" fs \
+              --format spdx-json \
+              --output evidence/sbom.spdx.json \
+              .
+            test -s evidence/sbom.spdx.json
             git archive --format=tar.gz --output=evidence/source.tar.gz HEAD
           python - <<'PY'
           import hashlib
@@ -763,9 +840,12 @@ jobs:
       contents: read
     steps:
       - name: Enforce fixed staging confirmation
+        env:
+          OPERATION: ${{ inputs.operation }}
+          CONFIRMATION: ${{ inputs.confirmation }}
         run: |
           set -Eeuo pipefail
-          case "${{ inputs.operation }}:${{ inputs.confirmation }}" in
+          case "${OPERATION}:${CONFIRMATION}" in
             deploy-staging-readonly:DEPLOY_STAGING_READONLY) ;;
             certify-staging-readonly:CERTIFY_STAGING_READONLY) ;;
             *) echo "STAGING_ERROR=invalid fixed confirmation" >&2; exit 1 ;;
@@ -820,9 +900,10 @@ jobs:
       - name: Enforce fixed production confirmation and maximum one percent
         env:
           CANARY_PERCENT: ${{ inputs.canary_percent }}
+          CONFIRMATION: ${{ inputs.confirmation }}
         run: |
           set -Eeuo pipefail
-          test "${{ inputs.confirmation }}" = "PROMOTE_PRODUCTION_READONLY"
+          test "$CONFIRMATION" = "PROMOTE_PRODUCTION_READONLY"
           python3 - <<'PY'
           import os
           value = float(os.environ["CANARY_PERCENT"])
