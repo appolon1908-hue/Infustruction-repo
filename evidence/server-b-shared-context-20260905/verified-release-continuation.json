@@ -60,9 +60,12 @@
     ]
   },
   "server_b_deployment_type": {
-    "classification": "OBSERVED_SOURCE_ARCHIVE_INSTALL",
+    "classification": "OBSERVED_SOURCE_ARCHIVE_CHECKSUM_NOT_OCI_DIGEST",
     "archive_sha256": "23c6a743244f3e06f239bfcc35a15312a8a4952bfae0b95bba66810774d11fee",
-    "oci_image_digest": null
+    "oci_image_digest": null,
+    "deployment_type_verified": false,
+    "source_evidence": "status.json#/SERVER_B_RELEASE_OR_IMAGE_DIGEST",
+    "limitations": "Only the source archive checksum was observed. The release manifest and build info were not found; the on-disk marker does not establish installation or running process/source equivalence. The failed SSH attempt provides no new installation observation."
   },
   "server_a_runtime": {
     "classification": "BLOCKED_NOT_FRESHLY_VERIFIED",
