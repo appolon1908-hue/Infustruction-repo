@@ -103,3 +103,27 @@ def test_node_audits_match_lockfile_package_manager():
     assert "auditor=(yarn npm audit --environment production --severity high)" in text
     assert "auditor=(yarn audit --groups dependencies --level high)" in text
     assert '"${auditor[@]}"' in text
+
+
+def test_deployment_confirmations_are_data_not_shell_source():
+    for name in (
+        "reusable-codestra-deploy-readiness.yml",
+        "reusable-codestra-upstream-deploy-readiness.yml",
+    ):
+        text = (ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
+        assert 'test "${{ inputs.confirmation }}"' not in text
+        assert 'case "${{ inputs.operation }}:${{ inputs.confirmation }}"' not in text
+        assert "CONFIRMATION: ${{ inputs.confirmation }}" in text
+
+
+def test_explicit_dockerfile_enables_source_container_check():
+    text = WORKFLOW.read_text(encoding="utf-8")
+    detector = text[text.index("      - name: Detect source stacks"):text.index("      - name: Set up Node.js")]
+    assert "CONFIGURED_DOCKERFILE: ${{ inputs.dockerfile_path }}" in detector
+    assert '[[ -n "$CONFIGURED_DOCKERFILE" ]] && has_docker=true' in detector
+
+
+def test_upstream_production_requires_manual_dispatch():
+    text = (ROOT / ".github/workflows/reusable-codestra-upstream-deploy-readiness.yml").read_text(encoding="utf-8")
+    job = text[text.index("  production-readonly-canary:"):]
+    assert "github.event_name == 'workflow_dispatch'" in job.split("runs-on:", 1)[0]

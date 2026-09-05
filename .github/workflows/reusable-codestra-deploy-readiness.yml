@@ -169,6 +169,8 @@ jobs:
 
       - name: Detect source stacks
         id: stacks
+        env:
+          CONFIGURED_DOCKERFILE: ${{ inputs.dockerfile_path }}
         run: |
           set -Eeuo pipefail
           has_node=false
@@ -179,6 +181,7 @@ jobs:
           find . -maxdepth 5 -type f \( -name pyproject.toml -o -name requirements.txt -o -name requirements.lock -o -name setup.py \) -print -quit | grep -q . && has_python=true || true
           find . -maxdepth 5 -type f -name go.mod -not -path '*/vendor/*' -print -quit | grep -q . && has_go=true || true
           find . -maxdepth 5 -type f -name Dockerfile -print -quit | grep -q . && has_docker=true || true
+          [[ -n "$CONFIGURED_DOCKERFILE" ]] && has_docker=true
           echo "node=${has_node}" >> "$GITHUB_OUTPUT"
           echo "python=${has_python}" >> "$GITHUB_OUTPUT"
           echo "go=${has_go}" >> "$GITHUB_OUTPUT"
@@ -837,9 +840,12 @@ jobs:
       contents: read
     steps:
       - name: Enforce fixed staging confirmation
+        env:
+          OPERATION: ${{ inputs.operation }}
+          CONFIRMATION: ${{ inputs.confirmation }}
         run: |
           set -Eeuo pipefail
-          case "${{ inputs.operation }}:${{ inputs.confirmation }}" in
+          case "${OPERATION}:${CONFIRMATION}" in
             deploy-staging-readonly:DEPLOY_STAGING_READONLY) ;;
             certify-staging-readonly:CERTIFY_STAGING_READONLY) ;;
             *) echo "STAGING_ERROR=invalid fixed confirmation" >&2; exit 1 ;;
@@ -894,9 +900,10 @@ jobs:
       - name: Enforce fixed production confirmation and maximum one percent
         env:
           CANARY_PERCENT: ${{ inputs.canary_percent }}
+          CONFIRMATION: ${{ inputs.confirmation }}
         run: |
           set -Eeuo pipefail
-          test "${{ inputs.confirmation }}" = "PROMOTE_PRODUCTION_READONLY"
+          test "$CONFIRMATION" = "PROMOTE_PRODUCTION_READONLY"
           python3 - <<'PY'
           import os
           value = float(os.environ["CANARY_PERCENT"])
