@@ -87,3 +87,13 @@ independently accessible restore proof and exact backup artifact binding remain
 open. Actual account creation additionally requires the separately approved
 request, effective bounded policy, database permissions and authorized execution
 interface. No generic SQL/shell/API workaround or global write enablement was used.
+
+## Approval follow-up
+
+The [approval follow-up](approval-followup.json) records a newer source snapshot.
+The owner approved continuation; GitHub still requires current-head reviews and
+checks. A normal PR #96 merge attempt was rejected by repository rules; no bypass
+was used. PR #95 is closed because the coordinated PR #85 incorporated its tests.
+PR #29 now adopts PR #28 canonical browser identity changes; the combined suite
+passes 110 tests and Ruff. Runtime observations above were not repeated, and no
+production changes were made.
