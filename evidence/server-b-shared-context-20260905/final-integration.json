@@ -433,16 +433,6 @@
       "statusCheckRollup": [
         {
           "__typename": "CheckRun",
-          "completedAt": "0001-01-01T00:00:00Z",
-          "conclusion": "",
-          "detailsUrl": "https://github.com/appolon1908-hue/Vicidialer-Codestra/actions/runs/33964721322/job/101302715075",
-          "name": "build-test-evidence",
-          "startedAt": "2026-09-05T11:58:03Z",
-          "status": "IN_PROGRESS",
-          "workflowName": "VICIdial restricted adapter container"
-        },
-        {
-          "__typename": "CheckRun",
           "completedAt": "2026-09-05T11:58:12Z",
           "conclusion": "SUCCESS",
           "detailsUrl": "https://github.com/appolon1908-hue/Vicidialer-Codestra/actions/runs/33964721570/job/101302715904",
@@ -470,6 +460,16 @@
           "startedAt": "2026-09-05T11:58:04Z",
           "status": "COMPLETED",
           "workflowName": "VICIdial adapter source validation"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-09-05T12:01:54Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/appolon1908-hue/Vicidialer-Codestra/actions/runs/33964721322/job/101302715075",
+          "name": "build-test-evidence",
+          "startedAt": "2026-09-05T11:58:03Z",
+          "status": "COMPLETED",
+          "workflowName": "VICIdial restricted adapter container"
         },
         {
           "__typename": "CheckRun",
@@ -915,5 +915,6 @@
     "evidence": "/var/log/codestra-vicidial-operator/20260905T115928Z-status-18254.log"
   },
   "ACTUAL_PRODUCTION_CHANGES": "NONE; read-only status generated normal operator audit evidence. No account, telephony, flags, service restarts, grants or privileges changed.",
-  "EXACT_REMAINING_BLOCKER": "Latest commits need independent current-head review: PR29 d364d7d approval currently references older4c842f3; PR23 e5ccefe has no approving review. Canonical PR22 98401a0 and PR28 013a260 show REVIEW_REQUIRED (one approval after latest push). PR23 container CI pending at snapshot. Protected service merges/build/signing/staging and administrative preflight remain subsequent boundaries."
+  "EXACT_REMAINING_BLOCKER": "Latest commits need independent current-head review: PR29 d364d7d approval currently references older4c842f3; PR23 e5ccefe has no approving review. Canonical PR22 98401a0 and PR28 013a260 show REVIEW_REQUIRED (one approval after latest push). PR23 container build/tests/scans passed in run33964721322/job101302715075; applicable PR checks passed. Protected service merges/build/signing/staging and administrative preflight remain subsequent boundaries.",
+  "final_ci_verified_at_utc": "2026-09-05T12:02:20.322627+00:00"
 }
