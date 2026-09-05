@@ -104,7 +104,6 @@ The [release-fix follow-up](release-fix-followup.json) records PR #23 for
 runtime-readable policy generation and PR #29 for strict disabled-state
 readback. Local tests passed (17 policy tests; 117 provisioning tests plus
 Ruff). Renewed review was requested. No production action occurred.
-
 ## Verified-release continuation
 
 The [verified-release continuation](verified-release-continuation.json) records the
