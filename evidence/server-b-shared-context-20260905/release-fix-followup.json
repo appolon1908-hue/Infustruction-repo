@@ -1,0 +1,25 @@
+{
+  "recorded_at_utc": "2026-09-05T11:50:50.673892+00:00",
+  "scope": "Repair production release source blockers; preserve protected gates and disabled business writes.",
+  "fixes": [
+    {
+      "repository": "Vicidialer-Codestra",
+      "pr": 23,
+      "sha": "529ba96e388e201627c2bdafc42cee5429feb22e",
+      "problem": "Root-owned 0600 policy inaccessible to container UID/GID 10001",
+      "change": "Explicit root-only runtime GID option writes root-owned 0640; packet specifies GID10001. Default remains staging-only 0600.",
+      "validation": "17 policy/tool tests passed; ownership assignment mocked, no privileged host changes."
+    },
+    {
+      "repository": "codestra-provisioning-service",
+      "pr": 29,
+      "sha": "ebe3f3b10fe832157c4be753a1d80418ac52f83a",
+      "problem": "Numeric zero accepted as False in disabled-state readback",
+      "change": "Require literal False or exact N; reject numeric and malformed flags. Preserve SIP regressions and coordinated code.",
+      "validation": "Ruff PASS; 117 tests passed, two dependency deprecation warnings."
+    }
+  ],
+  "reviews": "Renewed review requested from kazan555 on both current follow-ups.",
+  "production_changes": "NONE",
+  "remaining": "CI and current-head reviews; canonical integration; protected immutable build and artifact verification; runtime/preflight prerequisites unchanged."
+}
