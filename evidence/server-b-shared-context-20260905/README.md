@@ -104,3 +104,13 @@ The [release-fix follow-up](release-fix-followup.json) records PR #23 for
 runtime-readable policy generation and PR #29 for strict disabled-state
 readback. Local tests passed (17 policy tests; 117 provisioning tests plus
 Ruff). Renewed review was requested. No production action occurred.
+
+## Final integration checkpoint
+
+The [final integration record](final-integration.json) supersedes source status
+above while preserving historical observations. PR #96 is repaired and merged;
+PR #29 preserves unique tests against the newer canonical code (119 passed plus
+Ruff). PR #23 now addresses restrictive umask after adopting coordinated policy
+cleanup. Current-head review and protected release proof remain outstanding.
+Server B was rechecked at 11:59:28 UTC: ready, writes false, live version 0.1.0;
+running source/digest remain unverified. No production changes occurred.
